@@ -1,0 +1,10 @@
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+coverage
+.vscode
+
+# eslint section
+!.eslintrc.js
+.eslintcache
