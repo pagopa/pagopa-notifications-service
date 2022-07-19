@@ -9,7 +9,7 @@
     "noImplicitAny": true,
     "declaration": true,
     "sourceMap": true,
-    "lib": []
+    "lib": ["dom"]
   },
   "include": [
     "src/**/*"

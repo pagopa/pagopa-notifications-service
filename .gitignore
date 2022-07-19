@@ -8,3 +8,5 @@ coverage
 # eslint section
 !.eslintrc.js
 .eslintcache
+src/generated
+.env
