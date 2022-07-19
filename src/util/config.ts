@@ -15,7 +15,10 @@ dotenv.config();
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;
 export const IConfig = t.interface({
-  PORT: t.number
+  ACCESS_KEY_ID: t.string,
+  PORT: t.number,
+  REGION: t.string,
+  SECRET_ACCESS_KEY: t.string
 });
 
 // No need to re-evaluate this object for each call

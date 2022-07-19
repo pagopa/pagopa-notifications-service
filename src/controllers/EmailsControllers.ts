@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 /**
  * PaymentControllers
  * RESTful Controllers for Payments Endpoints
@@ -12,56 +13,50 @@ import {
 import { TypeofApiResponse } from "@pagopa/ts-commons/lib/requests";
 import { Logger } from "winston";
 import * as Handlebars from "handlebars";
-import * as AWS from "aws-sdk";
+import * as SESTransport from "nodemailer/lib/ses-transport";
+import { Transporter } from "nodemailer";
+import { Browser } from "puppeteer";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { IConfig } from "../util/config";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 
-const SES_CONFIG = {
-  accessKeyId: "<SES IAM user access key>",
-  region: "us-west-2",
-  secretAccessKey: "<SES IAM user secret access key>"
-};
-
-const AWS_SES = new AWS.SES(SES_CONFIG);
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const sendEmail = (recipientEmail: string, name: string, data: string) => {
-  const params = {
-    Destination: {
-      ToAddresses: [recipientEmail]
-    },
-    Message: {
-      Body: {
-        Html: {
-          Charset: "UTF-8",
-          Data: data
-        }
-      },
-      Subject: {
-        Charset: "UTF-8",
-        Data: `Hello, ${name}!`
+const sendEmail = async (
+  recipientEmail: string,
+  data: string,
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  pdfData: Buffer,
+  pdfName: string
+) =>
+  await mailTrasporter.sendMail({
+    from: "no-reply@pagopa.gov.it",
+    to: recipientEmail,
+    subject: "Test pagopa-notifications-service",
+    html: data,
+    attachments: [
+      {
+        filename: pdfName,
+        content: pdfData,
+        contentType: "application/pdf"
       }
-    },
-    ReplyToAddresses: [],
-    Source: "<email address you verified>"
-  };
-  return AWS_SES.sendEmail(params).promise();
-};
+    ]
+  });
 
 export const sendMailController: (
   config: IConfig,
-  logger: Logger
+  logger: Logger,
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
 ) => AsControllerFunction<SendNotificationEmailT> = (
   config,
-  logger
+  logger,
+  mailTrasporter,
+  browserEngine
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
-  logger.info(params.body.from);
-
   const data = {
-    your: params.body.body
+    your: params.body.templateId
   };
 
   const content = "<b>{{your}}</b>";
@@ -69,7 +64,18 @@ export const sendMailController: (
 
   const dataEmail = template(data);
 
-  await sendEmail(params.body.to, params.body.to, dataEmail);
+  const page = await browserEngine.newPage();
+  await page.setContent(dataEmail);
+
+  const pdfData = await page.pdf();
+
+  await sendEmail(
+    params.body.to,
+    dataEmail,
+    mailTrasporter,
+    pdfData,
+    "test.pdf"
+  );
 
   return ResponseSuccessJson({ outcome: "OK" });
 };
@@ -77,13 +83,20 @@ export const sendMailController: (
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function sendMail(
   config: IConfig,
-  logger: Logger
+  logger: Logger,
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
 ): (
   req: express.Request
 ) => Promise<
   AsControllerResponseType<TypeofApiResponse<SendNotificationEmailT>>
 > {
-  const controller = sendMailController(config, logger);
+  const controller = sendMailController(
+    config,
+    logger,
+    mailTrasporter,
+    browserEngine
+  );
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   return async req => {
     // Validate input provided
