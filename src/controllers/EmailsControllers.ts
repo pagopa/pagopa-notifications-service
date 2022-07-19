@@ -104,11 +104,12 @@ export function sendMail(
       req.body
     );
 
-    if (isLeft(errorOrNotificationEmailRequest)) {
-      const error = errorOrNotificationEmailRequest.left;
-      return ResponseErrorFromValidationErrors(NotificationEmailRequest)(error);
-    }
-    const notificationEmailRequest = errorOrNotificationEmailRequest.right;
-    return controller({ body: notificationEmailRequest });
+    return pipe(
+        errorOrNotificationEmailRequest,
+        E.fold(
+            ResponseErrorFromValidationErrors(NotificationEmailRequest),
+            notificationEmailRequest => controller({ body: notificationEmailRequest })
+        )
+    );
   };
 }
