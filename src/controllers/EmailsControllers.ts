@@ -3,8 +3,8 @@
  * PaymentControllers
  * RESTful Controllers for Payments Endpoints
  */
+import * as fs from "fs";
 import * as express from "express";
-import { isLeft } from "fp-ts/lib/Either";
 import {
   ResponseErrorFromValidationErrors,
   ResponseSuccessJson
@@ -16,6 +16,7 @@ import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import { Browser } from "puppeteer";
+import { isLeft } from "fp-ts/lib/Either";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { IConfig } from "../util/config";
@@ -56,11 +57,14 @@ export const sendMailController: (
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
   const data = {
-    your: params.body.templateId
+    amount: params.body.amount,
+    email: params.body.to,
+    psp: params.body.pspName,
+    noticeCode: "302000100000009424"
   };
 
-  const content = "<b>{{your}}</b>";
-  const template = Handlebars.compile(content);
+  const htmlTemplate = fs.readFileSync("src/templates/test.html").toString();
+  const template = Handlebars.compile(htmlTemplate);
 
   const dataEmail = template(data);
 
@@ -104,12 +108,11 @@ export function sendMail(
       req.body
     );
 
-    return pipe(
-        errorOrNotificationEmailRequest,
-        E.fold(
-            ResponseErrorFromValidationErrors(NotificationEmailRequest),
-            notificationEmailRequest => controller({ body: notificationEmailRequest })
-        )
-    );
+    if (isLeft(errorOrNotificationEmailRequest)) {
+      const error = errorOrNotificationEmailRequest.left;
+      return ResponseErrorFromValidationErrors(NotificationEmailRequest)(error);
+    }
+    const notificationEmailRequest = errorOrNotificationEmailRequest.right;
+    return controller({ body: notificationEmailRequest });
   };
 }
