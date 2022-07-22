@@ -2,8 +2,8 @@ FROM node:14.16.0-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN yarn
-RUN yarn build
 RUN yarn generate
+RUN yarn build
 
 FROM node:14.16.0-alpine AS production
 WORKDIR /app
