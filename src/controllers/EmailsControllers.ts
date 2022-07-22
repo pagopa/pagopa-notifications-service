@@ -16,7 +16,8 @@ import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import { Browser } from "puppeteer";
-import { isLeft } from "fp-ts/lib/Either";
+import * as E from "fp-ts/lib/Either";
+import { pipe } from "fp-ts/lib/function";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { IConfig } from "../util/config";
@@ -102,17 +103,13 @@ export function sendMail(
     browserEngine
   );
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  return async req => {
-    // Validate input provided
-    const errorOrNotificationEmailRequest = NotificationEmailRequest.decode(
-      req.body
+  return async req =>
+    pipe(
+      NotificationEmailRequest.decode(req.body),
+      E.foldW(
+        ResponseErrorFromValidationErrors(NotificationEmailRequest),
+        notificationEmailRequest =>
+          controller({ body: notificationEmailRequest })
+      )
     );
-
-    if (isLeft(errorOrNotificationEmailRequest)) {
-      const error = errorOrNotificationEmailRequest.left;
-      return ResponseErrorFromValidationErrors(NotificationEmailRequest)(error);
-    }
-    const notificationEmailRequest = errorOrNotificationEmailRequest.right;
-    return controller({ body: notificationEmailRequest });
-  };
 }
