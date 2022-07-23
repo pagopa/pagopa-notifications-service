@@ -83,7 +83,7 @@ microservice-chart:
     AWS_SES_REGION: "eu-south-1" 
 
   envSecret:
-    AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
+    AWS_SES_ACCESS_KEY_ID: aws-ses-access-key
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
 
   keyvault:
