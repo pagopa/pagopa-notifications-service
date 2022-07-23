@@ -37,9 +37,9 @@ export const startApp = async (
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup AWS mail mailTrasporter ⚡️⚡️⚡️⚡️⚡️`
   );
   const SES_CONFIG = {
-    accessKeyId: config.ACCESS_KEY_ID,
+    accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
     region: config.REGION,
-    secretAccessKey: config.SECRET_ACCESS_KEY
+    secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
   };
 
   const mailTrasporter: Transporter = nodemailer.createTransport({
