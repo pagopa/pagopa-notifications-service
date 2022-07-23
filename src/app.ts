@@ -6,8 +6,6 @@ import * as bodyParser from "body-parser";
 import * as AWS from "aws-sdk";
 import * as nodemailer from "nodemailer";
 import { Transporter } from "nodemailer";
-import { Browser } from "puppeteer";
-import * as puppeteer from "puppeteer";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 /**
@@ -28,10 +26,6 @@ export const startApp = async (
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup puppeter for pdf generator⚡️⚡️⚡️⚡️⚡️`
   );
-  const browserEngine: Browser = await puppeteer.launch({
-    args: ["--no-sandbox"],
-    headless: true
-  });
 
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup AWS mail mailTrasporter ⚡️⚡️⚡️⚡️⚡️`
@@ -55,7 +49,7 @@ export const startApp = async (
   const jsonParser = bodyParser.json();
 
   const sendMailtHandler = toExpressHandler(
-    EmailsControllers.sendMail(config, logger, mailTrasporter, browserEngine)
+    EmailsControllers.sendMail(config, logger, mailTrasporter)
   );
   app.post("/notifications/emails", jsonParser, sendMailtHandler);
 
