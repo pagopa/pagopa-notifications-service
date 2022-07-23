@@ -17,7 +17,7 @@ export type IConfig = t.TypeOf<typeof IConfig>;
 export const IConfig = t.interface({
   AWS_SES_ACCESS_KEY_ID: t.string,
   PORT: t.number,
-  REGION: t.string,
+  AWS_SES_REGION: t.string,
   AWS_SES_SECRET_ACCESS_KEY: t.string
 });
 

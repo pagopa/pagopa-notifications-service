@@ -38,7 +38,7 @@ export const startApp = async (
   );
   const SES_CONFIG = {
     accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
-    region: config.REGION,
+    region: config.AWS_SES_REGION,
     secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
   };
 
