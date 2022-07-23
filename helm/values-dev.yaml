@@ -35,7 +35,7 @@ microservice-chart:
   ingress:
     create: true
     host: "weudev.ecommerce.internal.dev.platform.pagopa.it"
-    path: /pagopa-ecommerce-transactions-service/(.*)
+    path: /pagopa-notifications-service/(.*)
 
   serviceAccount:
     create: false
