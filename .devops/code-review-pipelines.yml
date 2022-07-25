@@ -27,7 +27,7 @@ stages:
         steps:
           - template: templates/node-job-setup/template.yaml@pagopaCommons
           - bash: |
-              yarn build
+              yarn generate && yarn build
             displayName: 'Build'
   - stage: Static_analysis
     dependsOn: []
