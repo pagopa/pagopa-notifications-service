@@ -3,7 +3,7 @@
  */
 import * as app from "./app";
 import { getConfigOrThrow } from "./util/config";
-import { logger } from "./util/Logger";
+import { logger } from "./util/logger";
 
 // Retrieve server configuration
 const config = getConfigOrThrow();

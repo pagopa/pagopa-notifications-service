@@ -6,8 +6,6 @@ import * as bodyParser from "body-parser";
 import * as AWS from "aws-sdk";
 import * as nodemailer from "nodemailer";
 import { Transporter } from "nodemailer";
-import { Browser } from "puppeteer";
-import * as puppeteer from "puppeteer";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
@@ -29,18 +27,14 @@ export const startApp = async (
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup puppeter for pdf generator⚡️⚡️⚡️⚡️⚡️`
   );
-  const browserEngine: Browser = await puppeteer.launch({
-    args: ["--no-sandbox"],
-    headless: true
-  });
 
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup AWS mail mailTrasporter ⚡️⚡️⚡️⚡️⚡️`
   );
   const SES_CONFIG = {
-    accessKeyId: config.ACCESS_KEY_ID,
-    region: config.REGION,
-    secretAccessKey: config.SECRET_ACCESS_KEY
+    accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
+    region: config.AWS_SES_REGION,
+    secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
   };
 
   const mailTrasporter: Transporter = nodemailer.createTransport({
@@ -56,7 +50,7 @@ export const startApp = async (
   const jsonParser = bodyParser.json();
 
   const sendMailtHandler = toExpressHandler(
-    EmailsControllers.sendMail(config, logger, mailTrasporter, browserEngine)
+    EmailsControllers.sendMail(config, logger, mailTrasporter)
   );
   const getInfoHandler = toExpressHandler(infoController(config, logger));
 

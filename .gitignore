@@ -10,3 +10,4 @@ coverage
 .eslintcache
 src/generated
 .env
+helm/charts
