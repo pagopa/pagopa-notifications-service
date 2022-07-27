@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /**
- * HealthControllers
- * RESTful Controllers for pod health related informations
+ * InfoControllers
+ * RESTful Controllers for service related informations
  */
 import { TypeofApiResponse } from "@pagopa/ts-commons/lib/requests";
 import { ResponseSuccessJson } from "@pagopa/ts-commons/lib/responses";

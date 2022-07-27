@@ -9,6 +9,7 @@ import { Transporter } from "nodemailer";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
+import { healthController } from "./controllers/HealthControllers";
 /**
  * Define and start an express Server
  * to expose RESTful and SOAP endpoints for BackendApp and Proxy requests.
@@ -54,8 +55,11 @@ export const startApp = async (
   );
   const getInfoHandler = toExpressHandler(infoController(config, logger));
 
+  const getHealthHandler = toExpressHandler(healthController(config, logger));
+
   app.post("/notifications/emails", jsonParser, sendMailtHandler);
   app.get("/notifications/info", jsonParser, getInfoHandler);
+  app.get("/notifications/health", jsonParser, getHealthHandler);
 
   app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Express + TypeScript Server");

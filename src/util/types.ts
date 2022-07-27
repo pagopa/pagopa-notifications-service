@@ -4,6 +4,7 @@ import {
   TypeofApiResponse
 } from "@pagopa/ts-commons/lib/requests";
 import {
+  IResponseErrorGeneric,
   IResponseErrorNotFound,
   IResponseErrorValidation,
   IResponseSuccessJson,
@@ -16,6 +17,8 @@ export type AsControllerResponseType<T> = T extends IResponseType<200, infer R>
   ? IResponseErrorValidation
   : T extends IResponseType<404, ProblemJson>
   ? IResponseErrorNotFound
+  : T extends IResponseType<500, ProblemJson>
+  ? IResponseErrorGeneric
   : never;
 
 export type AsControllerFunction<T> = (
