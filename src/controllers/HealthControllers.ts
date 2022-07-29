@@ -75,7 +75,8 @@ const healthcheck = (
 export const healthController: (
   config: IConfig,
   logger: Logger
-) => AsControllerFunction<GetHealthT> = (config, logger) => async params => {
+) => // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+AsControllerFunction<GetHealthT> = (config, logger) => async _params => {
   logger.info("Retrieving service health");
   return await healthcheck(config, logger);
 };
