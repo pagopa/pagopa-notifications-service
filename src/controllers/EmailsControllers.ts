@@ -1,7 +1,7 @@
 /* eslint-disable sort-keys */
 /**
- * PaymentControllers
- * RESTful Controllers for Payments Endpoints
+ * EmailsControllers
+ * RESTful Controllers for emails functions
  */
 import * as fs from "fs";
 import * as express from "express";
