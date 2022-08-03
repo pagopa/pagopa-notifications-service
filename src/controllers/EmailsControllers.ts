@@ -17,6 +17,7 @@ import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
+import * as t from "io-ts";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { IConfig } from "../util/config";
@@ -61,22 +62,40 @@ export const sendMailController: (
     noticeCode: "302000100000009424"
   };
 
-  const htmlTemplate = fs.readFileSync("src/templates/test.html").toString();
+  const templateId = "poc-1";
+  const schema = await import(`../generated/templates/${templateId}/schema`);
+
+  const htmlTemplate = fs
+    .readFileSync(`src/templates/${templateId}/${templateId}.template.html`)
+    .toString();
   const template = Handlebars.compile(htmlTemplate);
 
-  const dataEmail = template(data);
+  return pipe(
+    data,
+    schema.default.decode as (v: unknown) => t.Validation<unknown>,
+    E.map<unknown, string>((templateParams: unknown) =>
+      template(templateParams)
+    ),
+    E.map(async markup => {
+      const pdfData = Buffer.from(markup);
 
-  const pdfData = Buffer.from("testPdf");
-
-  await sendEmail(
-    params.body.to,
-    dataEmail,
-    mailTrasporter,
-    pdfData,
-    "test.pdf"
+      return await sendEmail(
+        params.body.to,
+        markup,
+        mailTrasporter,
+        pdfData,
+        "test.pdf"
+      );
+    }),
+    E.fold<
+      t.Errors,
+      Promise<SESTransport.SentMessageInfo>,
+      ReturnType<AsControllerFunction<SendNotificationEmailT>>
+    >(
+      async err => ResponseErrorFromValidationErrors(schema.default)(err),
+      async _v => ResponseSuccessJson({ outcome: "OK" })
+    )
   );
-
-  return ResponseSuccessJson({ outcome: "OK" });
 };
 
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
