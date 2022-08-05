@@ -15,6 +15,8 @@ import { Logger } from "winston";
 import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
+import * as A from "fp-ts/lib/Array";
+import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
@@ -29,22 +31,29 @@ const sendEmail = async (
   recipientEmail: string,
   data: string,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  pdfData: Buffer,
+  pdfData: O.Option<Promise<Buffer>>,
   pdfName: string
-) =>
-  await mailTrasporter.sendMail({
+) => {
+  const attachments = await Promise.all(
+    pipe(
+      pdfData,
+      O.map(async content => ({
+        filename: pdfName,
+        content: await content,
+        contentType: "application/pdf"
+      })),
+      A.fromOption
+    )
+  );
+
+  return await mailTrasporter.sendMail({
     from: "no-reply@pagopa.gov.it",
     to: recipientEmail,
     subject: "Test pagopa-notifications-service",
     html: data,
-    attachments: [
-      {
-        filename: pdfName,
-        content: pdfData,
-        contentType: "application/pdf"
-      }
-    ]
+    attachments
   });
+};
 
 export const sendMailController: (
   config: IConfig,
@@ -68,26 +77,46 @@ export const sendMailController: (
   const templateId = "poc-1";
   const schema = await import(`../generated/templates/${templateId}/schema`);
 
-  const htmlTemplate = fs
+  const htmlTemplateRaw = fs
     .readFileSync(`src/templates/${templateId}/${templateId}.template.html`)
     .toString();
-  const template = Handlebars.compile(htmlTemplate);
+  const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
+
+  const pathExists = O.fromPredicate((path: string) => fs.existsSync(path));
+
+  const pdfTemplate = pipe(
+    pathExists(`src/templates/${templateId}/${templateId}.template.pdf`),
+    O.map(path => fs.readFileSync(path).toString()),
+    O.map(Handlebars.compile)
+  );
 
   return pipe(
     data,
     schema.default.decode as (v: unknown) => t.Validation<unknown>,
-    E.map<unknown, string>((templateParams: unknown) =>
-      template(templateParams)
+    E.map<unknown, readonly [string, O.Option<string>]>(
+      (templateParams: unknown) => [
+        htmlTemplate(templateParams),
+        pipe(
+          pdfTemplate,
+          O.map(f => f(templateParams))
+        )
+      ]
     ),
-    E.map(async markup => {
-      const page = await browserEngine.newPage();
-      await page.setContent(markup);
+    E.map(async ([htmlMarkup, pdfMarkup]) => {
+      const pdfData = pipe(
+        pdfMarkup,
+        O.map(async markup => {
+          const page = await browserEngine.newPage();
+          await page.setContent(markup);
 
-      const pdfData = await page.pdf({ printBackground: true });
+          return await page.pdf({ printBackground: true });
+        }),
+        O.map(async v => await v)
+      );
 
       return await sendEmail(
         params.body.to,
-        markup,
+        htmlMarkup,
         mailTrasporter,
         pdfData,
         "test.pdf"

@@ -11,7 +11,7 @@
     "postversion": "git push && git push --tags",
     "generate": "npm-run-all generate:*",
     "generate:definitions": "rimraf ./src/generated/definitions && shx mkdir -p ./src/generated/definitions && gen-api-models --api-spec ./api-spec/index.yaml --no-strict --out-dir ./src/generated/definitions --request-types",
-    "generate:template-schemas": "find src/templates/*/schema.json -exec yarn run iotsfjs --inputFile {} --outputDir src/generated \\;",
+    "generate:template-schemas": "find src/templates/*/*.json -exec yarn run iotsfjs --inputFile {} --outputDir src/generated \\;",
     "test": "jest",
     "start": "node dist/src/index.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/index.js\"",
