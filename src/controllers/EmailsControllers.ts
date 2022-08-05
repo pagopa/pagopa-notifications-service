@@ -18,6 +18,7 @@ import { Transporter } from "nodemailer";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
+import { Browser } from "puppeteer";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { IConfig } from "../util/config";
@@ -48,11 +49,13 @@ const sendEmail = async (
 export const sendMailController: (
   config: IConfig,
   logger: Logger,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
 ) => AsControllerFunction<SendNotificationEmailT> = (
   config,
   logger,
-  mailTrasporter
+  mailTrasporter,
+  browserEngine
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
   const data = {
@@ -77,7 +80,10 @@ export const sendMailController: (
       template(templateParams)
     ),
     E.map(async markup => {
-      const pdfData = Buffer.from(markup);
+      const page = await browserEngine.newPage();
+      await page.setContent(markup);
+
+      const pdfData = await page.pdf({ printBackground: true });
 
       return await sendEmail(
         params.body.to,
@@ -102,13 +108,19 @@ export const sendMailController: (
 export function sendMail(
   config: IConfig,
   logger: Logger,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
 ): (
   req: express.Request
 ) => Promise<
   AsControllerResponseType<TypeofApiResponse<SendNotificationEmailT>>
 > {
-  const controller = sendMailController(config, logger, mailTrasporter);
+  const controller = sendMailController(
+    config,
+    logger,
+    mailTrasporter,
+    browserEngine
+  );
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   return async req =>
     pipe(
