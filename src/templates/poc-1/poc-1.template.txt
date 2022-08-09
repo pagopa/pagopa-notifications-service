@@ -1,0 +1,4 @@
+Caro {{email}}
+Codice avviso {{noticeCode}}.
+In allegato la ricevuta.
+Grazie!
