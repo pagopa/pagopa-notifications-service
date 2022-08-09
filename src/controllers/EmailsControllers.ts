@@ -93,7 +93,7 @@ export const sendMailController: (
   const pathExists = O.fromPredicate((path: string) => fs.existsSync(path));
 
   const pdfTemplate = pipe(
-    pathExists(`src/templates/${templateId}/${templateId}.template.pdf`),
+    pathExists(`src/templates/${templateId}/${templateId}.template.pdf.html`),
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
