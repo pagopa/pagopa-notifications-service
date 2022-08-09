@@ -10,7 +10,10 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 
-import { TypeofApiResponse } from "@pagopa/ts-commons/lib/requests";
+import {
+  TypeofApiParams,
+  TypeofApiResponse
+} from "@pagopa/ts-commons/lib/requests";
 import { Logger } from "winston";
 import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
@@ -70,14 +73,7 @@ export const sendMailController: (
   browserEngine
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
-  const data = {
-    amount: params.body.amount,
-    email: params.body.to,
-    psp: params.body.pspName,
-    noticeCode: "302000100000009424"
-  };
-
-  const templateId = "poc-1";
+  const templateId = params.body.templateId;
   const schema = await import(`../generated/templates/${templateId}/schema`);
 
   const textTemplateRaw = fs
@@ -99,7 +95,7 @@ export const sendMailController: (
   );
 
   return pipe(
-    data,
+    params.body.parameters,
     schema.default.decode as (v: unknown) => t.Validation<unknown>,
     E.map<unknown, readonly [string, string, O.Option<string>]>(
       (templateParams: unknown) => [
@@ -107,7 +103,7 @@ export const sendMailController: (
         textTemplate(templateParams),
         pipe(
           pdfTemplate,
-          O.map(f => f(templateParams))
+          O.map(pdf => pdf(templateParams))
         )
       ]
     ),
