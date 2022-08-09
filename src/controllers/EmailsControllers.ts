@@ -32,6 +32,7 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmail = async (
   recipientEmail: string,
+  subject: string,
   htmlData: string,
   textData: string,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
@@ -54,7 +55,7 @@ const sendEmail = async (
   return await mailTrasporter.sendMail({
     from: "no-reply@pagopa.gov.it",
     to: recipientEmail,
-    subject: "Test pagopa-notifications-service",
+    subject,
     html: htmlData,
     text: textData,
     attachments
@@ -121,6 +122,7 @@ export const sendMailController: (
 
       return await sendEmail(
         params.body.to,
+        params.body.subject,
         htmlMarkup,
         textMarkup,
         mailTrasporter,
