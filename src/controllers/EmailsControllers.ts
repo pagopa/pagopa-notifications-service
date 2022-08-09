@@ -29,10 +29,12 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmail = async (
   recipientEmail: string,
-  data: string,
+  htmlData: string,
+  textData: string,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
   pdfData: O.Option<Promise<Buffer>>,
   pdfName: string
+  // eslint-disable-next-line max-params
 ) => {
   const attachments = await Promise.all(
     pipe(
@@ -50,7 +52,8 @@ const sendEmail = async (
     from: "no-reply@pagopa.gov.it",
     to: recipientEmail,
     subject: "Test pagopa-notifications-service",
-    html: data,
+    html: htmlData,
+    text: textData,
     attachments
   });
 };
@@ -77,6 +80,11 @@ export const sendMailController: (
   const templateId = "poc-1";
   const schema = await import(`../generated/templates/${templateId}/schema`);
 
+  const textTemplateRaw = fs
+    .readFileSync(`src/templates/${templateId}/${templateId}.template.txt`)
+    .toString();
+  const textTemplate = Handlebars.compile(textTemplateRaw);
+
   const htmlTemplateRaw = fs
     .readFileSync(`src/templates/${templateId}/${templateId}.template.html`)
     .toString();
@@ -93,16 +101,17 @@ export const sendMailController: (
   return pipe(
     data,
     schema.default.decode as (v: unknown) => t.Validation<unknown>,
-    E.map<unknown, readonly [string, O.Option<string>]>(
+    E.map<unknown, readonly [string, string, O.Option<string>]>(
       (templateParams: unknown) => [
         htmlTemplate(templateParams),
+        textTemplate(templateParams),
         pipe(
           pdfTemplate,
           O.map(f => f(templateParams))
         )
       ]
     ),
-    E.map(async ([htmlMarkup, pdfMarkup]) => {
+    E.map(async ([htmlMarkup, textMarkup, pdfMarkup]) => {
       const pdfData = pipe(
         pdfMarkup,
         O.map(async markup => {
@@ -117,6 +126,7 @@ export const sendMailController: (
       return await sendEmail(
         params.body.to,
         htmlMarkup,
+        textMarkup,
         mailTrasporter,
         pdfData,
         "test.pdf"
