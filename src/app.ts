@@ -5,6 +5,7 @@ import { toExpressHandler } from "@pagopa/ts-commons/lib/express";
 import * as bodyParser from "body-parser";
 import * as AWS from "aws-sdk";
 import * as nodemailer from "nodemailer";
+import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
@@ -50,8 +51,13 @@ export const startApp = async (
 
   const jsonParser = bodyParser.json();
 
+  const browserEngine = await puppeteer.launch({
+    args: ["--no-sandbox"],
+    headless: true
+  });
+
   const sendMailtHandler = toExpressHandler(
-    EmailsControllers.sendMail(config, logger, mailTrasporter)
+    EmailsControllers.sendMail(config, logger, mailTrasporter, browserEngine)
   );
   const getInfoHandler = toExpressHandler(infoController(config, logger));
 

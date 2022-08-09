@@ -15,8 +15,12 @@ import { Logger } from "winston";
 import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
+import * as A from "fp-ts/lib/Array";
+import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
+import * as t from "io-ts";
+import { Browser } from "puppeteer";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { IConfig } from "../util/config";
@@ -25,33 +29,45 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmail = async (
   recipientEmail: string,
-  data: string,
+  htmlData: string,
+  textData: string,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  pdfData: Buffer,
+  pdfData: O.Option<Promise<Buffer>>,
   pdfName: string
-) =>
-  await mailTrasporter.sendMail({
+  // eslint-disable-next-line max-params
+) => {
+  const attachments = await Promise.all(
+    pipe(
+      pdfData,
+      O.map(async content => ({
+        filename: pdfName,
+        content: await content,
+        contentType: "application/pdf"
+      })),
+      A.fromOption
+    )
+  );
+
+  return await mailTrasporter.sendMail({
     from: "no-reply@pagopa.gov.it",
     to: recipientEmail,
     subject: "Test pagopa-notifications-service",
-    html: data,
-    attachments: [
-      {
-        filename: pdfName,
-        content: pdfData,
-        contentType: "application/pdf"
-      }
-    ]
+    html: htmlData,
+    text: textData,
+    attachments
   });
+};
 
 export const sendMailController: (
   config: IConfig,
   logger: Logger,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
 ) => AsControllerFunction<SendNotificationEmailT> = (
   config,
   logger,
-  mailTrasporter
+  mailTrasporter,
+  browserEngine
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
   const data = {
@@ -61,35 +77,89 @@ export const sendMailController: (
     noticeCode: "302000100000009424"
   };
 
-  const htmlTemplate = fs.readFileSync("src/templates/test.html").toString();
-  const template = Handlebars.compile(htmlTemplate);
+  const templateId = "poc-1";
+  const schema = await import(`../generated/templates/${templateId}/schema`);
 
-  const dataEmail = template(data);
+  const textTemplateRaw = fs
+    .readFileSync(`src/templates/${templateId}/${templateId}.template.txt`)
+    .toString();
+  const textTemplate = Handlebars.compile(textTemplateRaw);
 
-  const pdfData = Buffer.from("testPdf");
+  const htmlTemplateRaw = fs
+    .readFileSync(`src/templates/${templateId}/${templateId}.template.html`)
+    .toString();
+  const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
 
-  await sendEmail(
-    params.body.to,
-    dataEmail,
-    mailTrasporter,
-    pdfData,
-    "test.pdf"
+  const pathExists = O.fromPredicate((path: string) => fs.existsSync(path));
+
+  const pdfTemplate = pipe(
+    pathExists(`src/templates/${templateId}/${templateId}.template.pdf.html`),
+    O.map(path => fs.readFileSync(path).toString()),
+    O.map(Handlebars.compile)
   );
 
-  return ResponseSuccessJson({ outcome: "OK" });
+  return pipe(
+    data,
+    schema.default.decode as (v: unknown) => t.Validation<unknown>,
+    E.map<unknown, readonly [string, string, O.Option<string>]>(
+      (templateParams: unknown) => [
+        htmlTemplate(templateParams),
+        textTemplate(templateParams),
+        pipe(
+          pdfTemplate,
+          O.map(f => f(templateParams))
+        )
+      ]
+    ),
+    E.map(async ([htmlMarkup, textMarkup, pdfMarkup]) => {
+      const pdfData = pipe(
+        pdfMarkup,
+        O.map(async markup => {
+          const page = await browserEngine.newPage();
+          await page.setContent(markup);
+
+          return await page.pdf({ printBackground: true });
+        }),
+        O.map(async v => await v)
+      );
+
+      return await sendEmail(
+        params.body.to,
+        htmlMarkup,
+        textMarkup,
+        mailTrasporter,
+        pdfData,
+        "test.pdf"
+      );
+    }),
+    E.fold<
+      t.Errors,
+      Promise<SESTransport.SentMessageInfo>,
+      ReturnType<AsControllerFunction<SendNotificationEmailT>>
+    >(
+      async err => ResponseErrorFromValidationErrors(schema.default)(err),
+      async _v => ResponseSuccessJson({ outcome: "OK" })
+    )
+  );
 };
 
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function sendMail(
   config: IConfig,
   logger: Logger,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
 ): (
   req: express.Request
 ) => Promise<
   AsControllerResponseType<TypeofApiResponse<SendNotificationEmailT>>
 > {
-  const controller = sendMailController(config, logger, mailTrasporter);
+  const controller = sendMailController(
+    config,
+    logger,
+    mailTrasporter,
+    browserEngine
+  );
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   return async req =>
     pipe(
