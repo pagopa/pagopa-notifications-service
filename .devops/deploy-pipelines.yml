@@ -127,7 +127,7 @@ stages:
                   displayName: Helm upgrade
                   inputs:
                     kubernetesServiceEndpoint: ${{ variables.kubernetesServiceConnection }}
-                    namespace: ecommerce
+                    namespace: shared
                     command: upgrade
                     chartType: filepath
                     chartPath: $(Pipeline.Workspace)/helm
