@@ -10,7 +10,7 @@ microservice-chart:
 
   livenessProbe:
     httpGet:
-      path: notifications/health
+      path: /health/liveness
       port: 3000
     initialDelaySeconds: 60
     failureThreshold: 6
@@ -18,7 +18,7 @@ microservice-chart:
 
   readinessProbe:
     httpGet:
-      path: notifications/info
+      path: /health/readiness
       port: 3000
     initialDelaySeconds: 60
     failureThreshold: 6
