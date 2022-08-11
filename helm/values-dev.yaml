@@ -14,7 +14,7 @@ microservice-chart:
       port: 3000
     initialDelaySeconds: 60
     failureThreshold: 6
-    periodSeconds: 10
+    periodSeconds: 90
 
   readinessProbe:
     httpGet:
