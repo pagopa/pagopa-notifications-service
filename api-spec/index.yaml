@@ -35,7 +35,7 @@ paths:
           description: Generic server error
           schema:
             $ref: "#/definitions/ProblemJson"
-  "/info":
+  "/health/readiness":
     x-swagger-router-controller: infoController
     get:
       operationId: getInfo
@@ -49,7 +49,7 @@ paths:
           description: Generic server error
           schema:
             $ref: "#/definitions/ProblemJson"
-  "/health":
+  "/health/liveness":
     x-swagger-router-controller: healthController
     get:
       operationId: getHealth
