@@ -10,10 +10,7 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 
-import {
-  TypeofApiParams,
-  TypeofApiResponse
-} from "@pagopa/ts-commons/lib/requests";
+import { TypeofApiResponse } from "@pagopa/ts-commons/lib/requests";
 import { Logger } from "winston";
 import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
@@ -75,22 +72,28 @@ export const sendMailController: (
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
   const templateId = params.body.templateId;
-  const schema = await import(`../generated/templates/${templateId}/schema`);
+  const schema = await import(`../generated/templates/${templateId}/schema.js`);
 
   const textTemplateRaw = fs
-    .readFileSync(`src/templates/${templateId}/${templateId}.template.txt`)
+    .readFileSync(
+      `./dist/src/templates/${templateId}/${templateId}.template.txt`
+    )
     .toString();
   const textTemplate = Handlebars.compile(textTemplateRaw);
 
   const htmlTemplateRaw = fs
-    .readFileSync(`src/templates/${templateId}/${templateId}.template.html`)
+    .readFileSync(
+      `./dist/src/templates/${templateId}/${templateId}.template.html`
+    )
     .toString();
   const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
 
   const pathExists = O.fromPredicate((path: string) => fs.existsSync(path));
 
   const pdfTemplate = pipe(
-    pathExists(`src/templates/${templateId}/${templateId}.template.pdf.html`),
+    pathExists(
+      `dist/src/templates/${templateId}/${templateId}.template.pdf.html`
+    ),
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
