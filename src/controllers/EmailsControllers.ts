@@ -122,7 +122,7 @@ export const sendMailController: (
         }),
         O.map(async v => await v)
       );
-
+      logger.info(`Sending email with template ${templateId}`);
       return await sendEmail(
         params.body.to,
         params.body.subject,
