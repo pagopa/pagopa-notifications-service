@@ -11,7 +11,6 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 
 import { TypeofApiResponse } from "@pagopa/ts-commons/lib/requests";
-import { Logger } from "winston";
 import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
@@ -25,6 +24,8 @@ import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { IConfig } from "../util/config";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
+import { logger } from "../util/logger";
+
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmail = async (
@@ -37,6 +38,7 @@ const sendEmail = async (
   pdfName: string
   // eslint-disable-next-line max-params
 ) => {
+  logger.info(`Setting attachments`);
   const attachments = await Promise.all(
     pipe(
       pdfData,
@@ -48,7 +50,7 @@ const sendEmail = async (
       A.fromOption
     )
   );
-
+  logger.info(`Sending email with mailTrasporter`);
   return await mailTrasporter.sendMail({
     from: "no-reply@pagopa.gov.it",
     to: recipientEmail,
@@ -61,12 +63,10 @@ const sendEmail = async (
 
 export const sendMailController: (
   config: IConfig,
-  logger: Logger,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
   browserEngine: Browser
 ) => AsControllerFunction<SendNotificationEmailT> = (
   config,
-  logger,
   mailTrasporter,
   browserEngine
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -97,7 +97,7 @@ export const sendMailController: (
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
-
+  logger.info(pdfTemplate);
   return pipe(
     params.body.parameters,
     schema.default.decode as (v: unknown) => t.Validation<unknown>,
@@ -147,7 +147,6 @@ export const sendMailController: (
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function sendMail(
   config: IConfig,
-  logger: Logger,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
   browserEngine: Browser
 ): (
@@ -155,12 +154,7 @@ export function sendMail(
 ) => Promise<
   AsControllerResponseType<TypeofApiResponse<SendNotificationEmailT>>
 > {
-  const controller = sendMailController(
-    config,
-    logger,
-    mailTrasporter,
-    browserEngine
-  );
+  const controller = sendMailController(config, mailTrasporter, browserEngine);
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   return async req =>
     pipe(
