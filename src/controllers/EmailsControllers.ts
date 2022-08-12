@@ -38,7 +38,6 @@ const sendEmail = async (
   pdfName: string
   // eslint-disable-next-line max-params
 ) => {
-  logger.info(`Setting attachments`);
   const attachments = await Promise.all(
     pipe(
       pdfData,
@@ -50,7 +49,6 @@ const sendEmail = async (
       A.fromOption
     )
   );
-  logger.info(`Sending email with mailTrasporter`);
   return await mailTrasporter.sendMail({
     from: "no-reply@pagopa.gov.it",
     to: recipientEmail,
@@ -97,7 +95,6 @@ export const sendMailController: (
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
-  logger.info(pdfTemplate);
   return pipe(
     params.body.parameters,
     schema.default.decode as (v: unknown) => t.Validation<unknown>,
