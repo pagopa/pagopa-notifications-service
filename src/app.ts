@@ -57,7 +57,7 @@ export const startApp = async (
   });
 
   const sendMailtHandler = toExpressHandler(
-    EmailsControllers.sendMail(config, logger, mailTrasporter, browserEngine)
+    EmailsControllers.sendMail(config, mailTrasporter, browserEngine)
   );
   const getInfoHandler = toExpressHandler(infoController(config, logger));
 
