@@ -10,5 +10,7 @@ export const logger = createLogger({
     format.simple(),
     printf(nfo => `${nfo.timestamp} [${nfo.level}]: ${nfo.message}`)
   ),
+  handleExceptions: true,
+  handleRejections: true,
   transports: [new transports.Console()]
 });
