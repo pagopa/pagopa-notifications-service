@@ -75,25 +75,19 @@ export const sendMailController: (
   const schema = await import(`../generated/templates/${templateId}/schema.js`);
 
   const textTemplateRaw = fs
-    .readFileSync(
-      `./dist/src/templates/${templateId}/${templateId}.template.txt`
-    )
+    .readFileSync(`./src/templates/${templateId}/${templateId}.template.txt`)
     .toString();
   const textTemplate = Handlebars.compile(textTemplateRaw);
 
   const htmlTemplateRaw = fs
-    .readFileSync(
-      `./dist/src/templates/${templateId}/${templateId}.template.html`
-    )
+    .readFileSync(`./src/templates/${templateId}/${templateId}.template.html`)
     .toString();
   const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
 
   const pathExists = O.fromPredicate((path: string) => fs.existsSync(path));
 
   const pdfTemplate = pipe(
-    pathExists(
-      `dist/src/templates/${templateId}/${templateId}.template.pdf.html`
-    ),
+    pathExists(`./src/templates/${templateId}/${templateId}.template.pdf.html`),
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
