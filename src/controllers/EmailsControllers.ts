@@ -26,7 +26,6 @@ import { IConfig } from "../util/config";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 import { logger } from "../util/logger";
 
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmail = async (
   recipientEmail: string,
