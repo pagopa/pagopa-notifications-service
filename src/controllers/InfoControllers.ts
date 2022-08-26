@@ -22,7 +22,7 @@ export const infoController: (
   logger
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
-  logger.info("Retrieving service info");
+  logger.debug("Retrieving service info");
   return ResponseSuccessJson({
     name: packageJson.name,
     version: packageJson.version
