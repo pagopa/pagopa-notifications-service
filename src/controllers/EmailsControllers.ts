@@ -59,9 +59,9 @@ const sendEmail = async (
     from: "no-reply@pagopa.gov.it",
     to: recipientEmail,
     subject,
-    html: htmlData,
-    text: textData,
-    attachments
+    html: "htmlData",
+    text: "textData"
+    // attachments
   });
 };
 
