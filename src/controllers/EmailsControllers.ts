@@ -6,7 +6,9 @@
 import * as fs from "fs";
 import * as express from "express";
 import {
+  IResponseErrorValidation,
   ResponseErrorFromValidationErrors,
+  ResponseErrorValidation,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 
@@ -21,10 +23,15 @@ import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import { Browser } from "puppeteer";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
-import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
-import { IConfig } from "../util/config";
-import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
+import {
+  IConfig,
+  NotificationsServiceClientConfig,
+  NotificationsServiceClientEnum,
+  NotificationsServiceClientType
+} from "../util/config";
 import { logger } from "../util/logger";
+import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
+import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmail = async (
@@ -140,6 +147,48 @@ export const sendMailController: (
   );
 };
 
+const validTemplateIdGivenClientConfig = (
+  clientConfig: NotificationsServiceClientConfig,
+  templateId: string
+): E.Either<Error, unknown> =>
+  pipe(
+    templateId,
+    E.right,
+    E.chainFirst(
+      E.fromPredicate(
+        () => clientConfig.TEMPLATE_IDS.includes(templateId),
+        () => new Error("Invalid Template")
+      )
+    )
+  );
+
+const getClientId = (req: express.Request): t.Validation<string> =>
+  pipe(
+    O.fromNullable(req.header("X-Client-Id")),
+    E.fromOption(() => [
+      {
+        context: t.getDefaultContext(NotificationsServiceClientType),
+        message: "Missing X-Client-Id header",
+        value: undefined
+      }
+    ]),
+    E.chain(NotificationsServiceClientType.decode)
+  );
+
+const headerValidationErrorHandler: (
+  e: ReadonlyArray<t.ValidationError>
+) => Promise<IResponseErrorValidation> = async e =>
+  ResponseErrorValidation(
+    "Invalid X-Client-Id",
+    e.map(err => err.message).join("\n")
+  );
+
+export type Param = t.TypeOf<typeof Param>;
+export const Param = t.interface({
+  body: NotificationEmailRequest,
+  "X-Client-Id": t.string
+});
+
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function sendMail(
   config: IConfig,
@@ -152,13 +201,34 @@ export function sendMail(
 > {
   const controller = sendMailController(config, mailTrasporter, browserEngine);
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  return async req =>
-    pipe(
-      NotificationEmailRequest.decode(req.body),
-      E.foldW(
-        ResponseErrorFromValidationErrors(NotificationEmailRequest),
-        notificationEmailRequest =>
-          controller({ body: notificationEmailRequest })
-      )
+  return async req => {
+    const errorOrBody = NotificationEmailRequest.decode(req.body);
+    if (E.isLeft(errorOrBody)) {
+      const error = errorOrBody.left;
+      return ResponseErrorFromValidationErrors(NotificationEmailRequest)(error);
+    }
+    const body = errorOrBody.right;
+
+    const maybeClientId = getClientId(req);
+    if (E.isLeft(maybeClientId)) {
+      const error = maybeClientId.left;
+      return headerValidationErrorHandler(error);
+    }
+    const clientId = maybeClientId.right as NotificationsServiceClientEnum;
+
+    const maybeValidTemplate = validTemplateIdGivenClientConfig(
+      config[clientId],
+      body.templateId
     );
+
+    if (E.isLeft(maybeValidTemplate)) {
+      const error = maybeValidTemplate.left;
+      return ResponseErrorValidation(error.name, error.message);
+    }
+
+    return controller({
+      body,
+      "X-Client-Id": clientId
+    });
+  };
 }
