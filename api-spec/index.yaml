@@ -24,8 +24,8 @@ paths:
           description: Client identifier to handle connection parameters for Nodo
           type: string
           x-extensible-enum:
-           - CLIENT_ECOMMERCE_CONFIG
-           - CLIENT_PAYMENT_MANAGER_CONFIG
+           - CLIENT_ECOMMERCE
+           - CLIENT_PAYMENT_MANAGER
           minLength: 1
           required: true
           x-example: CLIENT_1 
