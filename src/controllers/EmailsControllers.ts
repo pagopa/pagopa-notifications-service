@@ -183,12 +183,6 @@ const headerValidationErrorHandler: (
     e.map(err => err.message).join("\n")
   );
 
-export type Param = t.TypeOf<typeof Param>;
-export const Param = t.interface({
-  body: NotificationEmailRequest,
-  "X-Client-Id": t.string
-});
-
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function sendMail(
   config: IConfig,
