@@ -9,8 +9,27 @@ import * as E from "fp-ts/lib/Either";
 import * as t from "io-ts";
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { pipe } from "fp-ts/lib/function";
+import { enumType } from "@pagopa/ts-commons/lib/types";
 
 dotenv.config();
+
+export const NotificationsServiceClientConfig = t.interface({
+  TEMPLATE_IDS: t.array(t.string)
+});
+export type NotificationsServiceClientConfig = t.TypeOf<
+  typeof NotificationsServiceClientConfig
+>;
+export enum NotificationsServiceClientEnum {
+  "CLIENT_PAYMENT_MANAGER" = "CLIENT_PAYMENT_MANAGER",
+  "CLIENT_ECOMMERCE" = "CLIENT_ECOMMERCE"
+}
+
+export type NotificationsServiceClientType = t.TypeOf<
+  typeof NotificationsServiceClientType
+>;
+export const NotificationsServiceClientType = enumType<
+  NotificationsServiceClientEnum
+>(NotificationsServiceClientEnum, "NotificationsServiceClientType");
 
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;
@@ -18,12 +37,18 @@ export const IConfig = t.interface({
   AWS_SES_ACCESS_KEY_ID: t.string,
   AWS_SES_REGION: t.string,
   AWS_SES_SECRET_ACCESS_KEY: t.string,
+  CLIENT_ECOMMERCE: NotificationsServiceClientConfig,
+  CLIENT_PAYMENT_MANAGER: NotificationsServiceClientConfig,
   PORT: t.number
 });
 
 // No need to re-evaluate this object for each call
 const envConfig = {
   ...process.env,
+  CLIENT_ECOMMERCE: JSON.parse(process.env.CLIENT_ECOMMERCE || "{}"),
+  CLIENT_PAYMENT_MANAGER: JSON.parse(
+    process.env.CLIENT_PAYMENT_MANAGER || "{}"
+  ),
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 };
 

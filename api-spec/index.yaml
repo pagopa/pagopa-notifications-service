@@ -17,8 +17,18 @@ paths:
         - in: body
           name: body
           schema:
-            "$ref": "#/definitions/NotificationEmailRequest"
+            "$ref": "#/definitions/NotificationEmailRequest"  
           required: true
+        - in: header
+          name: X-Client-Id
+          description: Client identifier to handle connection parameters for Nodo
+          type: string
+          x-extensible-enum:
+           - CLIENT_ECOMMERCE_CONFIG
+           - CLIENT_PAYMENT_MANAGER_CONFIG
+          minLength: 1
+          required: true
+          x-example: CLIENT_1 
       responses:
         "200":
           description: Email notification started
