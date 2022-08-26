@@ -52,7 +52,7 @@ const healthcheck = (
   config: IConfig,
   logger: Logger
 ): Promise<IResponseErrorGeneric | IResponseSuccessJson<GetHealthT>> => {
-  logger.info("Healthcheck started");
+  logger.debug("Healthcheck started");
 
   return pipe(
     checkSESTask(config, logger),
@@ -77,7 +77,7 @@ export const healthController: (
   logger: Logger
 ) => // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 AsControllerFunction<GetHealthT> = (config, logger) => async _params => {
-  logger.info("Retrieving service health");
+  logger.debug("Retrieving service health");
   return await healthcheck(config, logger);
 };
 
