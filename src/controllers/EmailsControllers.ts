@@ -55,14 +55,21 @@ const sendEmail = async (
       A.fromOption
     )
   );
-  return await mailTrasporter.sendMail({
-    from: "no-reply@pagopa.gov.it",
-    to: recipientEmail,
-    subject,
-    html: htmlData,
-    text: textData,
-    attachments
-  });
+
+  try {
+    return await mailTrasporter.sendMail({
+      from: "no-reply@pagopa.gov.it",
+      to: recipientEmail,
+      subject,
+      html: htmlData,
+      text: textData,
+      attachments
+    });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error(e);
+    return { messageId: "" } as SESTransport.SentMessageInfo;
+  }
 };
 
 export const sendMailController: (
