@@ -93,6 +93,7 @@ export const sendMailController: (
 ) => async params => {
   const templateId = params.body.templateId;
   const schema = await import(`../generated/templates/${templateId}/schema.js`);
+  const clientId = params["X-Client-Id"];
 
   const textTemplateRaw = fs
     .readFileSync(
@@ -141,7 +142,7 @@ export const sendMailController: (
         }),
         O.map(async v => await v)
       );
-      logger.info(`Sending email with template ${templateId}`);
+      logger.info(`[${clientId}] - Sending email with template ${templateId}`);
       return await sendEmail(
         params.body.to,
         params.body.subject,
