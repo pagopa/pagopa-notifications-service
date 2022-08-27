@@ -44,6 +44,7 @@ const sendEmail = async (
   pdfName: string
   // eslint-disable-next-line max-params
 ) => {
+  logger.info("Attachment configurations...");
   const attachments = await Promise.all(
     pipe(
       pdfData,
@@ -56,6 +57,7 @@ const sendEmail = async (
     )
   );
 
+  logger.info("Sending...");
   try {
     const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
       {
