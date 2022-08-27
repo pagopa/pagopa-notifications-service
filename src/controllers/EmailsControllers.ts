@@ -57,14 +57,19 @@ const sendEmail = async (
   );
 
   try {
-    return await mailTrasporter.sendMail({
-      from: "no-reply@pagopa.gov.it",
-      to: recipientEmail,
-      subject,
-      html: htmlData,
-      text: textData,
-      attachments
-    });
+    const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
+      {
+        from: "no-reply@pagopa.gov.it",
+        to: recipientEmail,
+        subject,
+        html: htmlData,
+        text: textData,
+        attachments
+      }
+    );
+    // eslint-disable-next-line no-console
+    console.error(messageInfoOk);
+    return messageInfoOk;
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error(e);
