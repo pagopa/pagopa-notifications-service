@@ -45,17 +45,17 @@ const sendEmail = async (
   // eslint-disable-next-line max-params
 ) => {
   logger.info("Attachment configurations...");
-  const attachments = await Promise.all(
-    pipe(
-      pdfData,
-      O.map(async content => ({
-        filename: pdfName,
-        content: await content,
-        contentType: "application/pdf"
-      })),
-      A.fromOption
-    )
-  );
+  // const attachments = await Promise.all(
+  //   pipe(
+  //     pdfData,
+  //     O.map(async content => ({
+  //       filename: pdfName,
+  //       content: await content,
+  //       contentType: "application/pdf"
+  //     })),
+  //     A.fromOption
+  //   )
+  // );
 
   logger.info("Sending...");
   try {
@@ -66,7 +66,7 @@ const sendEmail = async (
         subject,
         html: htmlData,
         text: textData,
-        attachments
+        // attachments
       }
     );
     logger.info(messageInfoOk.response);
