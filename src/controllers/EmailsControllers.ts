@@ -67,12 +67,16 @@ const sendEmail = async (
         attachments
       }
     );
+    logger.info(messageInfoOk.response);
+    logger.info(messageInfoOk.messageId);
     // eslint-disable-next-line no-console
-    console.error(messageInfoOk);
+    console.info(messageInfoOk);
     return messageInfoOk;
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error(e);
+    console.info(e);
+    logger.info("Error");
+
     return { messageId: "" } as SESTransport.SentMessageInfo;
   }
 };
