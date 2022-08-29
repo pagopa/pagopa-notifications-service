@@ -82,7 +82,7 @@ microservice-chart:
     NOTIFICATIONS_EMAIL_ENABLED: "true"
     AWS_SES_REGION: "eu-south-1" 
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
-    CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
+    CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
 
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
