@@ -44,7 +44,7 @@ const sendEmail = async (
   pdfName: string
   // eslint-disable-next-line max-params
 ) => {
-  logger.info("Attachment configurations...");
+  // logger.info("Attachment configurations...");
   // const attachments = await Promise.all(
   //   pipe(
   //     pdfData,
@@ -57,7 +57,6 @@ const sendEmail = async (
   //   )
   // );
 
-  logger.info("Sending...");
   try {
     const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
       {
@@ -65,14 +64,12 @@ const sendEmail = async (
         to: recipientEmail,
         subject,
         html: htmlData,
-        text: textData,
+        text: textData
         // attachments
       }
     );
-    logger.info(messageInfoOk.response);
-    logger.info(messageInfoOk.messageId);
-    // eslint-disable-next-line no-console
-    console.info(messageInfoOk);
+    logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
+
     return messageInfoOk;
   } catch (e) {
     // eslint-disable-next-line no-console

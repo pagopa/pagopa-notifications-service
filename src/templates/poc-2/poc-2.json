@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "templates/poc-2/schema.json",
+  "title": "Template poc-2 schema",
+  "type": "object",
+  "required": [
+    "amount",
+    "email",
+    "noticeCode"
+  ],
+  "properties": {
+    "amount": {
+      "type": "integer"
+    },
+    "email": {
+      "type": "string"
+    },
+    "noticeCode": {
+      "type": "string"
+    }
+  }
+}
