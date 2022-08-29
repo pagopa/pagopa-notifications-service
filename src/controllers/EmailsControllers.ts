@@ -72,8 +72,6 @@ const sendEmail = async (
 
     return messageInfoOk;
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.info(e);
     logger.info("Error");
 
     return { messageId: "" } as SESTransport.SentMessageInfo;
