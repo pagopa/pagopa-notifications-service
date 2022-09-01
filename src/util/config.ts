@@ -39,7 +39,9 @@ export const IConfig = t.interface({
   AWS_SES_SECRET_ACCESS_KEY: t.string,
   CLIENT_ECOMMERCE: NotificationsServiceClientConfig,
   CLIENT_PAYMENT_MANAGER: NotificationsServiceClientConfig,
-  PORT: t.number
+  PORT: t.number,
+  RETRY_QUEUE_NAME: t.string,
+  STORAGE_CONNECTION_STRING: t.string
 });
 
 // No need to re-evaluate this object for each call

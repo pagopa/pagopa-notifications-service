@@ -9,6 +9,7 @@ import {
   IResponseErrorValidation,
   ResponseErrorFromValidationErrors,
   ResponseErrorValidation,
+  ResponseSuccessAccepted,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 
@@ -32,6 +33,7 @@ import {
 import { logger } from "../util/logger";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
+import { retryQueueClient } from "../util/queues";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmail = async (
@@ -57,25 +59,19 @@ const sendEmail = async (
   //   )
   // );
 
-  try {
-    const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
-      {
-        from: "no-reply@pagopa.gov.it",
-        to: recipientEmail,
-        subject,
-        html: htmlData,
-        text: textData
-        // attachments
-      }
-    );
-    logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
+  const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
+    {
+      from: "no-reply@pagopa.gov.it",
+      to: recipientEmail,
+      subject,
+      html: htmlData,
+      text: textData
+      // attachments
+    }
+  );
+  logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
 
-    return messageInfoOk;
-  } catch (e) {
-    logger.info("Error");
-
-    return { messageId: "" } as SESTransport.SentMessageInfo;
-  }
+  return messageInfoOk;
 };
 
 export const sendMailController: (
@@ -128,35 +124,63 @@ export const sendMailController: (
         )
       ]
     ),
-    E.map(async ([htmlMarkup, textMarkup, pdfMarkup]) => {
-      const pdfData = pipe(
-        pdfMarkup,
-        O.map(async markup => {
-          const page = await browserEngine.newPage();
-          await page.setContent(markup);
+    E.map(
+      async ([htmlMarkup, textMarkup, pdfMarkup]): Promise<
+        O.Option<SESTransport.SentMessageInfo>
+      > => {
+        const pdfData = pipe(
+          pdfMarkup,
+          O.map(async markup => {
+            const page = await browserEngine.newPage();
+            await page.setContent(markup);
 
-          return await page.pdf({ printBackground: true });
-        }),
-        O.map(async v => await v)
-      );
-      logger.info(`[${clientId}] - Sending email with template ${templateId}`);
-      return await sendEmail(
-        params.body.to,
-        params.body.subject,
-        htmlMarkup,
-        textMarkup,
-        mailTrasporter,
-        pdfData,
-        "test.pdf"
-      );
-    }),
-    E.fold<
-      t.Errors,
-      Promise<SESTransport.SentMessageInfo>,
-      ReturnType<AsControllerFunction<SendNotificationEmailT>>
-    >(
+            return await page.pdf({ printBackground: true });
+          }),
+          O.map(async v => await v)
+        );
+        logger.info(
+          `[${clientId}] - Sending email with template ${templateId}`
+        );
+
+        try {
+          return O.some(
+            await sendEmail(
+              params.body.to,
+              params.body.subject,
+              htmlMarkup,
+              textMarkup,
+              mailTrasporter,
+              pdfData,
+              "test.pdf"
+            )
+          );
+        } catch (e) {
+          logger.error(`Error while trying to send email to AWS SES: ${e}`);
+
+          await retryQueueClient.sendMessage(
+            JSON.stringify({ ...params, retryCount: 3 }),
+            {
+              visibilityTimeout: 120 // seconds
+            }
+          );
+
+          return O.none;
+        }
+      }
+    ),
+    E.fold(
       async err => ResponseErrorFromValidationErrors(schema.default)(err),
-      async _v => ResponseSuccessJson({ outcome: "OK" })
+      async sentMessageInfo =>
+        pipe(
+          await sentMessageInfo,
+          O.fold<
+            SESTransport.SentMessageInfo,
+            ReturnType<AsControllerFunction<SendNotificationEmailT>>
+          >(
+            async () => ResponseSuccessAccepted(),
+            async _v => ResponseSuccessJson({ outcome: "OK" })
+          )
+        )
     )
   );
 };
