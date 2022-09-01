@@ -233,34 +233,37 @@ export function sendMail(
 > {
   const controller = sendMailController(config, mailTrasporter, browserEngine);
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  return async req => {
-    const errorOrBody = NotificationEmailRequest.decode(req.body);
-    if (E.isLeft(errorOrBody)) {
-      const error = errorOrBody.left;
-      return ResponseErrorFromValidationErrors(NotificationEmailRequest)(error);
-    }
-    const body = errorOrBody.right;
-
-    const maybeClientId = getClientId(req);
-    if (E.isLeft(maybeClientId)) {
-      const error = maybeClientId.left;
-      return headerValidationErrorHandler(error);
-    }
-    const clientId = maybeClientId.right as NotificationsServiceClientEnum;
-
-    const maybeValidTemplate = validTemplateIdGivenClientConfig(
-      config[clientId],
-      body.templateId
+  return async req =>
+    pipe(
+      req.body,
+      NotificationEmailRequest.decode,
+      E.mapLeft(async e =>
+        ResponseErrorFromValidationErrors(NotificationEmailRequest)(e)
+      ),
+      E.bindTo("body"),
+      E.bind("clientId", () =>
+        pipe(
+          getClientId(req),
+          E.mapLeft(e => headerValidationErrorHandler(e))
+        )
+      ),
+      E.chainFirst(({ body, clientId }) =>
+        pipe(
+          validTemplateIdGivenClientConfig(
+            config[clientId as NotificationsServiceClientEnum],
+            body.templateId
+          ),
+          E.mapLeft(async e => ResponseErrorValidation(e.name, e.message))
+        )
+      ),
+      E.fold(
+        e => e,
+        ({ body, clientId }) =>
+          controller({
+            body,
+            "X-Client-Id": clientId
+          })
+      )
     );
-
-    if (E.isLeft(maybeValidTemplate)) {
-      const error = maybeValidTemplate.left;
-      return ResponseErrorValidation(error.name, error.message);
-    }
-
-    return controller({
-      body,
-      "X-Client-Id": clientId
-    });
-  };
 }
+
