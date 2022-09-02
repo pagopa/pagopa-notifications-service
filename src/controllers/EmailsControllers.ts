@@ -13,7 +13,10 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 
-import { TypeofApiResponse } from "@pagopa/ts-commons/lib/requests";
+import {
+  TypeofApiParams,
+  TypeofApiResponse
+} from "@pagopa/ts-commons/lib/requests";
 import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
@@ -74,20 +77,18 @@ const sendEmail = async (
   return messageInfoOk;
 };
 
-export const sendMailController: (
-  config: IConfig,
+// eslint-disable-next-line max-params
+const sendEmailImpl = async (
+  params: TypeofApiParams<SendNotificationEmailT>,
+  schema: any,
+  browserEngine: Browser,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  browserEngine: Browser
-) => AsControllerFunction<SendNotificationEmailT> = (
-  config,
-  mailTrasporter,
-  browserEngine
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-) => async params => {
-  const templateId = params.body.templateId;
-  const schema = await import(`../generated/templates/${templateId}/schema.js`);
+  config: IConfig,
+  retryCount: number
+  // eslint-disable-next-line max-params
+): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
   const clientId = params["X-Client-Id"];
-
+  const templateId = params.body.templateId;
   const textTemplateRaw = fs
     .readFileSync(
       `./dist/src/templates/${templateId}/${templateId}.template.txt`
@@ -157,12 +158,25 @@ export const sendMailController: (
         } catch (e) {
           logger.error(`Error while trying to send email to AWS SES: ${e}`);
 
-          await retryQueueClient.sendMessage(
-            JSON.stringify({ ...params, retryCount: 3 }),
-            {
-              visibilityTimeout: config.INITIAL_RETRY_TIMEOUT_SECONDS
-            }
-          );
+          if (retryCount > 0) {
+            logger.info(
+              `Enqueueing failed message with retryCount ${retryCount}`
+            );
+            await retryQueueClient.sendMessage(
+              JSON.stringify({
+                ...params,
+                retryCount
+              }),
+              {
+                visibilityTimeout:
+                  2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
+                  config.INITIAL_RETRY_TIMEOUT_SECONDS
+              }
+            );
+          } else {
+            logger.error(`Message failed too many times, skipping send`);
+            logger.error(JSON.stringify(params));
+          }
 
           return O.none;
         }
@@ -182,6 +196,29 @@ export const sendMailController: (
           )
         )
     )
+  );
+};
+
+export const sendMailController: (
+  config: IConfig,
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
+) => AsControllerFunction<SendNotificationEmailT> = (
+  config,
+  mailTrasporter,
+  browserEngine
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+) => async params => {
+  const templateId = params.body.templateId;
+  const schema = await import(`../generated/templates/${templateId}/schema.js`);
+
+  return sendEmailImpl(
+    params,
+    schema,
+    browserEngine,
+    mailTrasporter,
+    config,
+    config.MAX_RETRY_ATTEMPTS
   );
 };
 
@@ -267,3 +304,41 @@ export function sendMail(
     );
 }
 
+export const addRetryQueueListener = (
+  config: IConfig,
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
+): void => {
+  const retrieveMessage = async (): Promise<void> => {
+    const messages = await retryQueueClient.receiveMessages({
+      numberOfMessages: 14
+    });
+
+    if (messages.receivedMessageItems.length > 0) {
+      logger.info(`Retrying ${messages.receivedMessageItems.length} enqueued messages`);
+      for (const message of messages.receivedMessageItems) {
+        await retryQueueClient.deleteMessage(
+          message.messageId,
+          message.popReceipt
+        );
+
+        const { retryCount, ...params } = JSON.parse(message.messageText);
+        const templateId = params.body.templateId;
+        const schema = await import(
+          `../generated/templates/${templateId}/schema.js`
+        );
+
+        void sendEmailImpl(
+          params,
+          schema,
+          browserEngine,
+          mailTrasporter,
+          config,
+          retryCount - 1
+        );
+      }
+    }
+  };
+
+  setInterval(retrieveMessage, 1000);
+};
