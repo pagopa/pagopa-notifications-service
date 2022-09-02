@@ -39,8 +39,6 @@ paths:
               importoSingoloVersamento: 200
         "202":
           description: Email notification enqueued
-          schema:
-            $ref: "#/definitions/NotificationEmailResponse"
           examples:
             application/json:
               importoSingoloVersamento: 200
