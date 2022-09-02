@@ -20,7 +20,6 @@ import {
 import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
-import * as A from "fp-ts/lib/Array";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
@@ -45,22 +44,24 @@ const sendEmail = async (
   htmlData: string,
   textData: string,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  pdfData: O.Option<Promise<Buffer>>,
-  pdfName: string
+  _pdfData: O.Option<Promise<Buffer>>,
+  _pdfName: string
   // eslint-disable-next-line max-params
 ) => {
-  // logger.info("Attachment configurations...");
-  // const attachments = await Promise.all(
-  //   pipe(
-  //     pdfData,
-  //     O.map(async content => ({
-  //       filename: pdfName,
-  //       content: await content,
-  //       contentType: "application/pdf"
-  //     })),
-  //     A.fromOption
-  //   )
-  // );
+  /*
+  logger.info("Attachment configurations...");
+  const attachments = await Promise.all(
+    pipe(
+      pdfData,
+      O.map(async content => ({
+        filename: pdfName,
+        content: await content,
+        contentType: "application/pdf"
+      })),
+      A.fromOption
+    )
+  );
+  */
 
   const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
     {
@@ -80,7 +81,9 @@ const sendEmail = async (
 // eslint-disable-next-line max-params
 const sendEmailImpl = async (
   params: TypeofApiParams<SendNotificationEmailT>,
-  schema: any,
+  schema: {
+    readonly default: t.Type<unknown>;
+  },
   browserEngine: Browser,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
   config: IConfig,
@@ -114,7 +117,7 @@ const sendEmailImpl = async (
   );
   return pipe(
     params.body.parameters,
-    schema.default.decode as (v: unknown) => t.Validation<unknown>,
+    schema.default.decode,
     E.map<unknown, readonly [string, string, O.Option<string>]>(
       (templateParams: unknown) => [
         htmlTemplate(templateParams),
@@ -315,7 +318,9 @@ export const addRetryQueueListener = (
     });
 
     if (messages.receivedMessageItems.length > 0) {
-      logger.info(`Retrying ${messages.receivedMessageItems.length} enqueued messages`);
+      logger.info(
+        `Retrying ${messages.receivedMessageItems.length} enqueued messages`
+      );
       for (const message of messages.receivedMessageItems) {
         await retryQueueClient.deleteMessage(
           message.messageId,
