@@ -160,7 +160,7 @@ export const sendMailController: (
           await retryQueueClient.sendMessage(
             JSON.stringify({ ...params, retryCount: 3 }),
             {
-              visibilityTimeout: 120 // seconds
+              visibilityTimeout: config.INITIAL_RETRY_TIMEOUT_SECONDS
             }
           );
 
