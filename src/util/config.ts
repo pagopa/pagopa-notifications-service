@@ -39,6 +39,7 @@ export const IConfig = t.interface({
   AWS_SES_SECRET_ACCESS_KEY: t.string,
   CLIENT_ECOMMERCE: NotificationsServiceClientConfig,
   CLIENT_PAYMENT_MANAGER: NotificationsServiceClientConfig,
+  ERROR_QUEUE_NAME: t.string,
   INITIAL_RETRY_TIMEOUT_SECONDS: t.number,
   MAX_RETRY_ATTEMPTS: t.number,
   PORT: t.number,
