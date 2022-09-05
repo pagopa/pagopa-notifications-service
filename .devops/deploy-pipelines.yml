@@ -243,8 +243,6 @@ stages:
     jobs:
       - deployment: 'Deploy_to_${{ variables.environment }}'
         displayName: 'Deploy_to_${{ variables.environment }}'
-        pool:
-          vmImage: $(vmImageNameDefault)
         environment: '$(environment)'
         strategy:
           runOnce:
