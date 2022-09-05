@@ -39,9 +39,6 @@ paths:
               importoSingoloVersamento: 200
         "202":
           description: Email notification enqueued
-          examples:
-            application/json:
-              importoSingoloVersamento: 200
         "400":
           description: Invalid input
           schema:
