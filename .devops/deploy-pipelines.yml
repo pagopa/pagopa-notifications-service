@@ -55,7 +55,7 @@ variables:
     kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
     containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
     helmValues: values-uat.yaml
-    #selfHostedAgentPool: $(UAT_AGENT_POOL)
+    poolImage: 'pagopa-uat-linux'
 
   ${{ else }}:
     environment: 'DEV'
@@ -238,6 +238,8 @@ stages:
     displayName: 'Deploy_to_${{ variables.environment }}'
     dependsOn: "Serving_helm_UAT"
     condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
+    pool:
+      name: $(poolImage)
     jobs:
       - deployment: 'Deploy_to_${{ variables.environment }}'
         displayName: 'Deploy_to_${{ variables.environment }}'
