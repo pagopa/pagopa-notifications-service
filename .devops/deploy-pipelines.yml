@@ -236,7 +236,7 @@ stages:
               
   - stage: 'Deploy_UAT'
     displayName: 'Deploy_to_${{ variables.environment }}'
-    dependsOn: "Serving_helm"
+    dependsOn: "Serving_helm_UAT"
     condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
     jobs:
       - deployment: 'Deploy_to_${{ variables.environment }}'
