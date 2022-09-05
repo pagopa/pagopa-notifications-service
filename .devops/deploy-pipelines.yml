@@ -7,6 +7,28 @@ parameters:
     displayName: 'Check this flag to skip build and proceed to deploy a docker image previously built'
     type: boolean
     default: false
+  - name: 'DEV_DEPLOY'
+    displayName: 'Deploy on DEV environment'
+    type: boolean
+    default: True
+    values:
+      - False
+      - True
+  - name: 'UAT_PROD_DEPLOY'
+    displayName: 'Deploy on UAT then PROD environments'
+    type: boolean
+    default: False
+    values:
+      - False
+      - True
+  - name: 'RELEASE_SEMVER'
+    displayName: 'When packing a release, define the version bump to apply (release is done automatically when deploying on UAT and skipped on DEV) '
+    type: string
+    values:
+      - major
+      - minor
+      - patch
+    default: minor
 
 resources:
   - repo: self
@@ -56,7 +78,7 @@ variables:
 stages:
   - stage: 'Build'
     displayName: 'Build_and_Publish_to_${{ variables.environment }}'
-    condition: and(succeeded(), not(${{ parameters.skipBuild }} ))
+    condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.DEV_DEPLOY}}, true))
     jobs:
       - job: Build
         displayName: Build
@@ -79,7 +101,7 @@ stages:
   - stage: 'Serving_helm'
     displayName: 'Serving_Helm'
     dependsOn: Build
-    condition: or(succeeded(), ${{ parameters.skipBuild }} )
+    condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
     jobs:
       - job: Serving_helm
         displayName: Serving_helm
@@ -96,7 +118,7 @@ stages:
   - stage: 'Deploy'
     displayName: 'Deploy_to_${{ variables.environment }}'
     dependsOn: "Serving_helm"
-    condition: or(succeeded(), ${{ parameters.skipBuild }} )
+    condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
     jobs:
       - deployment: 'Deploy_to_${{ variables.environment }}'
         displayName: 'Deploy_to_${{ variables.environment }}'
@@ -137,3 +159,43 @@ stages:
                     install: true
                     waitForExecution: true
                     arguments: "--timeout 5m0s"
+                    
+  # Create a relase
+  # Activated when ONE OF these are met:
+  # - is on branch main
+  # - is a tag in the form v{version}-RELEASE
+  - stage: Release
+    dependsOn: []
+    condition:
+      and(
+        succeeded(),
+        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+          and(
+            startsWith(variables['Build.SourceBranch'], 'refs/tags'),
+            endsWith(variables['Build.SourceBranch'], '-RELEASE')
+          )
+        )
+      )
+    pool:
+      vmImage: 'ubuntu-latest'
+    jobs:
+      - job: make_release
+        steps:
+        - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+          - template: templates/node-job-setup/template.yaml@pagopaCommons
+            parameters:
+              persistCredentials: true
+          - template: templates/node-github-release/template.yaml@pagopaCommons 
+            parameters:
+              semver: '${{ parameters.RELEASE_SEMVER }}'
+              gitEmail: $(GIT_EMAIL)
+              gitUsername: $(GIT_USERNAME)
+              gitHubConnection: $(GITHUB_CONNECTION)
+              release_branch: main
+
+        - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+          - script: |
+              echo "We assume this reference to be a valid release: $(Build.SourceBranch). Therefore, there is no need to bundle a new release."
+            displayName: 'Skip release bundle'
