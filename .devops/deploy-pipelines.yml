@@ -32,6 +32,11 @@ parameters:
 
 resources:
   - repo: self
+  - repository: pagopaCommons
+    type: github
+    name: pagopa/azure-pipeline-templates
+    ref: refs/tags/v18
+    endpoint: 'io-azure-devops-github-ro'
 
 variables:
   dockerfileRelativePath: 'Dockerfile'
