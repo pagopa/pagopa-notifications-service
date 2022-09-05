@@ -214,5 +214,68 @@ stages:
               tags: |
                 $(Build.BuildId)
                 $(Build.SourceVersion)
-
                 latest
+
+  - stage: 'Serving_helm_UAT'
+    displayName: 'Serving_Helm'
+    dependsOn: Build_UAT_PROD
+    condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.UAT_PROD_DEPLOY}}, true) )
+    jobs:
+      - job: Serving_helm
+        displayName: Serving_helm
+        pool:
+          vmImage: $(vmImageNameDefault)
+        steps:
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Artifact manifests'
+            condition: succeeded()
+            inputs:
+              targetPath: '$(Build.Repository.LocalPath)/helm'
+              artifact: 'helm'
+              publishLocation: 'pipeline'
+              
+  - stage: 'Deploy_UAT'
+    displayName: 'Deploy_to_${{ variables.environment }}'
+    dependsOn: "Serving_helm"
+    condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
+    jobs:
+      - deployment: 'Deploy_to_${{ variables.environment }}'
+        displayName: 'Deploy_to_${{ variables.environment }}'
+        pool:
+          vmImage: $(vmImageNameDefault)
+        environment: '$(environment)'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: none
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    buildType: 'current'
+                    artifactName: 'helm'
+                    targetPath: '$(Pipeline.Workspace)/helm'
+                - task: Bash@3
+                  name: helm_dependency_build
+                  displayName: Helm dependency build
+                  inputs:
+                    workingDirectory: '$(Pipeline.Workspace)/helm'
+                    targetType: 'inline'
+                    script: |
+                      helm repo add pagopa-microservice https://pagopa.github.io/aks-microservice-chart-blueprint
+                      helm dep build
+                    failOnStderr: true    
+                - task: HelmDeploy@0
+                  displayName: Helm upgrade
+                  inputs:
+                    kubernetesServiceEndpoint: ${{ variables.kubernetesServiceConnection }}
+                    namespace: shared
+                    command: upgrade
+                    chartType: filepath
+                    chartPath: $(Pipeline.Workspace)/helm
+                    chartName: $(K8S_IMAGE_REPOSITORY_NAME)
+                    releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
+                    valueFile: "$(Pipeline.Workspace)/helm/$(helmValues)"
+                    install: true
+                    waitForExecution: true
+                    arguments: "--timeout 5m0s"
+                                  
