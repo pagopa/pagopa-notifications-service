@@ -49,21 +49,13 @@ variables:
   imageRepository: '$(K8S_IMAGE_REPOSITORY_NAME)'
   # settingsXmlROsecureFileName: '$(SETTINGS_XML_RO_SECURE_FILE_NAME)'
 
-  ${{ if eq(parameters['UAT_DEPLOY'], true) }}:
+  ${{ if eq(parameters['UAT_PROD_DEPLOY'], true) }}:
   environment: 'UAT'
   dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
   kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
   containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
   helmValues: values-uat.yaml
   #selfHostedAgentPool: $(UAT_AGENT_POOL)
-
-  ${{ if eq(parameters['UAT_PROD'], true) }}:
-    environment: 'PROD'
-    dockerRegistryServiceConnection: '$(PROD_CONTAINER_REGISTRY_SERVICE_CONN)'
-    kubernetesServiceConnection: '$(PROD_KUBERNETES_SERVICE_CONN)'
-    containerRegistry: '$(PROD_CONTAINER_REGISTRY_NAME)'
-    helmValues: values-prod.yaml
-    # selfHostedAgentPool: $(PROD_AGENT_POOL)
 
   ${{ else }}:
     environment: 'DEV'
