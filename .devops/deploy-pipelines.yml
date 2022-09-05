@@ -192,7 +192,7 @@ stages:
 
   - stage: 'Build_UAT_PROD'
     displayName: 'Build_and_Publish_to_UAT'
-    condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.UAT_DEPLOY}}, true))
+    condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.UAT_PROD_DEPLOY}}, true))
     jobs:
       - job: Build
         displayName: Build
