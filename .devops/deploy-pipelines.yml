@@ -50,13 +50,13 @@ variables:
   # settingsXmlROsecureFileName: '$(SETTINGS_XML_RO_SECURE_FILE_NAME)'
 
 
-  ${{ if eq(${{parameters.UAT_DEPLOY}}, true) }}:
-    environment: 'UAT'
-    dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
-    kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
-    containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
-    helmValues: values-uat.yaml
-    #selfHostedAgentPool: $(UAT_AGENT_POOL)
+${{ if eq(${{parameters.UAT_DEPLOY}}, true) }}:
+  environment: 'UAT'
+  dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
+  kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
+  containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
+  helmValues: values-uat.yaml
+  #selfHostedAgentPool: $(UAT_AGENT_POOL)
 
   ${{ elseif or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),eq(variables['Build.SourceBranch'], 'refs/heads/release-prod')) }}:
     environment: 'PROD'
@@ -223,4 +223,5 @@ stages:
               tags: |
                 $(Build.BuildId)
                 $(Build.SourceVersion)
+
                 latest
