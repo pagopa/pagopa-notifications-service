@@ -35,7 +35,7 @@ resources:
     - repository: pagopaCommons
       type: github
       name: pagopa/azure-pipeline-templates
-      ref: refs/tags/v18
+      ref: refs/tags/v19
       endpoint: 'io-azure-devops-github-ro'
 
 variables:
@@ -50,35 +50,29 @@ variables:
   # settingsXmlROsecureFileName: '$(SETTINGS_XML_RO_SECURE_FILE_NAME)'
 
 
-  # ${{ if or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release-uat'), startsWith(variables['Build.SourceBranch'], 'refs/heads/hotfix')) }}:
-  #   environment: 'UAT'
-  #   dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
-  #   kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
-  #   containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
-  #   helmValues: values-uat.yaml
-  #   # selfHostedAgentPool: $(UAT_AGENT_POOL)
-  #   mavenGoals: 'package'
-  #   settingsXmlsecureFileName: '$(SETTINGS_XML_RO_SECURE_FILE_NAME)'
+  ${{ if eq(${{parameters.UAT_DEPLOY}}, true) }}:
+    environment: 'UAT'
+    dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
+    kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
+    containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
+    helmValues: values-uat.yaml
+    #selfHostedAgentPool: $(UAT_AGENT_POOL)
 
-  # ${{ elseif or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),eq(variables['Build.SourceBranch'], 'refs/heads/release-prod')) }}:
-  #   environment: 'PROD'
-  #   dockerRegistryServiceConnection: '$(PROD_CONTAINER_REGISTRY_SERVICE_CONN)'
-  #   kubernetesServiceConnection: '$(PROD_KUBERNETES_SERVICE_CONN)'
-  #   containerRegistry: '$(PROD_CONTAINER_REGISTRY_NAME)'
-  #   helmValues: values-prod.yaml
-  #   # selfHostedAgentPool: $(PROD_AGENT_POOL)
-  #   mavenGoals: 'package'
-  #   settingsXmlsecureFileName: '$(SETTINGS_XML_RO_SECURE_FILE_NAME)'
+  ${{ elseif or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),eq(variables['Build.SourceBranch'], 'refs/heads/release-prod')) }}:
+    environment: 'PROD'
+    dockerRegistryServiceConnection: '$(PROD_CONTAINER_REGISTRY_SERVICE_CONN)'
+    kubernetesServiceConnection: '$(PROD_KUBERNETES_SERVICE_CONN)'
+    containerRegistry: '$(PROD_CONTAINER_REGISTRY_NAME)'
+    helmValues: values-prod.yaml
+    # selfHostedAgentPool: $(PROD_AGENT_POOL)
 
-  # ${{ else }}:
-  environment: 'DEV'
-  dockerRegistryServiceConnection: '$(DEV_CONTAINER_REGISTRY_SERVICE_CONN)'
-  kubernetesServiceConnection: '$(DEV_KUBERNETES_SERVICE_CONN)'
-  containerRegistry: '$(DEV_CONTAINER_REGISTRY_NAME)'
-  helmValues: values-dev.yaml
-  # selfHostedAgentPool: $(DEV_AGENT_POOL)
-  mavenGoals: 'package'
-  settingsXmlsecureFileName: '$(SETTINGS_XML_RO_SECURE_FILE_NAME)'
+  ${{ else }}:
+    environment: 'DEV'
+    dockerRegistryServiceConnection: '$(DEV_CONTAINER_REGISTRY_SERVICE_CONN)'
+    kubernetesServiceConnection: '$(DEV_KUBERNETES_SERVICE_CONN)'
+    containerRegistry: '$(DEV_CONTAINER_REGISTRY_NAME)'
+    helmValues: values-dev.yaml
+    # selfHostedAgentPool: $(DEV_AGENT_POOL)
 
 stages:
   - stage: 'Build'
@@ -204,3 +198,29 @@ stages:
           - script: |
               echo "We assume this reference to be a valid release: $(Build.SourceBranch). Therefore, there is no need to bundle a new release."
             displayName: 'Skip release bundle'
+
+  - stage: 'Build_UAT_PROD'
+    displayName: 'Build_and_Publish_to_UAT'
+    condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.UAT_DEPLOY}}, true))
+    jobs:
+      - job: Build
+        displayName: Build
+        pool:
+          vmImage: $(vmImageNameDefault)
+        steps:
+          - script: |
+               SERVICE_VERSION=$(node -p "require('./package.json').version")
+               echo $SERVICE_VERSION
+          - task: Docker@2
+            displayName: 'Publish_image_to_${{ variables.environment }}'
+            condition: succeeded()
+            inputs:
+              containerRegistry: '$(dockerRegistryServiceConnection)'
+              repository: '$(imageRepository)'
+              command: 'buildAndPush'
+              Dockerfile: '$(Build.Repository.LocalPath)/$(dockerfileRelativePath)'
+              buildContext: '$(Build.Repository.LocalPath)'
+              tags: |
+                $(Build.BuildId)
+                $(Build.SourceVersion)
+                latest
