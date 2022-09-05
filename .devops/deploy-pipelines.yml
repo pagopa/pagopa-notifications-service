@@ -183,7 +183,7 @@ stages:
     jobs:
       - job: make_release
         steps:
-        - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+        - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/CHK-612-pipeline-uat') }}:
           - template: templates/node-job-setup/template.yaml@pagopaCommons
             parameters:
               persistCredentials: true
