@@ -38,7 +38,7 @@ import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const sendEmail = async (
+const sendEmailWithAWS = async (
   recipientEmail: string,
   subject: string,
   htmlData: string,
@@ -79,7 +79,7 @@ const sendEmail = async (
 };
 
 // eslint-disable-next-line max-params
-const sendEmailImpl = async (
+export const sendEmail = async (
   params: TypeofApiParams<SendNotificationEmailT>,
   schema: {
     readonly default: t.Type<unknown>;
@@ -148,7 +148,7 @@ const sendEmailImpl = async (
 
         try {
           return O.some(
-            await sendEmail(
+            await sendEmailWithAWS(
               params.body.to,
               params.body.subject,
               htmlMarkup,
@@ -215,7 +215,7 @@ export const sendMailController: (
   const templateId = params.body.templateId;
   const schema = await import(`../generated/templates/${templateId}/schema.js`);
 
-  return sendEmailImpl(
+  return sendEmail(
     params,
     schema,
     browserEngine,
@@ -306,44 +306,3 @@ export function sendMail(
       )
     );
 }
-
-export const addRetryQueueListener = (
-  config: IConfig,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  browserEngine: Browser
-): void => {
-  const retrieveMessage = async (): Promise<void> => {
-    const messages = await retryQueueClient.receiveMessages({
-      numberOfMessages: 14
-    });
-
-    if (messages.receivedMessageItems.length > 0) {
-      logger.info(
-        `Retrying ${messages.receivedMessageItems.length} enqueued messages`
-      );
-      for (const message of messages.receivedMessageItems) {
-        await retryQueueClient.deleteMessage(
-          message.messageId,
-          message.popReceipt
-        );
-
-        const { retryCount, ...params } = JSON.parse(message.messageText);
-        const templateId = params.body.templateId;
-        const schema = await import(
-          `../generated/templates/${templateId}/schema.js`
-        );
-
-        void sendEmailImpl(
-          params,
-          schema,
-          browserEngine,
-          mailTrasporter,
-          config,
-          retryCount - 1
-        );
-      }
-    }
-  };
-
-  setInterval(retrieveMessage, 1000);
-};

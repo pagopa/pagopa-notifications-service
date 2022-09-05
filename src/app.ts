@@ -11,7 +11,7 @@ import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
 import { healthController } from "./controllers/HealthControllers";
-import { addRetryQueueListener } from "./controllers/EmailsControllers";
+import { addRetryQueueListener } from "./queues/RetryQueueListener";
 /**
  * Define and start an express Server
  * to expose RESTful and SOAP endpoints for BackendApp and Proxy requests.
