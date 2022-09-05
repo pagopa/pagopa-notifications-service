@@ -195,7 +195,7 @@ stages:
               gitHubConnection: $(GITHUB_CONNECTION)
               release_branch: main
 
-        - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+        - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/CHK-612-pipeline-uat') }}:
           - script: |
               echo "We assume this reference to be a valid release: $(Build.SourceBranch). Therefore, there is no need to bundle a new release."
             displayName: 'Skip release bundle'
