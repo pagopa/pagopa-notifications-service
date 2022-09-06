@@ -32,6 +32,11 @@
 					{
 						"key": "Accept",
 						"value": "*/*"
+					},
+					{
+						"key": "X-Client-Id",
+						"value": "CLIENT_ECOMMERCE",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -189,6 +194,11 @@
 					{
 						"key": "Accept",
 						"value": "*/*"
+					},
+					{
+						"key": "X-Client-Id",
+						"value": "CLIENT_ECOMMERCE",
+						"type": "text"
 					}
 				],
 				"url": {
@@ -282,6 +292,11 @@
 					{
 						"key": "Accept",
 						"value": "*/*"
+					},
+					{
+						"key": "X-Client-Id",
+						"value": "CLIENT_ECOMMERCE",
+						"type": "text"
 					}
 				],
 				"url": {
@@ -370,6 +385,14 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://api.platform.pagopa.it/notifications",
+			"type": "string",
+			"disabled": true
 		}
 	]
 }
