@@ -67,9 +67,9 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      for i in helm/values-*.yaml; do
+      for i in helm/values-uat.yaml; do
         [ -f "$i" ] || break
-        yq -i ".microservice-chart.image.tag = \"$(next_version.value)\"" "$i"
+        yq -i "canaryDelivery.microservice-chart.image.tag = \"$(next_version.value)\"" "$i"
         git add "$i"
       done
       CHART_FILE="helm/Chart.yaml"
@@ -78,29 +78,6 @@ steps:
         yq -i ".appVersion = \"$(next_version.value)\"" "$CHART_FILE"
         git add "$CHART_FILE"
       fi
-
-- task: Bash@3
-  displayName: Update Openapi/Swagger Version
-  name: update_version_openapi
-  continueOnError: true
-  inputs:
-    targetType: 'inline'
-    script: |
-      for i in openapi/*.json; do
-        [ -f "$i" ] || break
-        cat <<< "$(jq ".info.version = \"$(next_version.value)\"" "$i")" > "$i"
-        git add $i
-      done
-      for i in openapi/*.yaml; do
-        [ -f "$i" ] || break
-        yq -i ".info.version = \"$(next_version.value)\"" "$i"
-        git add "$i"
-      done
-      for i in openapi/*.yml; do
-        [ -f "$i" ] || break
-        yq -i ".info.version = \"$(next_version.value)\"" "$i"
-        git add "$i"
-      done
 
 # push new version
 - script: |
