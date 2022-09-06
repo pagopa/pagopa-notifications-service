@@ -3,8 +3,32 @@ microservice-chart:
   nameOverride: ""
   fullnameOverride: ""
 
+  canaryDelivery:
+    create: true
+    ingress:
+      create: true
+      canary:
+        type: bluegreen
+    service:
+      create: true
+    deployment:
+      create: true
+      image:
+        repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
+        tag: "latest" #improve
+        pullPolicy: Always
+      envConfig:
+        NOTIFICATIONS_EMAIL_ENABLED: "true"
+        AWS_SES_REGION: "eu-south-1" 
+        CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
+        CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
+        BLUE_DEPLOYMENT: "true"
+      envSecret:
+        AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
+        AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
+
   image:
-    repository: pagopadcommonacr.azurecr.io/pagopanotificationsservice
+    repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
     tag: "latest" #improve
     pullPolicy: Always
 
@@ -34,7 +58,7 @@ microservice-chart:
 
   ingress:
     create: true
-    host: "weudev.shared.internal.uat.platform.pagopa.it"
+    host: "weuuat.shared.internal.uat.platform.pagopa.it"
     path: /pagopa-notifications-service/(.*)
 
   serviceAccount:
