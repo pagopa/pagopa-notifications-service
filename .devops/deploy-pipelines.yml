@@ -230,9 +230,8 @@ stages:
               BUILD_SOURCE_BRANCH_NAME: $(Build.SourceBranchName)
           - template: templates/docker-release/template.yaml@pagopaCommons
             parameters:
-              CONTAINER_REGISTRY_SERVICE_CONN: $(CONTAINER_REGISTRY_SERVICE_CONN_PROD)
-              CONTAINER_REGISTRY_FQDN: $(CONTAINER_REGISTRY_FQDN_PROD)
-              DOCKER_IMAGE_NAME: $(DOCKER_IMAGE_NAME)
+              CONTAINER_REGISTRY_SERVICE_CONN: $(dockerRegistryServiceConnection)
+              DOCKER_IMAGE_NAME: $(imageRepository)
               DOCKER_IMAGE_TAG: $(deploy_version_decision.value)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
   # Deploy
