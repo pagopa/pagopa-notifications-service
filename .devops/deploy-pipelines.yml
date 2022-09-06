@@ -231,6 +231,7 @@ stages:
           - template: templates/docker-release/template.yaml@pagopaCommons
             parameters:
               CONTAINER_REGISTRY_SERVICE_CONN: $(dockerRegistryServiceConnection)
+              CONTAINER_REGISTRY_FQDN: "$(containerRegistry)"
               DOCKER_IMAGE_NAME: $(imageRepository)
               DOCKER_IMAGE_TAG: $(deploy_version_decision.value)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
