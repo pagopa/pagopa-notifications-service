@@ -243,7 +243,7 @@ stages:
     jobs:
       - deployment: "deploy"
         pool:
-          name: io-prod-linux
+          name: pagopa-uat-linux
         environment: $(environment)
         strategy:
           runOnce:
