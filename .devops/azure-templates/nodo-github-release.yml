@@ -67,17 +67,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      for i in helm/values-uat.yaml; do
-        [ -f "$i" ] || break
-        yq -i "canaryDelivery.microservice-chart.image.tag = \"$(next_version.value)\"" "$i"
-        git add "$i"
-      done
-      CHART_FILE="helm/Chart.yaml"
-      if [[ -f "$CHART_FILE" ]]; then
-        yq -i ".version = \"$(next_version.value)\"" "$CHART_FILE"
-        yq -i ".appVersion = \"$(next_version.value)\"" "$CHART_FILE"
-        git add "$CHART_FILE"
-      fi
+        yq -i ".microservice-chart.canaryDelivery.deployment.image.tag = \"$(next_version.value)\"" "helm/values-uat.yaml"
 
 # push new version
 - script: |
