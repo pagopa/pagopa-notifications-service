@@ -12,7 +12,7 @@ parameters:
     values:
       - False
       - True
-  - name: 'UAT_DEPLOY'
+  - name: 'UAT_PROD_DEPLOY'
     displayName: 'Deploy on UAT environment with PROD promotion'
     type: boolean
     default: False
