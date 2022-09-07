@@ -73,7 +73,7 @@ stages:
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
   - stage: 'Deploy_for_DEV'
-    displayName: 'Helm upgrade to deploy'
+    displayName: 'Helm upgrade DEV'
     condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
     jobs:
       - deployment: "deploy"
