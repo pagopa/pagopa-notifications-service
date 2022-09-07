@@ -238,7 +238,7 @@ stages:
               version=$(current_version_branch)
               echo "##vso[task.setvariable variable=value;isOutput=true]$version"
               HEAD_SHA=$(git rev-parse HEAD)
-              TITLE="Release $CURRENT_VERSION"
+              TITLE="Release $CURRENT_VERSION_BTANCH"
               TAG="v$version-RELEASE"
               echo "##vso[task.setvariable variable=title]$TITLE"
               echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
@@ -250,7 +250,7 @@ stages:
     dependsOn: "Build_UAT_PROD"
     variables:
       deploy_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['deploy_version_decision.value'] ]
-      current_version: $[ stageDependencies.Build_UAT_PROD.current_version.outputs['current_version.value'] ]
+      current_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['current_version.value'] ]
     jobs:
       - deployment: "deploy"
         pool:
