@@ -239,7 +239,7 @@ stages:
     dependsOn: "Build_UAT_PROD"
     variables:
       deploy_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['deploy_version_decision.value'] ]
-      current_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      current_version: $[ stageDependencies.Release.branch_version.outputs['current_version.value'] ]
     jobs:
       - deployment: "deploy"
         pool:
@@ -262,7 +262,7 @@ stages:
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat-blue.yaml"
-                    DEPLOY_VERSION: $[ stageDependencies.Release.branch_version.outputs['current_version.value'] ]
+                    DEPLOY_VERSION: $(current_version)
                 - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
                   parameters:
                     DO_DEPLOY: true
