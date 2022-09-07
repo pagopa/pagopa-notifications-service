@@ -43,7 +43,7 @@ parameters:
 steps:
   - task: HelmDeploy@0
     displayName: Deploy on ${{ parameters.ENV }} BLUEGREEN
-    condition: and(succeeded(), eq(${{ parameters.DO_BLUE_GREEN_DEPLOY }}, True))
+    condition: and(succeeded(), eq(${{ parameters.DO_DEPLOY }}, True), eq(${{ parameters.DO_BLUE_GREEN_DEPLOY }}, True))
     inputs:
       kubernetesServiceEndpoint: ${{ parameters.KUBERNETES_SERVICE_CONN }}
       namespace: ${{ parameters.NAMESPACE }}
@@ -60,7 +60,7 @@ steps:
 
   - task: HelmDeploy@0
     displayName: Deploy on ${{ parameters.ENV }}
-    condition: and(succeeded(), eq(${{ parameters.DO_DEPLOY }}, True))
+    condition: and(succeeded(), eq(${{ parameters.DO_DEPLOY }}, True), eq(${{ parameters.DO_BLUE_GREEN_DEPLOY }}, False))
     inputs:
       kubernetesServiceEndpoint: ${{ parameters.KUBERNETES_SERVICE_CONN }}
       namespace: ${{ parameters.NAMESPACE }}
