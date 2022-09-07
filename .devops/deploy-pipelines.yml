@@ -37,7 +37,7 @@ parameters:
       - False
       - True
   - name: "FORCE_REPLACE_DOCKER_IMAGE"
-    displayName: "Force the existing docker image to be replaced"
+    displayName: "Force the existing docker image to be replaced (latest tag)"
     type: boolean
     default: False
     values:
@@ -54,16 +54,7 @@ resources:
 variables:
   dockerfileRelativePath: 'Dockerfile'
 
-  # Agent VM image name for Build
-
-  vmImageNameDefault: 'ubuntu-latest'
-
-  # Image Repository Name
-  imageRepository: '$(K8S_IMAGE_REPOSITORY_NAME)'
-  # settingsXmlROsecureFileName: '$(SETTINGS_XML_RO_SECURE_FILE_NAME)'
-
   ${{ if eq(parameters['UAT_PROD_DEPLOY'], true) }}:
-    environment: 'UAT'
     dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
     kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
     containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
@@ -71,97 +62,51 @@ variables:
     poolImage: 'pagopa-uat-linux'
 
   ${{ else }}:
-    environment: 'DEV'
-    dockerRegistryServiceConnection: '$(DEV_CONTAINER_REGISTRY_SERVICE_CONN)'
+    dockerRegistryServiceConnection: ''
     kubernetesServiceConnection: '$(DEV_KUBERNETES_SERVICE_CONN)'
     containerRegistry: '$(DEV_CONTAINER_REGISTRY_NAME)'
     helmValues: values-dev.yaml
     # selfHostedAgentPool: $(DEV_AGENT_POOL)
 
+pool:
+  vmImage: ubuntu-latest
+
 stages:
-  - stage: 'Build'
-    displayName: 'Build_and_Publish_to_${{ variables.environment }}'
+  - stage: 'Build_DEV'
+    displayName: 'Build_and_Publish_docker_acr_DEV'
     condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.DEV_DEPLOY}}, true))
+    variables:
+      dev_version: $(Build.SourceVersion)
     jobs:
-      - job: Build
-        displayName: Build
-        pool:
-          vmImage: $(vmImageNameDefault)
+      - job: Build_docker
+        displayName: Build docker
         steps:
-          - task: Docker@2
-            displayName: 'Publish_image_to_${{ variables.environment }}'
-            condition: succeeded()
-            inputs:
-              containerRegistry: '$(dockerRegistryServiceConnection)'
-              repository: '$(imageRepository)'
-              command: 'buildAndPush'
-              Dockerfile: '$(Build.Repository.LocalPath)/$(dockerfileRelativePath)'
-              buildContext: '$(Build.Repository.LocalPath)'
-              tags: |
-                $(Build.BuildId)
-                $(Build.SourceVersion)
-                latest
-  - stage: 'Serving_helm'
-    displayName: 'Serving_Helm'
-    dependsOn: Build
+          - template: templates/docker-release/template.yaml@pagopaCommons
+            parameters:
+              CONTAINER_REGISTRY_SERVICE_CONN: $(DEV_CONTAINER_REGISTRY_SERVICE_CONN)
+              CONTAINER_REGISTRY_FQDN: $(DEV_CONTAINER_NAMESPACE)
+              DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+              DOCKER_IMAGE_TAG: $(dev_version)
+              FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+  - stage: 'Deploy_DEV'
+    displayName: 'Deply_helm_DEV'
     condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
     jobs:
       - job: Serving_helm
         displayName: Serving_helm
-        pool:
-          vmImage: $(vmImageNameDefault)
         steps:
-          - task: PublishPipelineArtifact@1
-            displayName: 'Publish Artifact manifests'
-            condition: succeeded()
-            inputs:
-              targetPath: '$(Build.Repository.LocalPath)/helm'
-              artifact: 'helm'
-              publishLocation: 'pipeline'
-  - stage: 'Deploy'
-    displayName: 'Deploy_to_${{ variables.environment }}'
-    dependsOn: "Serving_helm"
-    condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
-    jobs:
-      - deployment: 'Deploy_to_${{ variables.environment }}'
-        displayName: 'Deploy_to_${{ variables.environment }}'
-        pool:
-          vmImage: $(vmImageNameDefault)
-        environment: '$(environment)'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - download: none
-                - task: DownloadPipelineArtifact@2
-                  inputs:
-                    buildType: 'current'
-                    artifactName: 'helm'
-                    targetPath: '$(Pipeline.Workspace)/helm'
-                - task: Bash@3
-                  name: helm_dependency_build
-                  displayName: Helm dependency build
-                  inputs:
-                    workingDirectory: '$(Pipeline.Workspace)/helm'
-                    targetType: 'inline'
-                    script: |
-                      helm repo add pagopa-microservice https://pagopa.github.io/aks-microservice-chart-blueprint
-                      helm dep build
-                    failOnStderr: true    
-                - task: HelmDeploy@0
-                  displayName: Helm upgrade
-                  inputs:
-                    kubernetesServiceEndpoint: ${{ variables.kubernetesServiceConnection }}
-                    namespace: shared
-                    command: upgrade
-                    chartType: filepath
-                    chartPath: $(Pipeline.Workspace)/helm
-                    chartName: $(K8S_IMAGE_REPOSITORY_NAME)
-                    releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
-                    valueFile: "$(Pipeline.Workspace)/helm/$(helmValues)"
-                    install: true
-                    waitForExecution: true
-                    arguments: "--timeout 5m0s"
+          - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
+            parameters:
+              DEPLOY_VERSION: $(dev_version)
+          - template: azure-templates/helm-microservice-chart-deploy.yml
+            parameters:
+              DO_DEPLOY: true
+              ENV: 'DEV'
+              KUBERNETES_SERVICE_CONN: $(DEV_KUBERNETES_SERVICE_CONN)
+              NAMESPACE: shared
+              APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+              VALUE_FILE: "helm/values-dev.yaml"
+              DEPLOY_VERSION: $(dev_version)
                     
   # Create a relase
   # Activated when ONE OF these are met:
@@ -181,8 +126,6 @@ stages:
           )
         )
       )
-    pool:
-      vmImage: 'ubuntu-latest'
     jobs:
       - job: branch_version
         steps:
@@ -193,7 +136,7 @@ stages:
             - template: templates/node-job-setup/template.yaml@pagopaCommons
               parameters:
                 persistCredentials: true
-            - template: azure-templates/nodo-github-release.yml
+            - template: azure-templates/node-github-release.yml
               parameters:
                 semver: '${{ parameters.RELEASE_SEMVER }}'
                 gitEmail: $(GIT_EMAIL)
@@ -252,10 +195,10 @@ stages:
       deploy_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['deploy_version_decision.value'] ]
       current_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['current_version.value'] ]
     jobs:
-      - deployment: "deploy_bluegree"
+      - deployment: "deploy_bluegreen"
         pool:
           name: pagopa-uat-linux
-        environment: $(environment)
+        environment: 'UAT'
         strategy:
           runOnce:
             deploy:
@@ -308,5 +251,4 @@ stages:
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
-                    DEPLOY_VERSION: $(current_version)
-                    BLUE_GREEN_VERSION: $(deploy_version)      
+                    DEPLOY_VERSION: $(deploy_version)

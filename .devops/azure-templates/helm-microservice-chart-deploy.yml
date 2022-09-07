@@ -2,8 +2,6 @@ parameters:
   # Required
   - name: "DO_DEPLOY"
     type: boolean
-  - name: "DO_BLUE_GREEN_DEPLOY"
-    type: boolean  
   - name: "ENV"
     type: string
   - name: "KUBERNETES_SERVICE_CONN"
@@ -17,6 +15,9 @@ parameters:
   - name: "DEPLOY_VERSION"
     type: string
   # Optional
+  - name: "DO_BLUE_GREEN_DEPLOY"
+    type: boolean  
+    default: false
   - name: "BLUE_GREEN_VERSION"
     type: string
     default: "none"
