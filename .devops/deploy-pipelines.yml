@@ -1,4 +1,6 @@
-# Deploy to Azure Kubernetes Service
+# Deploy to Azure Kubernetes Service:
+# - DEV
+# - UAT -> PROD
 # Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
@@ -43,6 +45,7 @@ parameters:
     values:
       - False
       - True    
+
 resources:
   repositories:
     - repository: pagopaCommons
@@ -51,19 +54,16 @@ resources:
       ref: refs/tags/v2.10.1
       endpoint: 'io-azure-devops-github-ro'
 
-variables:
-  dockerfileRelativePath: 'Dockerfile'
-
 pool:
   vmImage: ubuntu-latest
 
 stages:
-  - stage: 'Build_DEV'
-    displayName: 'Build_and_Publish_docker_acr_DEV'
+  - stage: 'Build_for_DEV'
+    displayName: 'Build for DEV'
     condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.DEV_DEPLOY}}, true))
     jobs:
       - job: Build_docker
-        displayName: Build docker
+        displayName: Build docker with Build.SourceVersion as TAG
         steps:
           - template: templates/docker-release/template.yaml@pagopaCommons
             parameters:
