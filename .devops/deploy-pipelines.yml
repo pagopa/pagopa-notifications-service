@@ -158,7 +158,7 @@ stages:
               BUILD_SOURCE_BRANCH_NAME: $(Build.SourceBranchName)
           - template: templates/docker-release/template.yaml@pagopaCommons
             parameters:
-              CONTAINER_REGISTRY_SERVICE_CONN: $(dockerRegistryServiceConnection)
+              CONTAINER_REGISTRY_SERVICE_CONN: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
               CONTAINER_REGISTRY_FQDN: "pagopaucommonacr.azurecr.io"
               DOCKER_IMAGE_NAME: $(imageRepository)
               DOCKER_IMAGE_TAG: $(deploy_version_decision.value)
