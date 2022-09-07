@@ -1,0 +1,104 @@
+microservice-chart:
+  namespace: "shared"
+  nameOverride: ""
+  fullnameOverride: ""
+  canaryDelivery:
+    create: false
+    ingress:
+      create: true
+      canary:
+        type: bluegreen
+    service:
+      create: true
+    deployment:
+      create: true
+      image:
+        repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
+        tag: "0.0.14"
+        pullPolicy: Always
+      envConfig:
+        NOTIFICATIONS_EMAIL_ENABLED: "true"
+        AWS_SES_REGION: "eu-south-1"
+        CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
+        CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
+        BLUE_DEPLOYMENT: "true"
+      envSecret:
+        AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
+        AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
+  image:
+    repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
+    tag: "0.0.14"
+    pullPolicy: Always
+  livenessProbe:
+    httpGet:
+      path: /health/liveness
+      port: 3000
+    initialDelaySeconds: 60
+    failureThreshold: 6
+    periodSeconds: 90
+  readinessProbe:
+    httpGet:
+      path: /health/readiness
+      port: 3000
+    initialDelaySeconds: 60
+    failureThreshold: 6
+    periodSeconds: 10
+  deployment:
+    create: true
+  service:
+    create: true
+    type: ClusterIP
+    port: 3000
+  ingress:
+    create: true
+    host: "weuuat.shared.internal.uat.platform.pagopa.it"
+    path: /pagopa-notifications-service/(.*)
+  serviceAccount:
+    create: false
+    annotations: {}
+    name: ""
+  podAnnotations: {}
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+  resources:
+    requests:
+      memory: "96Mi"
+      cpu: "40m"
+    limits:
+      memory: "128Mi"
+      cpu: "150m"
+  autoscaling:
+    minReplica: 1
+    maxReplica: 2
+    pollingInterval: 30 # seconds
+    cooldownPeriod: 300 # seconds
+    triggers:
+      - type: azure-monitor
+        metadata:
+          tenantId: 7788edaf-0346-4068-9d79-c868aed15b3d
+          subscriptionId: bbe47ad4-08b3-4925-94c5-1278e5819b86
+          resourceGroupName: pagopa-u-shared-sec-rg
+          resourceURI: Microsoft.KeyVault/vaults/pagopa-u-shared-kv
+          metricName: ServiceApiHit
+          # metricNamespace: Microsoft.KeyVault/vaults
+          # metricFilter: namespace eq 'default'
+          # metricAggregationInterval: "-1:1:0"
+          metricAggregationType: Count
+          targetValue: "30"
+  envConfig:
+    NOTIFICATIONS_EMAIL_ENABLED: "true"
+    AWS_SES_REGION: "eu-south-1"
+    CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
+    CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
+  envSecret:
+    AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
+    AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
+  keyvault:
+    name: "pagopa-u-shared-kv"
+    tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

@@ -252,6 +252,39 @@ stages:
       deploy_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['deploy_version_decision.value'] ]
       current_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['current_version.value'] ]
     jobs:
+      - deployment: "deploy_bluegree"
+        pool:
+          name: pagopa-uat-linux
+        environment: $(environment)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: "Checkout"
+                - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
+                  parameters:
+                    DEPLOY_VERSION: $(deploy_version)
+                - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
+                  parameters:
+                    DO_DEPLOY: true
+                    DO_BLUE_GREEN_DEPLOY: true
+                    ENV: $(environment)
+                    KUBERNETES_SERVICE_CONN: ${{ variables.kubernetesServiceConnection }}
+                    NAMESPACE: shared
+                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                    VALUE_FILE: "helm/values-uat.yaml"
+                    DEPLOY_VERSION: $(current_version)
+                    BLUE_GREEN_VERSION: $(deploy_version)
+      - job: BLUE_GREEN_WaitForApproval
+        displayName: Wait for BLUE_GREEN approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 4320 # 3 days
+          inputs:
+            onTimeout: 'skip'
       - deployment: "deploy"
         pool:
           name: pagopa-uat-linux
@@ -268,18 +301,11 @@ stages:
                 - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
                   parameters:
                     DO_DEPLOY: true
+                    DO_BLUE_GREEN_DEPLOY: false
                     ENV: $(environment)
                     KUBERNETES_SERVICE_CONN: ${{ variables.kubernetesServiceConnection }}
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-                    VALUE_FILE: "helm/values-uat-blue.yaml"
+                    VALUE_FILE: "helm/values-uat.yaml"
                     DEPLOY_VERSION: $(current_version)
-                - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
-                  parameters:
-                    DO_DEPLOY: true
-                    ENV: $(environment)
-                    KUBERNETES_SERVICE_CONN: ${{ variables.kubernetesServiceConnection }}
-                    NAMESPACE: shared
-                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-                    VALUE_FILE: "helm/values-uat-green.yaml"
-                    DEPLOY_VERSION: $(deploy_version)    
+                    BLUE_GREEN_VERSION: $(deploy_version)      
