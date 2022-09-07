@@ -190,7 +190,7 @@ stages:
             - template: templates/node-job-setup/template.yaml@pagopaCommons
               parameters:
                 persistCredentials: true
-            - template: azure-templates/nodo-github-release.yml
+            - template: templates/node-github-release/template.yaml@pagopaCommons
               parameters:
                 semver: '${{ parameters.RELEASE_SEMVER }}'
                 gitEmail: $(GIT_EMAIL)
@@ -240,6 +240,7 @@ stages:
     dependsOn: "Build_UAT_PROD"
     variables:
       deploy_version: $[ stageDependencies.Build.build.outputs['deploy_version_decision.value'] ]
+      current_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
       - deployment: "deploy"
         pool:
@@ -262,7 +263,7 @@ stages:
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat-blue.yaml"
-                    DEPLOY_VERSION: $(deploy_version)
+                    DEPLOY_VERSION: $(current_version)
                 - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
                   parameters:
                     DO_DEPLOY: true
