@@ -219,7 +219,7 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             onTimeout: 'skip'
-      - deployment: "Blue_deployment"
+      - deployment: "Green_deployment"
         displayName: "Blue deployment"
         dependsOn: "BLUE_GREEN_WaitForApproval"
         pool:
