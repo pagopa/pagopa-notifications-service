@@ -63,16 +63,21 @@ steps:
 - task: Bash@3
   displayName: Update Version Helm
   name: update_version_helm
-  continueOnError: true
   inputs:
     targetType: 'inline'
     script: |
-        yq -i ".microservice-chart.canaryDelivery.deployment.image.tag = \"$(next_version.value)\"" "helm/values-uat-blue.yaml"
-        git add helm/values-uat-blue.yaml
-        yq -i ".microservice-chart.canaryDelivery.deployment.image.tag = \"$(next_version.value)\"" "helm/values-uat-green.yaml"
-        yq -i ".microservice-chart.image.tag = \"$(next_version.value)\"" "helm/values-uat-green.yaml"
-        git add helm/values-uat-green.yaml
-
+      for i in helm/values-*.yaml; do
+        [ -f "$i" ] || break
+        yq -i ".microservice-chart.image.tag = \"$(next_version.value)\"" "$i"
+        yq -i "microservice-chart.canaryDelivery.deployment.image.tag = \"$(next_version.value)\"" "$i"
+        git add "$i"
+      done
+      CHART_FILE="helm/Chart.yaml"
+      if [[ -f "$CHART_FILE" ]]; then
+        yq -i ".version = \"$(next_version.value)\"" "$CHART_FILE"
+        yq -i ".appVersion = \"$(next_version.value)\"" "$CHART_FILE"
+        git add "$CHART_FILE"
+      fi
 # push new version
 - script: |
     git tag $(next_version.value)

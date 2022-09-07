@@ -190,7 +190,7 @@ stages:
             - template: templates/node-job-setup/template.yaml@pagopaCommons
               parameters:
                 persistCredentials: true
-            - template: templates/node-github-release/template.yaml@pagopaCommons
+            - template: azure-templates/nodo-github-release.yml
               parameters:
                 semver: '${{ parameters.RELEASE_SEMVER }}'
                 gitEmail: $(GIT_EMAIL)
@@ -239,7 +239,7 @@ stages:
   - stage: "Deploy_UAT"
     dependsOn: "Build_UAT_PROD"
     variables:
-      deploy_version: $[ stageDependencies.Build.build.outputs['deploy_version_decision.value'] ]
+      deploy_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['deploy_version_decision.value'] ]
       current_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
       - deployment: "deploy"
