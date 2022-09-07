@@ -56,7 +56,7 @@ steps:
       install: true
       waitForExecution: ${{ parameters.WAIT_FOR_EXECUTION }}
       arguments: ${{ parameters.ARGUMENTS }}
-      overrideValues: microservice-chart.image.tag=${{ parameters.DEPLOY_VERSION }},microservice.canaryDelivery.create=true,microservice-chart.canaryDelivery.deployment.image.tag=${{ parameters.BLUE_GREEN_VERSION }}
+      overrideValues: microservice-chart.image.tag=${{ parameters.DEPLOY_VERSION }},microservice-chart.canaryDelivery.create=true,microservice-chart.canaryDelivery.deployment.image.tag=${{ parameters.BLUE_GREEN_VERSION }}
 
   - task: HelmDeploy@0
     displayName: Deploy on ${{ parameters.ENV }}
@@ -73,7 +73,7 @@ steps:
       install: true
       waitForExecution: ${{ parameters.WAIT_FOR_EXECUTION }}
       arguments: ${{ parameters.ARGUMENTS }}
-      overrideValues: microservice-chart.image.tag=${{ parameters.DEPLOY_VERSION }},microservice.canaryDelivery.create=false
+      overrideValues: microservice-chart.image.tag=${{ parameters.DEPLOY_VERSION }},microservice-chart.canaryDelivery.create=false
       
   
   - ${{ if ne(parameters['APPINSIGHTS_SERVICE_CONN'], 'none') }}:
