@@ -285,7 +285,8 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             onTimeout: 'skip'
-      - deployment: "deploy"
+      - deployment: "BLUE_GREEN_WaitForApproval"
+        dependsOn: "Build_UAT_PROD"
         pool:
           name: pagopa-uat-linux
         environment: $(environment)
