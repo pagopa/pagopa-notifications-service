@@ -2,12 +2,10 @@ microservice-chart:
   namespace: "shared"
   nameOverride: ""
   fullnameOverride: ""
-
   image:
     repository: pagopadcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "latest" #improve
+    tag: "0.0.6" #improve
     pullPolicy: Always
-
   livenessProbe:
     httpGet:
       path: /health/liveness
@@ -15,7 +13,6 @@ microservice-chart:
     initialDelaySeconds: 60
     failureThreshold: 6
     periodSeconds: 90
-
   readinessProbe:
     httpGet:
       path: /health/readiness
@@ -23,34 +20,26 @@ microservice-chart:
     initialDelaySeconds: 60
     failureThreshold: 6
     periodSeconds: 10
-
   deployment:
     create: true
-
   service:
     create: true
     type: ClusterIP
     port: 3000
-
   ingress:
     create: true
     host: "weudev.shared.internal.dev.platform.pagopa.it"
     path: /pagopa-notifications-service/(.*)
-
   serviceAccount:
     create: false
     annotations: {}
     name: ""
-
   podAnnotations: {}
-
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
-
   securityContext:
     allowPrivilegeEscalation: false
-
   resources:
     requests:
       memory: "96Mi"
@@ -58,7 +47,6 @@ microservice-chart:
     limits:
       memory: "128Mi"
       cpu: "150m"
-
   autoscaling:
     minReplica: 1
     maxReplica: 2
@@ -77,24 +65,17 @@ microservice-chart:
           # metricAggregationInterval: "-1:1:0"
           metricAggregationType: Count
           targetValue: "30"
-
   envConfig:
     NOTIFICATIONS_EMAIL_ENABLED: "true"
-    AWS_SES_REGION: "eu-south-1" 
+    AWS_SES_REGION: "eu-south-1"
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
     CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
-
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
-
   keyvault:
     name: "pagopa-d-shared-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-
   nodeSelector: {}
-
   tolerations: []
-
   affinity: {}
-
