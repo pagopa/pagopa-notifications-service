@@ -69,7 +69,7 @@ steps:
       for i in helm/values-*.yaml; do
         [ -f "$i" ] || break
         yq -i ".microservice-chart.image.tag = \"$(next_version.value)\"" "$i"
-        yq -i "microservice-chart.canaryDelivery.deployment.image.tag = \"$(next_version.value)\"" "$i"
+        yq -i ".microservice-chart.canaryDelivery.deployment.image.tag = \"$(next_version.value)\"" "$i"
         git add "$i"
       done
       CHART_FILE="helm/Chart.yaml"
