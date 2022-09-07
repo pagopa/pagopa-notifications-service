@@ -191,7 +191,7 @@ stages:
                     version=$(helm list -n shared | grep pagopanotificationsservice |  awk '{print $(NF)}')
                     echo "##vso[task.setvariable variable=value;isOutput=true]$version"
                     HEAD_SHA=$(git rev-parse HEAD)
-                    TITLE="Release $CURRENT_VERSION_BTANCH"
+                    TITLE="Release $DEPLOYED_VERSION"
                     TAG="v$version-RELEASE"
                     echo "##vso[task.setvariable variable=title]$TITLE"
                     echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
