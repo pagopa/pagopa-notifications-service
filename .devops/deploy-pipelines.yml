@@ -234,12 +234,23 @@ stages:
               DOCKER_IMAGE_NAME: $(imageRepository)
               DOCKER_IMAGE_TAG: $(deploy_version_decision.value)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+          - script: |
+              version=$(current_version_branch)
+              echo "##vso[task.setvariable variable=value;isOutput=true]$version"
+              HEAD_SHA=$(git rev-parse HEAD)
+              TITLE="Release $CURRENT_VERSION"
+              TAG="v$version-RELEASE"
+              echo "##vso[task.setvariable variable=title]$TITLE"
+              echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
+              echo "##vso[task.setvariable variable=tag]$TAG"
+            name: current_version
+            displayName: 'Set current_version variables'    
   # Deploy
   - stage: "Deploy_UAT"
     dependsOn: "Build_UAT_PROD"
     variables:
       deploy_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['deploy_version_decision.value'] ]
-      current_version: $[ stageDependencies.Release.branch_version.outputs['current_version.value'] ]
+      current_version: $[ stageDependencies.Build_UAT_PROD.current_version.outputs['current_version.value'] ]
     jobs:
       - deployment: "deploy"
         pool:
