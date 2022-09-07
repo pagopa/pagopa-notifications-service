@@ -5,10 +5,6 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 parameters:
-  - name: 'skipBuild'
-    displayName: 'Check this flag to skip build and proceed to deploy a docker image previously built'
-    type: boolean
-    default: false
   - name: 'DEV_DEPLOY'
     displayName: 'Deploy on DEV environment'
     type: boolean
@@ -17,12 +13,16 @@ parameters:
       - False
       - True
   - name: 'UAT_PROD_DEPLOY'
-    displayName: 'Deploy on UAT then PROD environments'
+    displayName: 'Deploy on UAT environment with PROD promotion'
     type: boolean
     default: False
     values:
       - False
       - True
+  - name: 'skipBuild'
+    displayName: 'Check this flag to skip build and proceed to deploy a docker image previously built'
+    type: boolean
+    default: false   
   - name: 'RELEASE_SEMVER'
     displayName: 'When packing a release, define the version bump to apply (release is done automatically when deploying on UAT and skipped on DEV) '
     type: string
@@ -31,6 +31,13 @@ parameters:
       - minor
       - patch
     default: minor
+  - name: "FORCE_REPLACE_DOCKER_IMAGE"
+    displayName: "Force the existing docker image to be replaced (latest tag)"
+    type: boolean
+    default: False
+    values:
+      - False
+      - True 
   - name: "SKIP_RELEASE"
     displayName: "Skip release"
     type: boolean
@@ -38,13 +45,6 @@ parameters:
     values:
       - False
       - True
-  - name: "FORCE_REPLACE_DOCKER_IMAGE"
-    displayName: "Force the existing docker image to be replaced (latest tag)"
-    type: boolean
-    default: False
-    values:
-      - False
-      - True    
 
 resources:
   repositories:
@@ -72,8 +72,8 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
-  - stage: 'Deploy_DEV'
-    displayName: 'Deply_helm_DEV'
+  - stage: 'Deploy_for_DEV'
+    displayName: 'Helm upgrade to deploy'
     condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
     jobs:
       - deployment: "deploy"
