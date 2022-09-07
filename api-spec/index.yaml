@@ -37,6 +37,8 @@ paths:
           examples:
             application/json:
               importoSingoloVersamento: 200
+        "202":
+          description: Email notification enqueued
         "400":
           description: Invalid input
           schema:

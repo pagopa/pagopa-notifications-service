@@ -9,14 +9,17 @@ import {
   IResponseErrorValidation,
   ResponseErrorFromValidationErrors,
   ResponseErrorValidation,
+  ResponseSuccessAccepted,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 
-import { TypeofApiResponse } from "@pagopa/ts-commons/lib/requests";
+import {
+  TypeofApiParams,
+  TypeofApiResponse
+} from "@pagopa/ts-commons/lib/requests";
 import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
-import * as A from "fp-ts/lib/Array";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
@@ -32,66 +35,63 @@ import {
 import { logger } from "../util/logger";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
+import { retryQueueClient } from "../util/queues";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const sendEmail = async (
+const sendEmailWithAWS = async (
   recipientEmail: string,
   subject: string,
   htmlData: string,
   textData: string,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  pdfData: O.Option<Promise<Buffer>>,
-  pdfName: string
+  _pdfData: O.Option<Promise<Buffer>>,
+  _pdfName: string
   // eslint-disable-next-line max-params
 ) => {
-  // logger.info("Attachment configurations...");
-  // const attachments = await Promise.all(
-  //   pipe(
-  //     pdfData,
-  //     O.map(async content => ({
-  //       filename: pdfName,
-  //       content: await content,
-  //       contentType: "application/pdf"
-  //     })),
-  //     A.fromOption
-  //   )
-  // );
+  /*
+  logger.info("Attachment configurations...");
+  const attachments = await Promise.all(
+    pipe(
+      pdfData,
+      O.map(async content => ({
+        filename: pdfName,
+        content: await content,
+        contentType: "application/pdf"
+      })),
+      A.fromOption
+    )
+  );
+  */
 
-  try {
-    const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
-      {
-        from: "no-reply@pagopa.gov.it",
-        to: recipientEmail,
-        subject,
-        html: htmlData,
-        text: textData
-        // attachments
-      }
-    );
-    logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
+  const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
+    {
+      from: "no-reply@pagopa.gov.it",
+      to: recipientEmail,
+      subject,
+      html: htmlData,
+      text: textData
+      // attachments
+    }
+  );
+  logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
 
-    return messageInfoOk;
-  } catch (e) {
-    logger.info("Error");
-
-    return { messageId: "" } as SESTransport.SentMessageInfo;
-  }
+  return messageInfoOk;
 };
 
-export const sendMailController: (
-  config: IConfig,
+// eslint-disable-next-line max-params
+export const sendEmail = async (
+  params: TypeofApiParams<SendNotificationEmailT>,
+  schema: {
+    readonly default: t.Type<unknown>;
+  },
+  browserEngine: Browser,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  browserEngine: Browser
-) => AsControllerFunction<SendNotificationEmailT> = (
-  config,
-  mailTrasporter,
-  browserEngine
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-) => async params => {
-  const templateId = params.body.templateId;
-  const schema = await import(`../generated/templates/${templateId}/schema.js`);
+  config: IConfig,
+  retryCount: number
+  // eslint-disable-next-line max-params
+): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
   const clientId = params["X-Client-Id"];
-
+  const templateId = params.body.templateId;
   const textTemplateRaw = fs
     .readFileSync(
       `./dist/src/templates/${templateId}/${templateId}.template.txt`
@@ -117,7 +117,7 @@ export const sendMailController: (
   );
   return pipe(
     params.body.parameters,
-    schema.default.decode as (v: unknown) => t.Validation<unknown>,
+    schema.default.decode,
     E.map<unknown, readonly [string, string, O.Option<string>]>(
       (templateParams: unknown) => [
         htmlTemplate(templateParams),
@@ -128,36 +128,100 @@ export const sendMailController: (
         )
       ]
     ),
-    E.map(async ([htmlMarkup, textMarkup, pdfMarkup]) => {
-      const pdfData = pipe(
-        pdfMarkup,
-        O.map(async markup => {
-          const page = await browserEngine.newPage();
-          await page.setContent(markup);
+    E.map(
+      async ([htmlMarkup, textMarkup, pdfMarkup]): Promise<
+        O.Option<SESTransport.SentMessageInfo>
+      > => {
+        const pdfData = pipe(
+          pdfMarkup,
+          O.map(async markup => {
+            const page = await browserEngine.newPage();
+            await page.setContent(markup);
 
-          return await page.pdf({ printBackground: true });
-        }),
-        O.map(async v => await v)
-      );
-      logger.info(`[${clientId}] - Sending email with template ${templateId}`);
-      return await sendEmail(
-        params.body.to,
-        params.body.subject,
-        htmlMarkup,
-        textMarkup,
-        mailTrasporter,
-        pdfData,
-        "test.pdf"
-      );
-    }),
-    E.fold<
-      t.Errors,
-      Promise<SESTransport.SentMessageInfo>,
-      ReturnType<AsControllerFunction<SendNotificationEmailT>>
-    >(
+            return await page.pdf({ printBackground: true });
+          }),
+          O.map(async v => await v)
+        );
+        logger.info(
+          `[${clientId}] - Sending email with template ${templateId}`
+        );
+
+        try {
+          return O.some(
+            await sendEmailWithAWS(
+              params.body.to,
+              params.body.subject,
+              htmlMarkup,
+              textMarkup,
+              mailTrasporter,
+              pdfData,
+              "test.pdf"
+            )
+          );
+        } catch (e) {
+          logger.error(`Error while trying to send email to AWS SES: ${e}`);
+
+          if (retryCount > 0) {
+            logger.info(
+              `Enqueueing failed message with retryCount ${retryCount}`
+            );
+            await retryQueueClient.sendMessage(
+              JSON.stringify({
+                ...params,
+                retryCount
+              }),
+              {
+                visibilityTimeout:
+                  2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
+                  config.INITIAL_RETRY_TIMEOUT_SECONDS
+              }
+            );
+          } else {
+            logger.error(`Message failed too many times, skipping send`);
+            logger.error(JSON.stringify(params));
+          }
+
+          return O.none;
+        }
+      }
+    ),
+    E.fold(
       async err => ResponseErrorFromValidationErrors(schema.default)(err),
-      async _v => ResponseSuccessJson({ outcome: "OK" })
+      async sentMessageInfo =>
+        pipe(
+          await sentMessageInfo,
+          O.fold<
+            SESTransport.SentMessageInfo,
+            ReturnType<AsControllerFunction<SendNotificationEmailT>>
+          >(
+            async () => ResponseSuccessAccepted(),
+            async _v => ResponseSuccessJson({ outcome: "OK" })
+          )
+        )
     )
+  );
+};
+
+export const sendMailController: (
+  config: IConfig,
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  browserEngine: Browser
+) => AsControllerFunction<SendNotificationEmailT> = (
+  config,
+  mailTrasporter,
+  browserEngine
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+) => async params => {
+  const templateId = params.body.templateId;
+  const schema = await import(`../generated/templates/${templateId}/schema.js`);
+
+  return sendEmail(
+    params,
+    schema,
+    browserEngine,
+    mailTrasporter,
+    config,
+    config.MAX_RETRY_ATTEMPTS
   );
 };
 
@@ -209,34 +273,36 @@ export function sendMail(
 > {
   const controller = sendMailController(config, mailTrasporter, browserEngine);
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  return async req => {
-    const errorOrBody = NotificationEmailRequest.decode(req.body);
-    if (E.isLeft(errorOrBody)) {
-      const error = errorOrBody.left;
-      return ResponseErrorFromValidationErrors(NotificationEmailRequest)(error);
-    }
-    const body = errorOrBody.right;
-
-    const maybeClientId = getClientId(req);
-    if (E.isLeft(maybeClientId)) {
-      const error = maybeClientId.left;
-      return headerValidationErrorHandler(error);
-    }
-    const clientId = maybeClientId.right as NotificationsServiceClientEnum;
-
-    const maybeValidTemplate = validTemplateIdGivenClientConfig(
-      config[clientId],
-      body.templateId
+  return async req =>
+    pipe(
+      req.body,
+      NotificationEmailRequest.decode,
+      E.mapLeft(async e =>
+        ResponseErrorFromValidationErrors(NotificationEmailRequest)(e)
+      ),
+      E.bindTo("body"),
+      E.bind("clientId", () =>
+        pipe(
+          getClientId(req),
+          E.mapLeft(e => headerValidationErrorHandler(e))
+        )
+      ),
+      E.chainFirst(({ body, clientId }) =>
+        pipe(
+          validTemplateIdGivenClientConfig(
+            config[clientId as NotificationsServiceClientEnum],
+            body.templateId
+          ),
+          E.mapLeft(async e => ResponseErrorValidation(e.name, e.message))
+        )
+      ),
+      E.fold(
+        e => e,
+        ({ body, clientId }) =>
+          controller({
+            body,
+            "X-Client-Id": clientId
+          })
+      )
     );
-
-    if (E.isLeft(maybeValidTemplate)) {
-      const error = maybeValidTemplate.left;
-      return ResponseErrorValidation(error.name, error.message);
-    }
-
-    return controller({
-      body,
-      "X-Client-Id": clientId
-    });
-  };
 }
