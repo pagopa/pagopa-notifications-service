@@ -218,7 +218,7 @@ stages:
         dependsOn: "BLUE_GREEN_WaitForApproval"
         pool:
           name: pagopa-uat-linux
-        environment: $(environment)
+        environment: UAT
         strategy:
           runOnce:
             deploy:
