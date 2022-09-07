@@ -184,6 +184,9 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
+      - job: branch_version
+        steps:
+          - template: templates/node-github-current-version/template.yaml@pagopaCommons
       - job: make_release
         steps:
           - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
@@ -200,10 +203,6 @@ stages:
 
           - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
             - template: templates/node-github-current-version/template.yaml@pagopaCommons
-      - job: branch_version
-        condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/CHK-612-pipeline-uat'))
-        steps:
-          - template: templates/node-github-current-version/template.yaml@pagopaCommons
       - job: tag_version
         condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
         steps:
