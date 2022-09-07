@@ -54,20 +54,6 @@ resources:
 variables:
   dockerfileRelativePath: 'Dockerfile'
 
-  ${{ if eq(parameters['UAT_PROD_DEPLOY'], true) }}:
-    dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
-    kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
-    containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
-    helmValues: values-uat.yaml
-    poolImage: 'pagopa-uat-linux'
-
-  ${{ else }}:
-    dockerRegistryServiceConnection: ''
-    kubernetesServiceConnection: '$(DEV_KUBERNETES_SERVICE_CONN)'
-    containerRegistry: '$(DEV_CONTAINER_REGISTRY_NAME)'
-    helmValues: values-dev.yaml
-    # selfHostedAgentPool: $(DEV_AGENT_POOL)
-
 pool:
   vmImage: ubuntu-latest
 
@@ -212,8 +198,8 @@ stages:
                   parameters:
                     DO_DEPLOY: true
                     DO_BLUE_GREEN_DEPLOY: true
-                    ENV: $(environment)
-                    KUBERNETES_SERVICE_CONN: ${{ variables.kubernetesServiceConnection }}
+                    ENV: 'UAT'
+                    KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
@@ -246,8 +232,8 @@ stages:
                   parameters:
                     DO_DEPLOY: true
                     DO_BLUE_GREEN_DEPLOY: false
-                    ENV: $(environment)
-                    KUBERNETES_SERVICE_CONN: ${{ variables.kubernetesServiceConnection }}
+                    ENV: 'UAT'
+                    KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
