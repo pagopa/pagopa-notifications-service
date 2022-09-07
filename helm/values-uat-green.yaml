@@ -27,7 +27,7 @@ microservice-chart:
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.0.6"
+    tag: "0.0.7"
     pullPolicy: Always
   livenessProbe:
     httpGet:
