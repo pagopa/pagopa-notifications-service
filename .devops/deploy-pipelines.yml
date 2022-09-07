@@ -12,7 +12,7 @@ parameters:
     values:
       - False
       - True
-  - name: 'UAT_PROD_DEPLOY'
+  - name: 'UAT_DEPLOY'
     displayName: 'Deploy on UAT environment with PROD promotion'
     type: boolean
     default: False
@@ -73,7 +73,7 @@ stages:
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
   - stage: 'Deploy_for_DEV'
-    displayName: 'Helm upgrade DEV'
+    displayName: 'Helm deploy DEV'
     condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
     jobs:
       - deployment: "deploy"
@@ -116,9 +116,6 @@ stages:
         )
       )
     jobs:
-      - job: branch_version
-        steps:
-          - template: templates/node-github-current-version/template.yaml@pagopaCommons
       - job: make_release
         steps:
           - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
@@ -132,16 +129,19 @@ stages:
                 gitUsername: $(GIT_USERNAME)
                 gitHubConnection: $(GITHUB_CONNECTION)
                 release_branch: CHK-612-pipeline-uat
-
           - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
             - template: templates/node-github-current-version/template.yaml@pagopaCommons
+      - job: branch_version
+        condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'CHK-612-pipeline-uat'))
+        steps:
+          - template: templates/node-github-current-version/template.yaml@pagopaCommons
       - job: tag_version
         condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
         steps:
           - template: templates/node-github-current-version/template.yaml@pagopaCommons
 
-  - stage: 'Build_UAT_PROD'
-    displayName: 'Build_and_Publish_to_UAT'
+  - stage: 'Build_UAT'
+    displayName: 'Build for UAT'
     condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.UAT_PROD_DEPLOY}}, true))
     variables:
       next_version: $[ stageDependencies.Release.make_release.outputs['next_version.value'] ]
@@ -166,25 +166,15 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(deploy_version_decision.value)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
-          - script: |
-              version=$(current_version_branch)
-              echo "##vso[task.setvariable variable=value;isOutput=true]$version"
-              HEAD_SHA=$(git rev-parse HEAD)
-              TITLE="Release $CURRENT_VERSION_BTANCH"
-              TAG="v$version-RELEASE"
-              echo "##vso[task.setvariable variable=title]$TITLE"
-              echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
-              echo "##vso[task.setvariable variable=tag]$TAG"
-            name: current_version
-            displayName: 'Set current_version variables'    
   # Deploy
   - stage: "Deploy_UAT"
-    dependsOn: "Build_UAT_PROD"
+    displayName: 'Blue/green deploy UAT'
+    dependsOn: "Build_UAT"
     variables:
-      deploy_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['deploy_version_decision.value'] ]
-      current_version: $[ stageDependencies.Build_UAT_PROD.build.outputs['current_version.value'] ]
+      deploy_version: $[ stageDependencies.Build_UAT.build.outputs['deploy_version_decision.value'] ]
     jobs:
-      - deployment: "deploy_bluegreen"
+      - deployment: "Blue_deployment"
+        displayName: "Blue deployment"
         pool:
           name: pagopa-uat-linux
         environment: 'UAT'
@@ -197,6 +187,17 @@ stages:
                 - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
                   parameters:
                     DEPLOY_VERSION: $(deploy_version)
+                - script: |
+                    version=$(current_version_branch)
+                    echo "##vso[task.setvariable variable=value;isOutput=true]$version"
+                    HEAD_SHA=$(git rev-parse HEAD)
+                    TITLE="Release $CURRENT_VERSION_BTANCH"
+                    TAG="v$version-RELEASE"
+                    echo "##vso[task.setvariable variable=title]$TITLE"
+                    echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
+                    echo "##vso[task.setvariable variable=tag]$TAG"
+                  name: deployed_version
+                  displayName: 'Set deployed_version variables'     
                 - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
                     DO_DEPLOY: true
@@ -206,10 +207,11 @@ stages:
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
-                    DEPLOY_VERSION: $(current_version)
+                    DEPLOY_VERSION: $(deployed_version)
                     BLUE_GREEN_VERSION: $(deploy_version)
       - job: BLUE_GREEN_WaitForApproval
-        displayName: Wait for BLUE_GREEN approval
+        dependsOn: "BLUE_GREEN_WaitForApproval"
+        displayName: Wait for blue deploy approval
         pool: server
         timeoutInMinutes: 4320 # 3 days
         steps:
@@ -217,7 +219,8 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             onTimeout: 'skip'
-      - deployment: "deploy"
+      - deployment: "Blue_deployment"
+        displayName: "Blue deployment"
         dependsOn: "BLUE_GREEN_WaitForApproval"
         pool:
           name: pagopa-uat-linux
