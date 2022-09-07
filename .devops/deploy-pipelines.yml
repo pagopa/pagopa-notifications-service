@@ -210,7 +210,7 @@ stages:
                     DEPLOY_VERSION: $(deployed_version)
                     BLUE_GREEN_VERSION: $(deploy_version)
       - job: BLUE_GREEN_WaitForApproval
-        dependsOn: "BLUE_GREEN_WaitForApproval"
+        dependsOn: "Blue_deployment"
         displayName: Wait for blue deploy approval
         pool: server
         timeoutInMinutes: 4320 # 3 days
