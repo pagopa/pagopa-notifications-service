@@ -61,8 +61,6 @@ stages:
   - stage: 'Build_DEV'
     displayName: 'Build_and_Publish_docker_acr_DEV'
     condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.DEV_DEPLOY}}, true))
-    variables:
-      dev_version: $(Build.SourceVersion)
     jobs:
       - job: Build_docker
         displayName: Build docker
@@ -72,7 +70,7 @@ stages:
               CONTAINER_REGISTRY_SERVICE_CONN: $(DEV_CONTAINER_REGISTRY_SERVICE_CONN)
               CONTAINER_REGISTRY_FQDN: $(DEV_CONTAINER_NAMESPACE)
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-              DOCKER_IMAGE_TAG: $(dev_version)
+              DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
   - stage: 'Deploy_DEV'
     displayName: 'Deply_helm_DEV'
@@ -88,7 +86,7 @@ stages:
                   displayName: "Checkout"
                 - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
                   parameters:
-                    DEPLOY_VERSION: $(dev_version)
+                    DEPLOY_VERSION: $(Build.SourceVersion)
                 - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
                     DO_DEPLOY: true
@@ -97,7 +95,7 @@ stages:
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-dev.yaml"
-                    DEPLOY_VERSION: $(dev_version)
+                    DEPLOY_VERSION: $(Build.SourceVersion)
                     
   # Create a relase
   # Activated when ONE OF these are met:
