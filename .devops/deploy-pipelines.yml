@@ -166,20 +166,6 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(deploy_version_decision.value)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
-      - job: "Deployed_version_check"
-        displayName: Deployed_version_check
-        pool:
-          name: pagopa-uat-linux
-        steps:
-          - task: HelmDeploy@0
-            name: helm_get_deployed_version
-            displayName: Helm get deployed version
-            inputs:
-              kubernetesServiceEndpoint: $(UAT_KUBERNETES_SERVICE_CONN)
-              namespace: shared
-              command: list
-              waitForExecution: true
-              arguments: -f $(K8S_IMAGE_REPOSITORY_NAME) | grep $(K8S_IMAGE_REPOSITORY_NAME) | awk '{print $(NF)}'           
   
   # Deploy
   - stage: "Deploy_UAT"
@@ -203,23 +189,16 @@ stages:
                 - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
                   parameters:
                     DEPLOY_VERSION: $(deploy_version)
-                - script: |
-                      version=$(echo $deployed_app | grep pagopanotificationsservice | awk '{print $(NF)}')
-                      echo "##vso[task.setvariable variable=value;isOutput=true]$version"
-                      echo $(deployed_app)
-                  name: deployed_version
                   displayName: 'Set release variables'
-                - template: azure-templates/helm-microservice-chart-deploy.yml
+                - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
                   parameters:
                     DO_DEPLOY: true
-                    DO_BLUE_GREEN_DEPLOY: true
                     ENV: 'UAT'
                     KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-                    VALUE_FILE: "helm/values-uat.yaml"
+                    VALUE_FILE: "helm/values-uat-blue.yaml"
                     DEPLOY_VERSION: $(deployed_version.value)
-                    BLUE_GREEN_VERSION: $(deploy_version)
       - job: BLUE_GREEN_WaitForApproval
         dependsOn: "Blue_deployment"
         displayName: Wait for blue deploy approval
@@ -245,13 +224,12 @@ stages:
                 - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
                   parameters:
                     DEPLOY_VERSION: $(deploy_version)
-                - template: azure-templates/helm-microservice-chart-deploy.yml
+                - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
                   parameters:
                     DO_DEPLOY: true
-                    DO_BLUE_GREEN_DEPLOY: false
                     ENV: 'UAT'
                     KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-                    VALUE_FILE: "helm/values-uat.yaml"
+                    VALUE_FILE: "helm/values-uat-green.yaml"
                     DEPLOY_VERSION: $(deploy_version)

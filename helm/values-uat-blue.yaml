@@ -3,7 +3,7 @@ microservice-chart:
   nameOverride: ""
   fullnameOverride: ""
   canaryDelivery:
-    create: false
+    create: true
     ingress:
       create: true
       canary:
@@ -27,7 +27,7 @@ microservice-chart:
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.0.53"
+    tag: "0.0.52"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -43,8 +43,7 @@ microservice-chart:
     initialDelaySeconds: 60
     failureThreshold: 6
     periodSeconds: 10
-  deployment:
-    create: true
+  
   service:
     create: true
     type: ClusterIP
