@@ -150,6 +150,8 @@ stages:
       current_version_tag: $[ stageDependencies.Release.tag_version.outputs['current_version.value'] ]
     jobs:
       - job: "build"
+        pool:
+          name: pagopa-uat-linux
         steps:
           - template: templates/deploy-release-decision/template.yaml@pagopaCommons
             parameters:
