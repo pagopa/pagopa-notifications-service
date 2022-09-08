@@ -166,15 +166,6 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(deploy_version_decision.value)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
-          - task: HelmDeploy@0
-            name: helm_get_deployed_version
-            displayName: Helm get deployed version
-            inputs:
-              kubernetesServiceEndpoint: $(UAT_KUBERNETES_SERVICE_CONN)
-              namespace: shared
-              command: list
-              waitForExecution: true
-              arguments: -f $(K8S_IMAGE_REPOSITORY_NAME)
       - job: "Deployed_version_check"
         displayName: Deployed_version_check
         pool:
