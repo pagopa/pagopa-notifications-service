@@ -179,7 +179,7 @@ stages:
               namespace: shared
               command: list
               waitForExecution: true
-              arguments: -f $(K8S_IMAGE_REPOSITORY_NAME)           
+              arguments: -f $(K8S_IMAGE_REPOSITORY_NAME) | grep $(K8S_IMAGE_REPOSITORY_NAME) | awk '{print $(NF)}'           
   
   # Deploy
   - stage: "Deploy_UAT"
