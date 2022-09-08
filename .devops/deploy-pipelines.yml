@@ -206,8 +206,7 @@ stages:
                 - script: |
                       version=$(echo $deployed_app | awk '{print $(NF)}')
                       echo "##vso[task.setvariable variable=value;isOutput=true]$version"
-                      echo $deployed_app
-                      echo $version
+                      echo $(version)
                       echo $(deployed_app)
                   name: deployed_version
                   displayName: 'Set release variables'
