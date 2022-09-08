@@ -198,6 +198,7 @@ stages:
                 - script: |
                       version=$(echo $helmOutput | awk '{print $(NF)}')
                       echo "##vso[task.setvariable variable=value;isOutput=true]$version"
+                      echo $version
                   name: current_version
                   displayName: 'Set release variables'
                 - template: azure-templates/helm-microservice-chart-deploy.yml
