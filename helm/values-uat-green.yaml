@@ -6,10 +6,10 @@ microservice-chart:
     create: false
     deployment:
       image:
-        tag: 0.0.54
+        tag: 0.0.55
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.0.54"
+    tag: "0.0.55"
     pullPolicy: Always
   livenessProbe:
     httpGet:
