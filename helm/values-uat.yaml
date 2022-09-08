@@ -14,7 +14,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-        tag: "0.0.36"
+        tag: "0.0.37"
         pullPolicy: Always
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
@@ -27,7 +27,7 @@ microservice-chart:
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.0.36"
+    tag: "0.0.37"
     pullPolicy: Always
   livenessProbe:
     httpGet:
