@@ -191,11 +191,12 @@ stages:
                     namespace: shared
                     command: list
                     waitForExecution: true
+                    arguments: -f $(K8S_IMAGE_REPOSITORY_NAME)
                 - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
                   parameters:
                     DEPLOY_VERSION: $(deploy_version)
                 - script: |
-                      version=$(echo $helmOutput | grep pagopanotificationsservice |  awk '{print $(NF)}')
+                      version=$(echo $helmOutput | awk '{print $(NF)}')
                       echo "##vso[task.setvariable variable=value;isOutput=true]$version"
                   name: current_version
                   displayName: 'Set release variables'
@@ -208,7 +209,7 @@ stages:
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
-                    DEPLOY_VERSION: $(current_version.value)
+                    DEPLOY_VERSION: $(git stat.value)
                     BLUE_GREEN_VERSION: $(deploy_version)
       - job: BLUE_GREEN_WaitForApproval
         dependsOn: "Blue_deployment"
