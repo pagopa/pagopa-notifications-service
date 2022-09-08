@@ -191,7 +191,6 @@ stages:
                     namespace: shared
                     command: list
                     waitForExecution: true
-                    arguments: "--timeout 5m0s"        
                 - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
                   parameters:
                     DEPLOY_VERSION: $(deploy_version)
