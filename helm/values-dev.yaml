@@ -79,7 +79,3 @@ microservice-chart:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-  canaryDelivery:
-    deployment:
-      image:
-        tag: 0.0.57
