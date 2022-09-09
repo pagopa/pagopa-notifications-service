@@ -81,6 +81,7 @@ stages:
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
   - stage: 'Deploy_for_DEV'
     displayName: 'Deploy DEV'
+    dependsOn: Build_for_DEV
     condition: or(succeeded(), ${{ parameters.skipBuild }}, eq(${{parameters.DEV_DEPLOY}}, true) )
     jobs:
       - deployment: "deploy"
@@ -220,8 +221,7 @@ stages:
             containerRegistry: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
             command: "login"
         - task: Bash@3
-          displayName: "docker build and push (force)"
-          condition: and(succeeded(), eq(${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}, True))
+          displayName: "docker tag new version"
           inputs:
             targetType: "inline"
             script: |
