@@ -12,13 +12,13 @@ parameters:
     type: string
   - name: "VALUE_FILE"
     type: string
-  - name: "DEPLOY_VERSION"
+  - name: "GREEN_VERSION"
     type: string
   # Optional
   - name: "DO_BLUE_GREEN_DEPLOY"
     type: boolean  
     default: false
-  - name: "BLUE_GREEN_VERSION"
+  - name: "BLUE_VERSION"
     type: string
     default: "none"
   - name: "CHART_TYPE"
@@ -56,7 +56,7 @@ steps:
       install: true
       waitForExecution: ${{ parameters.WAIT_FOR_EXECUTION }}
       arguments: ${{ parameters.ARGUMENTS }}
-      overrideValues: microservice-chart.image.tag=${{ parameters.DEPLOY_VERSION }},microservice-chart.canaryDelivery.create=true,microservice-chart.canaryDelivery.deployment.image.tag=${{ parameters.BLUE_GREEN_VERSION }}
+      overrideValues: microservice-chart.image.tag=${{ parameters.GREEN_VERSION }},microservice-chart.canaryDelivery.create=true,microservice-chart.canaryDelivery.deployment.image.tag=${{ parameters.BLUE_VERSION }}
 
   - task: HelmDeploy@0
     displayName: Deploy on ${{ parameters.ENV }}
@@ -73,7 +73,7 @@ steps:
       install: true
       waitForExecution: ${{ parameters.WAIT_FOR_EXECUTION }}
       arguments: ${{ parameters.ARGUMENTS }}
-      overrideValues: microservice-chart.image.tag=${{ parameters.DEPLOY_VERSION }},microservice-chart.canaryDelivery.create=false
+      overrideValues: microservice-chart.image.tag=${{ parameters.GREEN_VERSION }},microservice-chart.canaryDelivery.create=false
       
   
   - ${{ if ne(parameters['APPINSIGHTS_SERVICE_CONN'], 'none') }}:
@@ -92,7 +92,7 @@ steps:
             APPINSIGHTS_ID=${{ parameters.APPINSIGHTS_RESOURCE_ID }}
             UUID=$(uuidgen)
             releaseName="${{ parameters.APP_NAME }}-${{ parameters.ENV }}"
-            releaseDescription="${{ parameters.DEPLOY_VERSION }}"
+            releaseDescription="${{ parameters.GREEN_VERSION }}"
             triggerBy="Azure DevOps"
             eventTime=$(date -u '+%Y-%m-%dT%H:%M:%S')
             category="Deployment"

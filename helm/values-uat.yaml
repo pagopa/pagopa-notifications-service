@@ -3,7 +3,7 @@ microservice-chart:
   nameOverride: ""
   fullnameOverride: ""
   canaryDelivery:
-    create: true
+    create: false
     ingress:
       create: true
       canary:
@@ -21,7 +21,6 @@ microservice-chart:
         AWS_SES_REGION: "eu-south-1"
         CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
         CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
-        BLUE_DEPLOYMENT: "true"
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
