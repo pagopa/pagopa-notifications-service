@@ -116,20 +116,20 @@ stages:
       - job: "build"
         displayName: 'Build UAT service beta'
         steps:
-          - template: templates/docker-release/template.yaml@pagopaCommons
-            parameters:
-              CONTAINER_REGISTRY_SERVICE_CONN: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
-              CONTAINER_REGISTRY_FQDN: $(UAT_CONTAINER_NAMESPACE)
-              DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-              DOCKER_IMAGE_TAG: $(Build.SourceVersion)
-              FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+          # - template: templates/docker-release/template.yaml@pagopaCommons
+          #   parameters:
+          #     CONTAINER_REGISTRY_SERVICE_CONN: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
+          #     CONTAINER_REGISTRY_FQDN: $(UAT_CONTAINER_NAMESPACE)
+          #     DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+          #     DOCKER_IMAGE_TAG: $(Build.SourceVersion)
+          #     FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
           - template: templates/node-github-current-version/template.yaml@pagopaCommons
 
   - stage: "Deploy_UAT_Blue"
     displayName: 'UAT blue deployment'
     dependsOn: Build_UAT_Blue
     variables:
-      current_version: $[ stageDependencies.Build_UAT_Blue.build.outputs['current_version.value'] ]
+      green_version: $[ stageDependencies.Build_UAT_Blue.build.outputs['current_version.value'] ]
     jobs:
       - deployment: "Blue_deployment"
         displayName: "Blue deployment"
@@ -144,7 +144,7 @@ stages:
                   displayName: "Checkout"
                 - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
                   parameters:
-                    DEPLOY_VERSION: $(current_version)  
+                    DEPLOY_VERSION: $(green_version)  
                 - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
                     DO_DEPLOY: true
@@ -154,5 +154,5 @@ stages:
                     NAMESPACE: shared
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
-                    GREEN_VERSION: $(current_version)
+                    GREEN_VERSION: $(green_version)
                     BLUE_VERSION: $(Build.SourceVersion)
