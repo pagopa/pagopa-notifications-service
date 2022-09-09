@@ -30,6 +30,13 @@ parameters:
       - major
       - minor
       - patch
+  - name: 'RELEASE_CHART_SEMVER'
+    displayName: 'When upgrading helm chart, define the version bump to apply'
+    type: string
+    values:
+      - major
+      - minor
+      - patch  
     default: minor
   - name: "FORCE_REPLACE_DOCKER_IMAGE"
     displayName: "Force the existing docker image to be replaced (latest tag)"
@@ -142,6 +149,27 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
+                - task: Bash@3
+                  name: setup_semver_utility
+                  displayName: 'Setup semver utility'
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      npm install -g semver
+                - task: Bash@3
+                  name: setup_helm_microservice_chart
+                  displayName: 'Setup helm microservice chart'
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      RELEASE_CHART_SEMVER=${{parameters.RELEASE_CHART_SEMVER}}
+                      CHART_FILE="helm/Chart.yaml"
+                      CURRENT_CHART_VERSION=$(yq -r '.version' Chart.yaml)
+                      if [[ -f "$CHART_FILE" ]]; then
+                        yq -i ".appVersion = \"$(semver $CURRENT_CHART_VERSION -i $RELEASE_CHART_SEMVER )\"" "$CHART_FILE"
+                      fi
+                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+                      helm dep build helm
                 - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
                   parameters:
                     DEPLOY_VERSION: $(green_version)  
