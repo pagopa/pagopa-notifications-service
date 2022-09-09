@@ -134,7 +134,7 @@ stages:
         
   - stage: "Deploy_UAT_Blue"
     displayName: 'UAT blue deployment'
-    dependsOn: Build_UAT_Blue
+    dependsOn: Build_release_candidate
     variables:
       green_version: $[ stageDependencies.Build_UAT_Blue.build.outputs['current_version.value'] ]
     jobs:
