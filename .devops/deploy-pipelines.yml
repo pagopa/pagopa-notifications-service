@@ -135,7 +135,7 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
-                - template: azure-templates/helm-microservice-chart-deploy.yaml
+                - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
                     DO_DEPLOY: true
                     DO_BLUE_GREEN_DEPLOY: true
