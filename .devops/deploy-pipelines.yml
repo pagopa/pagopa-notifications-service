@@ -131,7 +131,28 @@ stages:
           #     DOCKER_IMAGE_TAG: $(Build.SourceVersion)
           #     FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
           - template: templates/node-github-current-version/template.yaml@pagopaCommons
-
+          - task: Bash@3
+            name: setup_semver_utility
+            displayName: 'Setup semver utility'
+            inputs:
+              targetType: "inline"
+              script: |
+                yarn global add semver
+          - task: Bash@3
+            name: setup_helm_microservice_chart
+            displayName: 'Setup helm microservice chart'
+            inputs:
+              targetType: "inline"
+              script: |
+                RELEASE_CHART_SEMVER=${{parameters.RELEASE_CHART_SEMVER}}
+                CHART_FILE="helm/Chart.yaml"
+                CURRENT_CHART_VERSION=$(yq -r '.version' Chart.yaml)
+                if [[ -f "$CHART_FILE" ]]; then
+                  yq -i ".appVersion = \"$(semver $CURRENT_CHART_VERSION -i $RELEASE_CHART_SEMVER )\"" "$CHART_FILE"
+                fi
+                helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+                helm dep build helm
+                
   - stage: "Deploy_UAT_Blue"
     displayName: 'UAT blue deployment'
     dependsOn: Build_UAT_Blue
@@ -149,27 +170,6 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
-                - task: Bash@3
-                  name: setup_semver_utility
-                  displayName: 'Setup semver utility'
-                  inputs:
-                    targetType: "inline"
-                    script: |
-                      yarn global add semver
-                - task: Bash@3
-                  name: setup_helm_microservice_chart
-                  displayName: 'Setup helm microservice chart'
-                  inputs:
-                    targetType: "inline"
-                    script: |
-                      RELEASE_CHART_SEMVER=${{parameters.RELEASE_CHART_SEMVER}}
-                      CHART_FILE="helm/Chart.yaml"
-                      CURRENT_CHART_VERSION=$(yq -r '.version' Chart.yaml)
-                      if [[ -f "$CHART_FILE" ]]; then
-                        yq -i ".appVersion = \"$(semver $CURRENT_CHART_VERSION -i $RELEASE_CHART_SEMVER )\"" "$CHART_FILE"
-                      fi
-                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
-                      helm dep build helm
                 - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
                     DO_DEPLOY: true
