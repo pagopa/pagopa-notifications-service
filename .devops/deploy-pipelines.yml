@@ -98,8 +98,8 @@ stages:
                     GREEN_VERSION: $(Build.SourceVersion)
                     
   # Deploy
-  - stage: "Deploy_UAT_Beta"
-    displayName: 'UAT beta deployment'
+  - stage: "Deploy_UAT_Blue"
+    displayName: 'UAT blue deployment'
     dependsOn: []
     condition:
       and(
@@ -136,6 +136,9 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
+                - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
+                  parameters:
+                    DEPLOY_VERSION: $(current_version.value)  
                 - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
                     DO_DEPLOY: true
