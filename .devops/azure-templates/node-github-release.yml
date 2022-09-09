@@ -102,6 +102,7 @@ steps:
       CURRENT_CHART_VERSION=$(yq -r '.version' $CHART_FILE)
       if [[ -f "$CHART_FILE" ]]; then
         yq -i ".version = \"$(semver $CURRENT_CHART_VERSION -i $RELEASE_CHART_SEMVER )\"" "$CHART_FILE"
+        git add "$CHART_FILE"
       fi      
 # push new version
 - script: |
