@@ -97,9 +97,8 @@ stages:
                     VALUE_FILE: "helm/values-dev.yaml"
                     GREEN_VERSION: $(Build.SourceVersion)
                     
-  # Deploy
-  - stage: "Deploy_UAT_Blue"
-    displayName: 'UAT blue deployment'
+  - stage: "Build_UAT_Blue"
+    displayName: 'Build blue version for UAT'
     dependsOn: []
     condition:
       and(
@@ -125,8 +124,14 @@ stages:
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
           - template: templates/node-github-current-version/template.yaml@pagopaCommons
+
+  - stage: "Deploy_UAT_Blue"
+    displayName: 'UAT blue deployment'
+    dependsOn: Build_UAT_Blue
+    variables:
+      current_version: $[ stageDependencies.Build_UAT_Blue.build.outputs['current_version.value'] ]
+    jobs:
       - deployment: "Blue_deployment"
-        dependsOn: "build"
         displayName: "Blue deployment"
         pool:
           name: pagopa-uat-linux
