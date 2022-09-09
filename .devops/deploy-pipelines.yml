@@ -170,9 +170,6 @@ stages:
                       fi
                       helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
                       helm dep build helm
-                - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
-                  parameters:
-                    DEPLOY_VERSION: $(green_version)  
                 - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
                     DO_DEPLOY: true
