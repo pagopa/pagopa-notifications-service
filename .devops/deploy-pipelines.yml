@@ -217,7 +217,7 @@ stages:
         - task: Docker@2
           displayName: "docker login"
           inputs:
-            containerRegistry: "${{ parameters.CONTAINER_REGISTRY_SERVICE_CONN }}"
+            containerRegistry: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
             command: "login"
         - task: Bash@3
           displayName: "docker build and push (force)"
