@@ -12,6 +12,13 @@ parameters:
   - minor
   - patch
   - prerelease
+# Versioning parameters
+- name: 'release_chart_semver'
+  type: string
+  values:
+  - major
+  - minor
+  - patch
 
 # This is the branch in which we will push the release tag.
 # It'll be master, but it can be overridden
@@ -61,7 +68,7 @@ steps:
   displayName: 'Set release variables'
 
 - task: Bash@3
-  displayName: Update Version Helm
+  displayName: Update app Version Helm
   name: update_version_helm
   inputs:
     targetType: 'inline'
@@ -74,10 +81,28 @@ steps:
       done
       CHART_FILE="helm/Chart.yaml"
       if [[ -f "$CHART_FILE" ]]; then
-        yq -i ".version = \"$(next_version.value)\"" "$CHART_FILE"
         yq -i ".appVersion = \"$(next_version.value)\"" "$CHART_FILE"
         git add "$CHART_FILE"
       fi
+- task: Bash@3
+  name: setup_semver_utility
+  displayName: 'Setup semver utility'
+  inputs:
+    targetType: "inline"
+    script: |
+      yarn global add semver
+- task: Bash@3
+  name: update_chart_version
+  displayName: 'Setup helm microservice chart'
+  inputs:
+    targetType: "inline"
+    script: |
+      RELEASE_CHART_SEMVER=${{parameters.RELEASE_CHART_SEMVER}}
+      CHART_FILE="helm/Chart.yaml"
+      CURRENT_CHART_VERSION=$(yq -r '.version' Chart.yaml)
+      if [[ -f "$CHART_FILE" ]]; then
+        yq -i ".version = \"$(semver $CURRENT_CHART_VERSION -i $RELEASE_CHART_SEMVER )\"" "$CHART_FILE"
+      fi      
 # push new version
 - script: |
     git tag $(next_version.value)
