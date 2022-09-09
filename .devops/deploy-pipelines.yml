@@ -126,6 +126,7 @@ stages:
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
           - template: templates/node-github-current-version/template.yaml@pagopaCommons
       - deployment: "Blue_deployment"
+        dependsOn: "build"
         displayName: "Blue deployment"
         pool:
           name: pagopa-uat-linux
