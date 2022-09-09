@@ -100,6 +100,7 @@ stages:
   # Deploy
   - stage: "Deploy_UAT_Beta"
     displayName: 'UAT beta deployment'
+    dependsOn: []
     condition:
       and(
         succeeded(),
