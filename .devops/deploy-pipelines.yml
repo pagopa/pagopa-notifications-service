@@ -155,7 +155,7 @@ stages:
                   inputs:
                     targetType: "inline"
                     script: |
-                      npm install -g semver
+                      yarn global add semver
                 - task: Bash@3
                   name: setup_helm_microservice_chart
                   displayName: 'Setup helm microservice chart'
