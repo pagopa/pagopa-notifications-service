@@ -99,7 +99,7 @@ steps:
     script: |
       RELEASE_CHART_SEMVER=${{parameters.RELEASE_CHART_SEMVER}}
       CHART_FILE="helm/Chart.yaml"
-      CURRENT_CHART_VERSION=$(yq -r '.version' Chart.yaml)
+      CURRENT_CHART_VERSION=$(yq -r '.version' $CHART_FILE)
       if [[ -f "$CHART_FILE" ]]; then
         yq -i ".version = \"$(semver $CURRENT_CHART_VERSION -i $RELEASE_CHART_SEMVER )\"" "$CHART_FILE"
       fi      
