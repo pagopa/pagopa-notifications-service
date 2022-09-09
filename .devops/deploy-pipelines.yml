@@ -123,6 +123,7 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+          - template: templates/node-github-current-version/template.yaml@pagopaCommons
       - deployment: "Blue_deployment"
         displayName: "Blue deployment"
         pool:
@@ -134,8 +135,6 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
-                - template: templates/node-github-current-version/template.yaml@pagopaCommons
-                  name: current_version
                 - template: azure-templates/helm-microservice-chart-deploy.yaml
                   parameters:
                     DO_DEPLOY: true
