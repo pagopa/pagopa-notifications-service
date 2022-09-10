@@ -211,12 +211,20 @@ stages:
       - job: tag_version
         steps:
           - template: templates/node-github-current-version/template.yaml@pagopaCommons
+      - task: Bash@3
+        name: clean_version
+        displayName: "clean version"
+        inputs:
+          targetType: "inline"
+          script: |
+            version=$(echo $current_version.value | sed 's/"//g')
+            echo "##vso[task.setvariable variable=value;isOutput=true]$version"
 
   - stage: "Release_tag_docker"
     displayName: 'Docker tag release'
     dependsOn: Release
     variables:
-      next_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      next_version: $[ stageDependencies.Release.make_release.outputs['clean_version.value'] ]
     jobs:
       - job: "build"
         displayName: 'Build UAT service beta'
