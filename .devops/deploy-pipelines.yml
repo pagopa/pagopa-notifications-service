@@ -222,9 +222,9 @@ stages:
 
   - stage: "Release_tag_docker"
     displayName: 'Docker tag release'
-    dependsOn: Release
-    variables:
-      next_version: $[ stageDependencies.Release.make_release.outputs['clean_version.value'] ]
+    #dependsOn: Release
+    #variables:
+    #  next_version: $[ stageDependencies.Release.make_release.outputs['clean_version.value'] ]
     jobs:
       - job: "build"
         displayName: 'Build UAT service beta'
@@ -234,16 +234,25 @@ stages:
           inputs:
             containerRegistry: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
             command: "login"
+        - template: templates/node-github-current-version/template.yaml@pagopaCommons
+        - task: Bash@3
+          name: clean_version
+          displayName: "clean version"
+          inputs:
+            targetType: "inline"
+            script: |
+              version=$(echo $current_version.value | sed 's/"//g')
+              echo "##vso[task.setvariable variable=value;isOutput=true]$version"    
         - task: Bash@3
           displayName: "docker tag new version"
           inputs:
             targetType: "inline"
             script: |
               docker pull $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion)
-              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(next_version)
+              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(clean_version.value)
               echo "clean version"
               echo $clean_version
-              docker push $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(clean_version)
+              docker push $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(clean_version.value)
 
   - stage: "Deploy_UAT_Green"
     displayName: 'UAT green deployment'
