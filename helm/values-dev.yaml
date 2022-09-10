@@ -2,9 +2,31 @@ microservice-chart:
   namespace: "shared"
   nameOverride: ""
   fullnameOverride: ""
+  canaryDelivery:
+    create: false
+    ingress:
+      create: true
+      canary:
+        type: bluegreen
+    service:
+      create: true
+    deployment:
+      create: true
+      image:
+        repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
+        tag: "0.0.56"
+        pullPolicy: Always
+      envConfig:
+        NOTIFICATIONS_EMAIL_ENABLED: "true"
+        AWS_SES_REGION: "eu-south-1"
+        CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
+        CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
+      envSecret:
+        AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
+        AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
   image:
     repository: pagopadcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.0.57"
+    tag: "0.0.56"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -79,8 +101,3 @@ microservice-chart:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-  canaryDelivery:
-    create: false
-    deployment:
-      image:
-        tag: 0.0.57
