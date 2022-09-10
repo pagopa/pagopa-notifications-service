@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: pagopadcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.0.57"
+    tag: "0.0.56"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -80,6 +80,7 @@ microservice-chart:
   tolerations: []
   affinity: {}
   canaryDelivery:
+    create: false
     deployment:
       image:
-        tag: 0.0.57
+        tag: 0.0.56
