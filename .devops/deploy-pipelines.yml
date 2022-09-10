@@ -92,9 +92,14 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
-                - template: templates/helm-microservice-chart-setup/template.yaml@pagopaCommons
-                  parameters:
-                    DEPLOY_VERSION: $(Build.SourceVersion)
+                - task: Bash@3
+                  name: update_chart_version
+                  displayName: 'Setup helm microservice chart'
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+                      helm dep build helm
                 - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
                     DO_DEPLOY: true
