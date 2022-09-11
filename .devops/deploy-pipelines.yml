@@ -195,10 +195,10 @@ stages:
           name: pagopa-uat-linux
         steps:
           - script: |
-              docker build -t api-tests-image tests/api-tests
+              docker build -t api-tests-im tests/api-tests
             displayName: 'Build docker test image'
           - script: |
-              docker run --name=api-tests-container api-tests-image
+              docker run --name=api-tests-con api-tests-im
             displayName: 'Run API test container'
             continueOnError: true 
           - script: |
@@ -206,11 +206,11 @@ stages:
             displayName: 'Copy test result'
             continueOnError: true 
           - script: |
-              docker rm api-tests-container
+              docker rm api-tests-con
             displayName: 'remove test container'
             continueOnError: true
           - script: |
-              docker rmi api-tests-image
+              docker rmi api-tests-im
             displayName: 'remove test imager'   
             continueOnError: true   
           - task: PublishTestResults@2
