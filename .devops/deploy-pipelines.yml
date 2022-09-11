@@ -191,7 +191,8 @@ stages:
             onTimeout: 'skip'
       - job: API_tests
         displayName: API test for blue deploy approval
-        timeoutInMinutes: 4320 # 3 days
+        pool:
+          name: pagopa-uat-linux
         steps:
           - script: |
               sleep 60
