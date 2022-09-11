@@ -195,14 +195,15 @@ stages:
           name: pagopa-uat-linux
         steps:
           - script: |
-              sleep 60
-            displayName: 'Waiting App running'
+              docker build -t api-tests-image tests/api-tests
+            displayName: 'Build docker test image'
           - script: |
-              yarn global add newman
-            displayName: 'newman installation'
+              docker run --name=api-tests-container api-tests-image
+            displayName: 'Run API test container'
+            continueOnError: true 
           - script: |
-              newman run tests/api-tests/notifications-service.api.tests.json --environment=tests/api-tests/dev.env.json --reporters cli,junit --reporter-junit-export Results/api-TEST.xml     
-            displayName: 'Run api test on blue app'
+              docker cp api-tests-container:/puppeteer/test_reports  test_reports
+            displayName: 'Copy test result'
             continueOnError: true 
           - task: PublishTestResults@2
             inputs:

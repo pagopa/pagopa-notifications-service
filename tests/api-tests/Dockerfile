@@ -6,4 +6,4 @@ COPY --chown=node:node . .
 RUN yarn global add newman
 USER node
 
-CMD newman run notifications-service.api.tests.json --environment=dev.env.json --reporters cli
+CMD newman run notifications-service.api.tests.json --environment=dev.env.json --reporters cli,junit --reporter-junit-export Results/api-TEST.xml     
