@@ -191,33 +191,22 @@ stages:
             onTimeout: 'skip'
       - job: API_tests
         displayName: API test for blue deploy approval
-        pool:
-          name: pagopa-uat-linux
         steps:
           - script: |
-              docker build -t api-tests-im tests/api-tests
-            displayName: 'Build docker test image'
+              sleep 60
+            displayName: 'Waiting App running'
           - script: |
-              docker run --name=api-tests-con api-tests-im
-            displayName: 'Run API test container'
+              yarn global add newman
+            displayName: 'newman installation'
+          - script: |
+              newman run tests/api-tests/notifications-service.api.tests.json --environment=tests/api-tests/dev.env.json --reporters cli,junit --reporter-junit-export Results/api-TEST.xml     
+            displayName: 'Run api test on blue app'
             continueOnError: true 
-          - script: |
-              docker cp api-tests-container:/puppeteer/test_reports  test_reports
-            displayName: 'Copy test result'
-            continueOnError: true 
-          - script: |
-              docker rm api-tests-con
-            displayName: 'remove test container'
-            continueOnError: true
-          - script: |
-              docker rmi api-tests-im
-            displayName: 'remove test imager'   
-            continueOnError: true   
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: 'JUnit'
               testResultsFiles: '**/*-TEST.xml' 
-              searchFolder: '$(System.DefaultWorkingDirectory)'       
+              searchFolder: '$(System.DefaultWorkingDirectory)'          
 
   - stage: Release
     dependsOn: Bluegreen_WaitForApproval
