@@ -180,7 +180,7 @@ stages:
     dependsOn: Deploy_UAT_Blue
     jobs:
       - job: Bluegreen_WaitForApproval
-        displayName: Wait for blue deploy approval
+        displayName: Manual blue deploy approval
         pool: server
         timeoutInMinutes: 4320 # 3 days
         steps:
@@ -188,6 +188,19 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             onTimeout: 'skip'
+      - job: API_tests
+        displayName: API test for blue deploy approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+        - task: Bash@3
+          name: Run_API_tests
+          displayName: 'Running api test'
+          inputs:
+            targetType: "inline"
+            script: |
+              yarn global add newman
+              newman run notifications-service.api.tests.json --environment=dev.env.json --reporters cli     
 
   - stage: Release
     dependsOn: Bluegreen_WaitForApproval
