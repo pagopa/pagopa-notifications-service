@@ -205,6 +205,14 @@ stages:
               docker cp api-tests-container:/puppeteer/test_reports  test_reports
             displayName: 'Copy test result'
             continueOnError: true 
+          - script: |
+              docker rm api-tests-container
+            displayName: 'remove test container'
+            continueOnError: true
+          - script: |
+              docker rmi api-tests-image
+            displayName: 'remove test imager'   
+            continueOnError: true   
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: 'JUnit'
