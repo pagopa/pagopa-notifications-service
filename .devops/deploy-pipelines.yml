@@ -190,7 +190,6 @@ stages:
             onTimeout: 'skip'
       - job: API_tests
         displayName: API test for blue deploy approval
-        pool: server
         timeoutInMinutes: 4320 # 3 days
         steps:
           - script: |
