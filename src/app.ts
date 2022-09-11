@@ -11,6 +11,7 @@ import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
 import { healthController } from "./controllers/HealthControllers";
+import { addRetryQueueListener } from "./queues/RetryQueueListener";
 /**
  * Define and start an express Server
  * to expose RESTful and SOAP endpoints for BackendApp and Proxy requests.
@@ -72,6 +73,8 @@ export const startApp = async (
   });
   const server = http.createServer(app);
   server.listen(config.PORT);
+
+  addRetryQueueListener(config, mailTrasporter, browserEngine);
 
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service Server started at https://localhost:${config.PORT} ⚡️⚡️⚡️⚡️⚡️`

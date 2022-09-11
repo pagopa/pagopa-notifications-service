@@ -39,7 +39,11 @@ export const IConfig = t.interface({
   AWS_SES_SECRET_ACCESS_KEY: t.string,
   CLIENT_ECOMMERCE: NotificationsServiceClientConfig,
   CLIENT_PAYMENT_MANAGER: NotificationsServiceClientConfig,
-  PORT: t.number
+  INITIAL_RETRY_TIMEOUT_SECONDS: t.number,
+  MAX_RETRY_ATTEMPTS: t.number,
+  PORT: t.number,
+  RETRY_QUEUE_NAME: t.string,
+  STORAGE_CONNECTION_STRING: t.string
 });
 
 // No need to re-evaluate this object for each call
@@ -49,6 +53,12 @@ const envConfig = {
   CLIENT_PAYMENT_MANAGER: JSON.parse(
     process.env.CLIENT_PAYMENT_MANAGER || "{}"
   ),
+  INITIAL_RETRY_TIMEOUT_SECONDS: process.env.INITIAL_RETRY_TIMEOUT_SECONDS
+    ? parseInt(process.env.INITIAL_RETRY_TIMEOUT_SECONDS, 10)
+    : 120,
+  MAX_RETRY_ATTEMPTS: process.env.MAX_RETRY_ATTEMPTS
+    ? parseInt(process.env.MAX_RETRY_ATTEMPTS, 10)
+    : 3,
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 };
 
