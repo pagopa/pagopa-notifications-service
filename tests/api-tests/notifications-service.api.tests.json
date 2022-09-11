@@ -41,7 +41,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"from\": \"ecommerce-test-mailgroup@pagopa.it\",\n  \"to\": \"ecommerce-test-mailgroup@pagopa.it\",\n  \"templateId\": \"poc-1\",\n  \"pspName\": \"test\",\n  \"amount\": 100,\n  \"transactionId\": true\n}",
+					"raw": "{\n  \"from\": \"test@test.it\",\n  \"to\": \"test@test.it\",\n  \"templateId\": \"poc-1\",\n  \"pspName\": \"test\",\n  \"amount\": 100,\n  \"transactionId\": true\n}",
 					"options": {
 						"raw": {
 							"language": "json"

@@ -18,8 +18,8 @@ export function setup() {
 export default function () {
     const urlBasePath = __ENV.URL_BASE_PATH
     const bodyRequest =  {
-      from: "ecommerce-test-mailgroup@pagopa.it",
-      to: "ecommerce-test-mailgroup@pagopa.it",
+      from: "test@test.it",
+      to: "test@test.it",
       templateId: "poc-1",
       pspName: "pspName",
       amount: 100,
