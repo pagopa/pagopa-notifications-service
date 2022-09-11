@@ -177,7 +177,7 @@ stages:
 
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
-    dependsOn: Deploy_UAT_Blue
+    #dependsOn: Deploy_UAT_Blue
     jobs:
       - job: Bluegreen_WaitForApproval
         displayName: Manual blue deploy approval
@@ -193,14 +193,21 @@ stages:
         pool: server
         timeoutInMinutes: 4320 # 3 days
         steps:
-        - task: Bash@3
-          name: Run_API_tests
-          displayName: 'Running api test'
-          inputs:
-            targetType: "inline"
-            script: |
+          - script: |
+              sleep 60
+            displayName: 'Waiting App running'
+          - script: |
               yarn global add newman
-              newman run notifications-service.api.tests.json --environment=dev.env.json --reporters cli     
+            displayName: 'newman installation'
+          - script: |
+              newman run tests/api-tests/notifications-service.api.tests.json --environment=tests/api-tests/dev.env.json --reporters cli,junit --reporter-junit-export Results/api-TEST.xml     
+            displayName: 'Run api test on blue app'
+            continueOnError: true 
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/*-TEST.xml' 
+              searchFolder: '$(System.DefaultWorkingDirectory)'       
 
   - stage: Release
     dependsOn: Bluegreen_WaitForApproval
