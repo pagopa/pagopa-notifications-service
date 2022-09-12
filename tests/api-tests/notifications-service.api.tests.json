@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d3cebe90-0ec1-4926-8c70-639c36281275",
+		"_postman_id": "e8ef7cfc-a916-4524-9555-dc05de108073",
 		"name": "Notification API",
 		"description": "API to support notifications",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -36,6 +36,11 @@
 						"key": "ocp-apim-subscription-key",
 						"value": "{{NOTIFICATIONS_SERVICE_TESTING_API_KEY}}",
 						"type": "text"
+					},
+					{
+						"key": "blue-hostname",
+						"value": "https://weuuat.shared.internal.uat.platform.pagopa.it/beta/pagopa-notifications-service",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -58,6 +63,42 @@
 				}
 			},
 			"response": [
+				{
+					"name": "Email notification started",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"from\": \"elit anim in id exercitation\",\n  \"to\": \"id ut pariatur laboris\",\n  \"templateId\": \"sed irure aliquip sit\",\n  \"pspName\": \"pariatur tempor \",\n  \"amount\": -69783558,\n  \"transactionId\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emails",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"emails"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"importoSingoloVersamento\": 200\n}"
+				},
 				{
 					"name": "Invalid input",
 					"originalRequest": {
@@ -129,42 +170,6 @@
 					],
 					"cookie": [],
 					"body": ""
-				},
-				{
-					"name": "Email notification started",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"from\": \"elit anim in id exercitation\",\n  \"to\": \"id ut pariatur laboris\",\n  \"templateId\": \"sed irure aliquip sit\",\n  \"pspName\": \"pariatur tempor \",\n  \"amount\": -69783558,\n  \"transactionId\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/emails",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"emails"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"importoSingoloVersamento\": 200\n}"
 				}
 			]
 		}
