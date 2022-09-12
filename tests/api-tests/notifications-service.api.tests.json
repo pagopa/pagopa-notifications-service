@@ -45,7 +45,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"from\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"to\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"templateId\": \"poc-1\",\n  \"pspName\": \"test\",\n  \"amount\": 100,\n  \"transactionId\": true\n}",
+					"raw": "{\n  \"from\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"to\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"templateId\": \"poc-2\",\n  \"pspName\": \"test\",\n  \"amount\": 100,\n  \"transactionId\": true\n}",
 					"options": {
 						"raw": {
 							"language": "json"
