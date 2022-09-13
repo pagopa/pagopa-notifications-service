@@ -1,49 +1,157 @@
 {
-  "transaction": {
-    "id": "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
-    "timestamp": "2020-07-10 15:00:00.000",
-    "amount": "300,00",
-    "psp": {
-      "name": "Nexi",
-      "fee": {
-        "amount": "2,00"
-      }
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "success",
+  "type": "object",
+  "properties": {
+    "transaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "psp": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "fee": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": ["amount"]
+            }
+          },
+          "required": ["name", "fee"]
+        },
+        "rrn": {
+          "type": "string"
+        },
+        "authCode": {
+          "type": "string"
+        },
+        "paymentMethod": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "logo": {
+              "type": "string"
+            },
+            "accountHolder": {
+              "type": "string"
+            },
+            "extraFee": {
+              "type": "boolean"
+            }
+          },
+          "required": ["name"]
+        }
+      },
+      "required": [
+        "id",
+        "timestamp",
+        "amount",
+        "psp",
+        "rrn",
+        "authCode",
+        "paymentMethod"
+      ]
     },
-    "rrn": "1234567890",
-    "authCode": "9999999999",
-    "paymentMethod": {
-      "name": "Visa *1234",
-      "logo": "https://...",
-      "accountHolder": "Marzia Roccaraso",
-      "extraFee": false
+    "user": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "properties": {
+            "firstName": {
+              "type": "string"
+            },
+            "lastName": {
+              "type": "string"
+            },
+            "taxCode": {
+              "type": "string"
+            }
+          },
+          "required": ["firstName", "lastName", "taxCode"]
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": ["email"]
+    },
+    "cart": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "additionalItems": false,
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "refNumber": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "enum": ["codiceAvviso", "IUV"]
+                    },
+                    "number": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["type", "number"]
+                },
+                "debtor": {
+                  "type": "object",
+                  "properties": {
+                    "fullName": {
+                      "type": "string"
+                    },
+                    "taxCode": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["fullName", "taxCode"]
+                },
+                "payee": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "taxCode": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["name", "taxCode"]
+                },
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": ["refNumber", "payee", "amount"]
+            }
+          ]
+        },
+        "amountPartial": {
+          "type": "string"
+        }
+      },
+      "required": ["items", "amountPartial"]
     }
   },
-  "user": {
-    "data": {
-      "firstName": "Marzia",
-      "lastName": "Roccaraso",
-      "taxCode": "RCCMRZ88A52C409A"
-    },
-    "email": "nome.cognome@pagopa.it"
-  },
-  "cart": {
-    "items": [
-      {
-        "refNumber": {
-          "type": "codiceAvviso",
-          "number": "123456789012345678"
-        },
-        "debtor": {
-          "fullName": "Giuseppe Bianchi",
-          "taxCode": "BNCGSP70A12F205X"
-        },
-        "payee": {
-          "name": "Comune di Controguerra",
-          "taxCode": 82001760675
-        },
-        "amount": "150,00"
-      }
-    ],
-    "amountPartial": "300,00"
-  }
+  "required": ["transaction", "user", "cart"]
 }

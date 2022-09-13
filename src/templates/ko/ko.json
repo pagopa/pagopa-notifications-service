@@ -1,7 +1,28 @@
 {
-  "transaction": {
-    "id": "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
-    "timestamp": "2020-07-10 15:00:00.000",
-    "amount": "300,00"
-  }
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "transaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "timestamp",
+        "amount"
+      ]
+    }
+  },
+  "required": [
+    "transaction"
+  ]
 }
