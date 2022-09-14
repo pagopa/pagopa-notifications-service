@@ -7,6 +7,7 @@ import * as AWS from "aws-sdk";
 import * as nodemailer from "nodemailer";
 import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
+import * as ai from "applicationinsights";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
@@ -50,9 +51,6 @@ export const startApp = async (
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup express app ⚡️⚡️⚡️⚡️⚡️`
   );
-
-  trackServiceStartup();
-  trackTrace("TEST APPLICATION INSIGHT SDK");
 
   const app: express.Express = express();
   app.set("port", config.PORT);

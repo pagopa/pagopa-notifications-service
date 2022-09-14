@@ -21,7 +21,10 @@ export const trackServiceStartup = (): void => {
   });
 };
 
-export const trackTrace = (message: string): void => {
+export const trackTrace = (
+  message: string,
+  severity?: ai.Contracts.SeverityLevel
+): void => {
   const telemetryClient: ai.TelemetryClient = getTelemetryClient();
-  telemetryClient.trackTrace({ message });
+  telemetryClient.trackTrace({ message, severity });
 };
