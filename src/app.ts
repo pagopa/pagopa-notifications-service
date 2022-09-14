@@ -7,14 +7,12 @@ import * as AWS from "aws-sdk";
 import * as nodemailer from "nodemailer";
 import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
-import { ApplicationInsightsConfig } from "@pagopa/ts-commons/lib/appinsights";
-import * as packageJson from "../package.json";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
 import { healthController } from "./controllers/HealthControllers";
 import { addRetryQueueListener } from "./queues/RetryQueueListener";
-import { initAppInsights } from "./util/appInsights";
+import { trackServiceStartup, trackTrace } from "./util/appInsights";
 
 /**
  * Define and start an express Server
@@ -49,17 +47,13 @@ export const startApp = async (
     SES: new AWS.SES(SES_CONFIG)
   });
 
-  const aiConfig: ApplicationInsightsConfig = {
-    cloudRole: packageJson.name,
-    disableAppInsights: config.AI_ENABLED === true,
-    samplingPercentage: config.AI_SAMPLING_PERCENTAGE
-  };
-
-  initAppInsights(config.AI_INSTRUMENTATION_KEY, aiConfig);
-
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup express app ⚡️⚡️⚡️⚡️⚡️`
   );
+
+  trackServiceStartup();
+  trackTrace("TEST APPLICATION INSIGHT SDK");
+
   const app: express.Express = express();
   app.set("port", config.PORT);
 

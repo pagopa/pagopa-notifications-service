@@ -53,6 +53,12 @@ export const IConfig = t.interface({
 // No need to re-evaluate this object for each call
 const envConfig = {
   ...process.env,
+  AI_ENABLED: process.env.AI_ENABLED
+    ? process.env.AI_ENABLED === "true"
+    : false,
+  AI_SAMPLING_PERCENTAGE: process.env.AI_SAMPLING_PERCENTAGE
+    ? parseInt(process.env.AI_SAMPLING_PERCENTAGE, 10)
+    : 30,
   CLIENT_ECOMMERCE: JSON.parse(process.env.CLIENT_ECOMMERCE || "{}"),
   CLIENT_PAYMENT_MANAGER: JSON.parse(
     process.env.CLIENT_PAYMENT_MANAGER || "{}"
