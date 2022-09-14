@@ -7,13 +7,11 @@ import * as AWS from "aws-sdk";
 import * as nodemailer from "nodemailer";
 import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
-import * as ai from "applicationinsights";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
 import { healthController } from "./controllers/HealthControllers";
 import { addRetryQueueListener } from "./queues/RetryQueueListener";
-import { trackServiceStartup, trackTrace } from "./util/appInsights";
 
 /**
  * Define and start an express Server
