@@ -7,11 +7,15 @@ import * as AWS from "aws-sdk";
 import * as nodemailer from "nodemailer";
 import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
+import { ApplicationInsightsConfig } from "@pagopa/ts-commons/lib/appinsights";
+import * as packageJson from "../package.json";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
 import { healthController } from "./controllers/HealthControllers";
 import { addRetryQueueListener } from "./queues/RetryQueueListener";
+import { initAppInsights } from "./util/appInsights";
+
 /**
  * Define and start an express Server
  * to expose RESTful and SOAP endpoints for BackendApp and Proxy requests.
@@ -34,6 +38,7 @@ export const startApp = async (
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup AWS mail mailTrasporter ⚡️⚡️⚡️⚡️⚡️`
   );
+
   const SES_CONFIG = {
     accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
     region: config.AWS_SES_REGION,
@@ -43,6 +48,14 @@ export const startApp = async (
   const mailTrasporter: Transporter = nodemailer.createTransport({
     SES: new AWS.SES(SES_CONFIG)
   });
+
+  const aiConfig: ApplicationInsightsConfig = {
+    cloudRole: packageJson.name,
+    disableAppInsights: config.AI_ENABLED === true,
+    samplingPercentage: config.AI_SAMPLING_PERCENTAGE
+  };
+
+  initAppInsights(config.AI_INSTRUMENTATION_KEY, aiConfig);
 
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup express app ⚡️⚡️⚡️⚡️⚡️`

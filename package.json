@@ -46,6 +46,7 @@
     "@aws-sdk/client-ses": "^3.131.0",
     "@azure/storage-queue": "^12.0.0",
     "@pagopa/ts-commons": "^10.7.1",
+    "applicationinsights": "^2.3.4",
     "aws-sdk": "^2.1176.0",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",

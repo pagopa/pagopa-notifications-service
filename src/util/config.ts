@@ -34,6 +34,9 @@ export const NotificationsServiceClientType = enumType<
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;
 export const IConfig = t.interface({
+  AI_ENABLED: t.boolean,
+  AI_INSTRUMENTATION_KEY: t.string,
+  AI_SAMPLING_PERCENTAGE: t.number,
   AWS_SES_ACCESS_KEY_ID: t.string,
   AWS_SES_REGION: t.string,
   AWS_SES_SECRET_ACCESS_KEY: t.string,
