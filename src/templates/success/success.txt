@@ -1,0 +1,85 @@
+** Hai inviato un pagamento di {{transaction.amount}} € tramite pagoPA **
+Il tuo pagamento è andato a buon fine. Ecco i dettagli dell'operazione.
+
+{{!-- Don't remove extra lines between built-in helpers (if/with/each/etc…).
+They are placed there to ensure the right spacing between blocks
+in all the possible combinations --}}
+
+{{!-- Show transaction subject if there aren't multiple cart items
+AND transaction subject is set --}}
+{{#eq cart.items.length 1}}
+  {{#if cart.items.[0].subject}} 
+- - - - - - - - - - -
+
+Oggetto del pagamento:
+{{cart.items.[0].subject}}
+  {{/if}}
+{{/eq}}
+{{!-- End condition --}}
+
+- - - - - - - - - - -
+
+{{!-- Show the following key value pair if user is authenticated  --}}
+{{#with user.data}}
+Pagato da: {{firstName}} {{lastName}} ({{taxCode}})
+{{/with}}
+Indirizzo email: {{user.email}}
+ID transazione (RRN): {{transaction.rrn}}
+Codice autorizzativo: {{transaction.authCode}}
+Metodo di pagamento: {{transaction.paymentMethod.name}}
+{{#if transaction.paymentMethod.accountHolder}}
+Intestato a: {{transaction.paymentMethod.accountHolder}}
+{{/if}}
+Gestore della transazione (PSP): {{transaction.psp.name}}
+Data e ora: {{transaction.timestamp}}
+
+- - - - - - - - - - -
+
+{{#each cart.items}}
+  {{#with this.debtor}}
+Debitore: {{fullName}} {{#if taxCode}}({{taxCode}}){{/if}}
+  {{/with}}
+Ente creditore: {{this.payee.name}}
+Codice Fiscale ente: {{this.payee.taxCode}}
+  {{#eq this.refNumber.type "codiceAvviso"}}
+Codice Avviso: {{this.refNumber.value}}
+  {{/eq}}
+  {{#eq this.refNumber.type "IUV"}}
+IUV: {{this.refNumber.value}}
+  {{/eq}}
+  {{#not @root.cart.items.length 1}}
+Oggetto del pagamento: {{this.subject}}
+  {{/not}}
+Importo: {{this.amount}}
+
+{{/each}}
+{{#not cart.items.length 1}}
+Importo parziale: {{cart.amountPartial}} €
+
+{{/not}}
+Commissione (applicata da {{transaction.psp.name}}): {{transaction.psp.fee.amount}} €
+
+Totale: {{transaction.amount}} €
+{{#if transaction.paymentMethod.extraFee}}
+
+Il totale non include eventuali costi di invio bonifico, se applicati dal gestore della transazione (PSP). Per maggiori informazioni, rivolgiti alla tua banca.
+{{/if}}
+
+- - - - - - - - - - -
+{{#if user.data.taxCode}}
+
+Poiché hai effettuato questo pagamento tramite uno strumento tracciabile, puoi usare questa e-mail come ricevuta per le tue detrazioni o deduzioni fiscali.
+
+- - - - - - - - - - -
+{{/if}}
+
+Serve aiuto?
+
+Contatta il servizio di assistenza all'indirizzo https://pagopa.gov.it/assistenza e comunica il codice transazione: {{transaction.id}}.
+
+Non rispondere a questa email. Questa casella di posta è utilizzata solo per l’invio della presente mail e, non essendo monitorata, non riceveresti risposta.
+
+- - - - - - - - - - -
+
+A presto,
+il team di pagoPA
