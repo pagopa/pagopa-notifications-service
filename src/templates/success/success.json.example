@@ -31,7 +31,7 @@
       {
         "refNumber": {
           "type": "codiceAvviso",
-          "number": "123456789012345678"
+          "value": "123456789012345678"
         },
         "debtor": {
           "fullName": "Giuseppe Bianchi",
@@ -41,6 +41,7 @@
           "name": "Comune di Controguerra",
           "taxCode": 82001760675
         },
+        "subject": "TARI 2022",
         "amount": "150,00"
       }
     ],

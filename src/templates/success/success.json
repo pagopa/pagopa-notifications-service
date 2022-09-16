@@ -108,11 +108,11 @@
                     "type": {
                       "enum": ["codiceAvviso", "IUV"]
                     },
-                    "number": {
+                    "value": {
                       "type": "string"
                     }
                   },
-                  "required": ["type", "number"]
+                  "required": ["type", "value"]
                 },
                 "debtor": {
                   "type": "object",
@@ -137,6 +137,9 @@
                     }
                   },
                   "required": ["name", "taxCode"]
+                },
+                "subject": {
+                  "type": "string"
                 },
                 "amount": {
                   "type": "string"
