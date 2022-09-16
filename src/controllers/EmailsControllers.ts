@@ -36,6 +36,7 @@ import { logger } from "../util/logger";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
+import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -177,8 +178,12 @@ export const sendEmail = async (
               }
             );
           } else {
-            logger.error(`Message failed too many times, skipping send`);
+            logger.error(
+              `Message failed too many times, adding to error queue`
+            );
             logger.error(JSON.stringify(params));
+
+            await sendMessageToErrorQueue(params);
           }
 
           return O.none;
