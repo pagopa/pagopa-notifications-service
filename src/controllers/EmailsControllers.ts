@@ -25,6 +25,7 @@ import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import { Browser } from "puppeteer";
+import MimeNode = require("nodemailer/lib/mime-node");
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import {
   IConfig,
@@ -78,6 +79,17 @@ const sendEmailWithAWS = async (
 
   return messageInfoOk;
 };
+const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
+  envelope: {
+    from: "no-reply@pagopa.gov.it",
+    to: [to]
+  } as MimeNode.Envelope,
+  messageId: "mock-id",
+  response: "ok",
+  accepted: [to],
+  rejected: [],
+  pending: []
+});
 
 // eslint-disable-next-line max-params
 export const sendEmail = async (
@@ -148,17 +160,21 @@ export const sendEmail = async (
         );
 
         try {
-          return O.some(
-            await sendEmailWithAWS(
-              params.body.to,
-              params.body.subject,
-              htmlMarkup,
-              textMarkup,
-              mailTrasporter,
-              pdfData,
-              "test.pdf"
-            )
-          );
+          if (clientId !== "CLIENT_ECOMMERCE_TEST") {
+            return O.some(
+              await sendEmailWithAWS(
+                params.body.to,
+                params.body.subject,
+                htmlMarkup,
+                textMarkup,
+                mailTrasporter,
+                pdfData,
+                "test.pdf"
+              )
+            );
+          } else {
+            return O.some(mockedResponse(params.body.to));
+          }
         } catch (e) {
           logger.error(`Error while trying to send email to AWS SES: ${e}`);
 
