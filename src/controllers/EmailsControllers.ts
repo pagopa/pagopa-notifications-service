@@ -66,7 +66,7 @@ const sendEmailWithAWS = async (
 
   const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
     {
-      from: "no-reply@pagopa.gov.it",
+      from: "no-reply@pagopa.it",
       to: recipientEmail,
       subject,
       html: htmlData,
