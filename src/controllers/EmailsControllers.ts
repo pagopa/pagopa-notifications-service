@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable sort-keys */
 /**
  * EmailsControllers
@@ -37,6 +38,9 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const helpers = require("handlebars-helpers")();
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
