@@ -53,6 +53,7 @@ export const IConfig = t.interface({
 const envConfig = {
   ...process.env,
   CLIENT_ECOMMERCE: JSON.parse(process.env.CLIENT_ECOMMERCE || "{}"),
+  CLIENT_ECOMMERCE_TEST: JSON.parse(process.env.CLIENT_ECOMMERCE_TEST || "{}"),
   CLIENT_PAYMENT_MANAGER: JSON.parse(
     process.env.CLIENT_PAYMENT_MANAGER || "{}"
   ),
