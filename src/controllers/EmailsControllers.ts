@@ -178,7 +178,7 @@ export const sendEmail = async (
                     pdfData,
                     "test.pdf"
                   )
-                ),
+                )
             )
           );
         } catch (e) {
