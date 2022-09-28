@@ -118,7 +118,7 @@ stages:
         succeeded(),
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
         or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/CHK-612-pipeline-uat'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
           and(
             startsWith(variables['Build.SourceBranch'], 'refs/tags'),
             endsWith(variables['Build.SourceBranch'], '-RELEASE')
@@ -222,7 +222,7 @@ stages:
                 gitEmail: $(GIT_EMAIL)
                 gitUsername: $(GIT_USERNAME)
                 gitHubConnection: $(GITHUB_CONNECTION)
-                release_branch: CHK-612-pipeline-uat
+                release_branch: main
                 release_chart_semver: '${{ parameters.RELEASE_CHART_SEMVER }}'
           - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
             - template: templates/node-github-current-version/template.yaml@pagopaCommons

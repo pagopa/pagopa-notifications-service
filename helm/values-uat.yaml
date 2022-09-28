@@ -19,6 +19,7 @@ microservice-chart:
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
         AWS_SES_REGION: "eu-south-1"
+        CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
         CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
         CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
         RETRY_QUEUE_NAME: "pagopa-u-weu-shared-notifications-service-retry-queue"
@@ -91,6 +92,7 @@ microservice-chart:
   envConfig:
     NOTIFICATIONS_EMAIL_ENABLED: "true"
     AWS_SES_REGION: "eu-south-1"
+    CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
     CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
     RETRY_QUEUE_NAME: "pagopa-u-weu-shared-notifications-service-retry-queue"
