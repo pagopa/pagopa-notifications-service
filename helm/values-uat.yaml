@@ -1,5 +1,5 @@
 microservice-chart:
-  namespace: "shared"
+  namespace: "ecommerce"
   nameOverride: ""
   fullnameOverride: ""
   canaryDelivery:
@@ -22,8 +22,8 @@ microservice-chart:
         CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
         CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
         CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
-        RETRY_QUEUE_NAME: "pagopa-u-weu-shared-notifications-service-retry-queue"
-        ERROR_QUEUE_NAME: "pagopa-u-weu-shared-notifications-service-errors-queue"
+        RETRY_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-retry-queue"
+        ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue"
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
@@ -38,12 +38,12 @@ microservice-chart:
       port: 3000
     initialDelaySeconds: 60
     failureThreshold: 6
-    periodSeconds: 90
+    periodSeconds: 60
   readinessProbe:
     httpGet:
       path: /health/readiness
       port: 3000
-    initialDelaySeconds: 60
+    initialDelaySeconds: 30
     failureThreshold: 6
     periodSeconds: 10
   service:
@@ -52,7 +52,7 @@ microservice-chart:
     port: 3000
   ingress:
     create: true
-    host: "weuuat.shared.internal.uat.platform.pagopa.it"
+    host: "weuuat.ecommerce.internal.uat.platform.pagopa.it"
     path: /pagopa-notifications-service/(.*)
   serviceAccount:
     create: false
@@ -66,8 +66,8 @@ microservice-chart:
     allowPrivilegeEscalation: false
   resources:
     requests:
-      memory: "96Mi"
-      cpu: "40m"
+      memory: "128Mi"
+      cpu: "150m"
     limits:
       memory: "128Mi"
       cpu: "150m"
@@ -81,8 +81,8 @@ microservice-chart:
         metadata:
           tenantId: 7788edaf-0346-4068-9d79-c868aed15b3d
           subscriptionId: bbe47ad4-08b3-4925-94c5-1278e5819b86
-          resourceGroupName: pagopa-u-shared-sec-rg
-          resourceURI: Microsoft.KeyVault/vaults/pagopa-u-shared-kv
+          resourceGroupName: pagopa-u-ecommerce-sec-rg
+          resourceURI: Microsoft.KeyVault/vaults/pagopa-u-ecommerce-kv
           metricName: ServiceApiHit
           # metricNamespace: Microsoft.KeyVault/vaults
           # metricFilter: namespace eq 'default'
@@ -95,14 +95,14 @@ microservice-chart:
     CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
     CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
-    RETRY_QUEUE_NAME: "pagopa-u-weu-shared-notifications-service-retry-queue"
-    ERROR_QUEUE_NAME: "pagopa-u-weu-shared-notifications-service-errors-queue"
+    RETRY_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-retry-queue"
+    ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue"
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-access-key-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secret-access-key
     STORAGE_CONNECTION_STRING: notifications-service-sa-connection-string
   keyvault:
-    name: "pagopa-u-shared-kv"
+    name: "pagopa-u-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   nodeSelector: {}
   tolerations: []
