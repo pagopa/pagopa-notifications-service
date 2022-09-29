@@ -1,7 +1,7 @@
 FROM node:14.16.0-alpine AS builder
 WORKDIR /app
 COPY . .
-RUN yarn
+RUN yarn install --frozen-lockfile
 RUN yarn generate
 RUN yarn build
 
@@ -13,7 +13,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 COPY --from=builder ./app/dist ./dist
 COPY package* ./
 COPY tsconfig* ./
-RUN yarn install --production
+RUN yarn install --production --frozen-lockfile
 RUN rm -rf dist/__test__
 EXPOSE 3000
 CMD [ "yarn", "start" ]

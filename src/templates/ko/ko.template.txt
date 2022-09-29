@@ -1,0 +1,17 @@
+** Ops! Il pagamento di {{transaction.amount}} € tramite pagoPA non è riuscito **
+
+Il tuo pagamento non è andato a buon fine.
+Non è stato addebitato nessun importo sul metodo di pagamento utilizzato.
+
+- - - - - - - - - - -
+
+Serve aiuto?
+
+Contatta il servizio di assistenza all'indirizzo https://pagopa.gov.it/assistenza e comunica il codice transazione: {{transaction.id}}.
+
+Non rispondere a questa email. Questa casella di posta è utilizzata solo per l’invio della presente mail e, non essendo monitorata, non riceveresti risposta.
+
+- - - - - - - - - - -
+
+A presto,
+il team di pagoPA

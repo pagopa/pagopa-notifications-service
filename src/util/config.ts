@@ -21,7 +21,8 @@ export type NotificationsServiceClientConfig = t.TypeOf<
 >;
 export enum NotificationsServiceClientEnum {
   "CLIENT_PAYMENT_MANAGER" = "CLIENT_PAYMENT_MANAGER",
-  "CLIENT_ECOMMERCE" = "CLIENT_ECOMMERCE"
+  "CLIENT_ECOMMERCE" = "CLIENT_ECOMMERCE",
+  "CLIENT_ECOMMERCE_TEST" = "CLIENT_ECOMMERCE_TEST"
 }
 
 export type NotificationsServiceClientType = t.TypeOf<
@@ -41,6 +42,7 @@ export const IConfig = t.interface({
   AWS_SES_REGION: t.string,
   AWS_SES_SECRET_ACCESS_KEY: t.string,
   CLIENT_ECOMMERCE: NotificationsServiceClientConfig,
+  CLIENT_ECOMMERCE_TEST: NotificationsServiceClientConfig,
   CLIENT_PAYMENT_MANAGER: NotificationsServiceClientConfig,
   ERROR_QUEUE_NAME: t.string,
   INITIAL_RETRY_TIMEOUT_SECONDS: t.number,
@@ -60,6 +62,7 @@ const envConfig = {
     ? parseInt(process.env.AI_SAMPLING_PERCENTAGE, 10)
     : 30,
   CLIENT_ECOMMERCE: JSON.parse(process.env.CLIENT_ECOMMERCE || "{}"),
+  CLIENT_ECOMMERCE_TEST: JSON.parse(process.env.CLIENT_ECOMMERCE_TEST || "{}"),
   CLIENT_PAYMENT_MANAGER: JSON.parse(
     process.env.CLIENT_PAYMENT_MANAGER || "{}"
   ),
