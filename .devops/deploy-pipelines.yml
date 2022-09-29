@@ -216,7 +216,7 @@ stages:
             - template: templates/node-job-setup/template.yaml@pagopaCommons
               parameters:
                 persistCredentials: true
-            - template: azure-templates/node-github-release.yml
+            - template: azure-templates/chart-github-release.yml
               parameters:
                 semver: '${{ parameters.RELEASE_SEMVER }}'
                 gitEmail: $(GIT_EMAIL)
