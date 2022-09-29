@@ -14,7 +14,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-        tag: "0.0.61"
+        tag: "0.1.0"
         pullPolicy: Always
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
@@ -30,7 +30,7 @@ microservice-chart:
         STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.0.61"
+    tag: "0.1.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:

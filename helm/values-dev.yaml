@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: pagopadcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.0.61"
+    tag: "0.1.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -67,7 +67,7 @@ microservice-chart:
           targetValue: "30"
   envConfig:
     NOTIFICATIONS_EMAIL_ENABLED: "true"
-    AWS_SES_REGION: "eu-south-1" 
+    AWS_SES_REGION: "eu-south-1"
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
     CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\"]}"
     CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
@@ -86,4 +86,4 @@ microservice-chart:
   canaryDelivery:
     deployment:
       image:
-        tag: 0.0.61
+        tag: 0.1.0
