@@ -27,7 +27,7 @@ microservice-chart:
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
-        STORAGE_CONNECTION_STRING: notifications-service-sa-connection-string
+        STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
     tag: "0.0.61"
