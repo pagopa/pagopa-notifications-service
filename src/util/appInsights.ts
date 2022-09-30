@@ -14,13 +14,6 @@ export const getTelemetryClient = (): ai.TelemetryClient =>
         samplingPercentage: config.AI_SAMPLING_PERCENTAGE
       }) as unknown) as ai.TelemetryClient);
 
-export const trackServiceStartup = (): void => {
-  const telemetryClient: ai.TelemetryClient = getTelemetryClient();
-  telemetryClient.trackEvent({
-    name: "notifications-service STARTED"
-  });
-};
-
 export const trackTrace = (
   message: string,
   severity?: ai.Contracts.SeverityLevel
