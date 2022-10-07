@@ -36,6 +36,7 @@ export const startApp = async (
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup AWS mail mailTrasporter ⚡️⚡️⚡️⚡️⚡️`
   );
+
   const SES_CONFIG = {
     accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
     region: config.AWS_SES_REGION,
@@ -51,6 +52,7 @@ export const startApp = async (
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup express app ⚡️⚡️⚡️⚡️⚡️`
   );
+
   const app: express.Express = express();
   app.set("port", config.PORT);
 

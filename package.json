@@ -1,6 +1,6 @@
 {
   "name": "pagopa-notifications-service",
-  "version": "0.0.61",
+  "version": "0.1.0",
   "description": "POC for pagopa-notifications-service",
   "repository": "https://github.com/pagopa/pagopa-notifications-service",
   "author": "https://pagopa.gov.it",
@@ -47,6 +47,7 @@
     "@aws-sdk/client-ses": "^3.131.0",
     "@azure/storage-queue": "^12.0.0",
     "@pagopa/ts-commons": "^10.7.1",
+    "applicationinsights": "^2.3.4",
     "aws-sdk": "^2.1176.0",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
