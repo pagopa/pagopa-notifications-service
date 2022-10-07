@@ -35,6 +35,9 @@ export const NotificationsServiceClientType = enumType<
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;
 export const IConfig = t.interface({
+  AI_ENABLED: t.boolean,
+  AI_INSTRUMENTATION_KEY: t.string,
+  AI_SAMPLING_PERCENTAGE: t.number,
   AWS_SES_ACCESS_KEY_ID: t.string,
   AWS_SES_REGION: t.string,
   AWS_SES_SECRET_ACCESS_KEY: t.string,
@@ -52,6 +55,12 @@ export const IConfig = t.interface({
 // No need to re-evaluate this object for each call
 const envConfig = {
   ...process.env,
+  AI_ENABLED: process.env.AI_ENABLED
+    ? process.env.AI_ENABLED === "true"
+    : false,
+  AI_SAMPLING_PERCENTAGE: process.env.AI_SAMPLING_PERCENTAGE
+    ? parseInt(process.env.AI_SAMPLING_PERCENTAGE, 10)
+    : 30,
   CLIENT_ECOMMERCE: JSON.parse(process.env.CLIENT_ECOMMERCE || "{}"),
   CLIENT_ECOMMERCE_TEST: JSON.parse(process.env.CLIENT_ECOMMERCE_TEST || "{}"),
   CLIENT_PAYMENT_MANAGER: JSON.parse(

@@ -73,10 +73,13 @@ microservice-chart:
     CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-2\"]}"
     RETRY_QUEUE_NAME: "pagopa-d-weu-ecommerce-notifications-service-retry-queue"
     ERROR_QUEUE_NAME: "pagopa-d-weu-ecommerce-notifications-service-errors-queue"
+    AI_SAMPLING_PERCENTAGE: "30"
+    AI_ENABLED: "true"
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
     STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
+    AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
   keyvault:
     name: "pagopa-d-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
