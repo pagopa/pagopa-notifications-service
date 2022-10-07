@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "templates/ko/ko.json",
+  "$id": "templates/ko/schema.json",
   "type": "object",
   "properties": {
     "transaction": {

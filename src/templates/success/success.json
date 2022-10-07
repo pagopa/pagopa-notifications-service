@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "templates/success/success.json",
+  "$id": "templates/success/schema.json",
   "title": "success",
   "type": "object",
   "required": ["transaction", "user", "cart"],

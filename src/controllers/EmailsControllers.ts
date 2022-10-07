@@ -38,6 +38,7 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
+import { formatValidationErrors } from "io-ts-reporters";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -304,9 +305,10 @@ export function sendMail(
     pipe(
       req.body,
       NotificationEmailRequest.decode,
-      E.mapLeft(async e =>
-        ResponseErrorFromValidationErrors(NotificationEmailRequest)(e)
-      ),
+      E.mapLeft(async e => {
+        logger.error(formatValidationErrors(e));
+        return ResponseErrorFromValidationErrors(NotificationEmailRequest)(e);
+      }),
       E.bindTo("body"),
       E.bind("clientId", () =>
         pipe(
