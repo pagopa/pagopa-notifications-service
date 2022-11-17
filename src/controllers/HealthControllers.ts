@@ -23,7 +23,7 @@ import { IConfig } from "../util/config";
 import { GetHealthT } from "../generated/definitions/requestTypes";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 
-const checkSESTask = (
+export const checkSESTask = (
   config: IConfig,
   logger: Logger
 ): TE.TaskEither<string, GetSendQuotaCommandOutput> => {

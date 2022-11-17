@@ -1,11 +1,25 @@
 import * as HealthControllers from "../HealthControllers";
 import { Logger } from "winston";
 import * as configuration from "../../util/config";
+import { right } from "fp-ts/lib/Separated";
+import { IResponseSuccessJson } from "@pagopa/ts-commons/lib/responses";
+import { GetHealthT } from "../../generated/definitions/requestTypes";
 
 
 describe("health check", () => {
 
-  var logger : Logger;
+  var logger = {
+    // tslint:disable-next-line: no-console
+    error: jest.fn().mockImplementation(console.log),
+    // tslint:disable-next-line: no-console
+    info: jest.fn().mockImplementation(console.log),
+    // tslint:disable-next-line: no-console
+    verbose: jest.fn().mockImplementation(console.log),
+    // tslint:disable-next-line: no-console
+    warn: jest.fn().mockImplementation(console.log),
+    // tslint:disable-next-line: no-console
+    debug: jest.fn().mockImplementation(console.log)
+  } as unknown as Logger;
 
   var config = {
     AI_ENABLED: false,
@@ -26,7 +40,13 @@ describe("health check", () => {
   } as configuration.IConfig;
 
 
-    it("should return a correct object",async () => {
-      await HealthControllers.getHealth(config, logger);
+    it("should return a right object",async () => {
+      var handler = HealthControllers.getHealth(config, logger);
+
+      var req2 = {} as any;
+
+      const responseErrorValidation2 = await handler(req2);
+
+      expect(responseErrorValidation2.kind).toBe("IResponseErrorGeneric");
     });
 });

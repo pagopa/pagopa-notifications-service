@@ -10,6 +10,8 @@ import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import * as nodemailer from "nodemailer";
 import * as AWS from "aws-sdk";
+import { healthController } from "../controllers/HealthControllers";
+import { SendEmailCommand } from "@aws-sdk/client-ses";
 var browser: Browser;
 
 describe("error queue", () => {
@@ -46,6 +48,5 @@ describe("error queue", () => {
 
     it("sendMessageToErrorQueue", () => {
         RetryQueueListener.addRetryQueueListener(config,mailTrasporter,browser);
-        //expect(errorQueueClient.sendMessage).toBeCalled();
     });
 });
