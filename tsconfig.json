@@ -10,7 +10,12 @@
     "declaration": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "lib": ["dom"]
+    "lib": ["dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": [ "src/*"],
+      "@dist/*":["dist/*"]
+    },
   },
   "include": [
     "src/**/*"

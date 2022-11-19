@@ -12,6 +12,9 @@ import * as nodemailer from "nodemailer";
 import * as AWS from "aws-sdk";
 import { healthController } from "../controllers/HealthControllers";
 import { SendEmailCommand } from "@aws-sdk/client-ses";
+import console from "console";
+import { receiveMessageOnPort } from "worker_threads";
+import { addRetryQueueListener } from "../queues/RetryQueueListener";
 var browser: Browser;
 
 describe("error queue", () => {
@@ -47,6 +50,6 @@ describe("error queue", () => {
       });
 
     it("sendMessageToErrorQueue", () => {
-        RetryQueueListener.addRetryQueueListener(config,mailTrasporter,browser);
+        addRetryQueueListener(config,mailTrasporter,browser);
     });
 });
