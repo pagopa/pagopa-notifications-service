@@ -22,6 +22,8 @@ import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import * as nodemailer from "nodemailer";
 import * as AWS from "aws-sdk";
+import * as puppeteer from "puppeteer";
+  
 
 describe("sendMail", () => {
 
@@ -72,7 +74,7 @@ const mailTrasporter: Transporter = nodemailer.createTransport({
 
 var browser: Browser;
 
-    it("should return IResponseErrorValidation", async () => {
+    xit("should return IResponseErrorValidation", async () => {
       //const errorOrNodoVerificaRPTInput = EmailsController.sendMail(config, mailTrasporter, browser);
       //const req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>> = {};
 
@@ -87,7 +89,7 @@ var browser: Browser;
       expect(responseErrorValidation.kind).toBe("IResponseErrorValidation");
     });
     
-    it("should return Invalid X-Client-Id", async () => {
+    xit("should return Invalid X-Client-Id", async () => {
       //const errorOrNodoVerificaRPTInput = EmailsController.sendMail(config, mailTrasporter, browser);
       //const req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>> = {};
 
@@ -112,28 +114,47 @@ var browser: Browser;
     });
 
     it("should return ok", async () => {
-      //const errorOrNodoVerificaRPTInput = EmailsController.sendMail(config, mailTrasporter, browser);
-      //const req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>> = {};
-      //{name: "pspName", fee:{amount:"100"}, amount: "1200"}
       const transactionMock = {
-        id: "id",
-        timestamp: "timestamp",
-        amount:"1200",
-        psp: {name: "pspName", fee:{amount:"100"}, amount: "1200"},
-        rrn: "testRrn",
-        paymentMethod: {name:"name",logo:"logo",accountHolder:"accHold",extraFee: false},
-        authCode: "authCode"
+        id: "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
+        timestamp: "2020-07-10 15:00:00.000",
+        amount:"300,00",
+        psp: { "name": "Nexi","fee": { "amount": "2,00"}},
+        rrn: "1234567890",
+        paymentMethod: {name:"Visa *1234",logo:"https://...",accountHolder:"Marzia Roccaraso",extraFee: false},
+        authCode: "9999999999"
       };
       const cartMock = {
-        items:[],
-        amountPartial:"1300"
+          items: [
+            {
+              refNumber: {
+                type: "codiceAvviso",
+                value: "123456789012345678"
+              },
+              debtor: {
+                fullName: "Giuseppe Bianchi",
+                taxCode: "BNCGSP70A12F205X"
+              },
+              payee: {
+                name: "Comune di Controguerra",
+                taxCode: 82001760675
+              },
+              subject: "TARI 2022",
+              amount: "150,00"
+            }
+          ],
+          amountPartial: "300,00"
       };
       const userMock = {
+        data: {
+          firstName: "Marzia",
+          lastName: "Roccaraso",
+          taxCode: "RCCMRZ88A52C409A"
+        },
         email: "email@test.it"
       };
       const mockReq = {
-        "transaction": transactionMock,
-        "user":userMock,
+        transaction: transactionMock,
+        user:userMock,
         cart: cartMock
       };
       var reqOk = 
@@ -151,12 +172,15 @@ var browser: Browser;
         sendMail: jest.fn(() => {return sentMessage;})
       } as unknown as Transporter<SESTransport.SentMessageInfo>;
 
+      /*puppeteer.launch({
+        args: ["--no-sandbox"],
+        headless: true
+      }).then(p => browser = p);*/
 
       const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
 
       const responseErrorValidation = await handler(reqOk);
 
-      //expect(responseErrorValidation.kind).toBe("IResponseSuccessJson");
       expect(responseErrorValidation.detail).toBe("IResponseSuccessJson");
     });
 

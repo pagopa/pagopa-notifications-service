@@ -119,7 +119,7 @@ export const sendEmail = async (
     )
     .toString();
   const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
-
+  
   const pathExists = O.fromPredicate((path: string) => fs.existsSync(path));
 
   const pdfTemplate = pipe(
@@ -129,6 +129,8 @@ export const sendEmail = async (
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
+  console.log(schema);
+  console.log(schema.default);
   return pipe(
     params.body.parameters,
     schema.default.decode,
