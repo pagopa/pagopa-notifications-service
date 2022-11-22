@@ -1,7 +1,7 @@
 import * as RetryQueueListener from "../queues/RetryQueueListener"
 import { TypeofApiParams } from "@pagopa/ts-commons/lib/requests";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
-import { errorQueueClient } from "../util/queues";
+import { errorQueueClient, retryQueueClient } from "../util/queues";
 import { Logger } from "winston";
 import * as configuration from "../util/config";
 import { Browser } from "puppeteer";
@@ -12,9 +12,9 @@ import * as nodemailer from "nodemailer";
 import * as AWS from "aws-sdk";
 import { healthController } from "../controllers/HealthControllers";
 import { SendEmailCommand } from "@aws-sdk/client-ses";
-import console from "console";
 import { receiveMessageOnPort } from "worker_threads";
 import { addRetryQueueListener } from "../queues/RetryQueueListener";
+import { QueueReceiveMessageResponse } from "@azure/storage-queue";
 var browser: Browser;
 
 describe("error queue", () => {
@@ -50,6 +50,10 @@ describe("error queue", () => {
       });
 
     it("sendMessageToErrorQueue", () => {
+        const spyReceiveMessages = jest.spyOn(retryQueueClient,'receiveMessages').mockResolvedValue({} as QueueReceiveMessageResponse);
         addRetryQueueListener(config,mailTrasporter,browser);
+        retryQueueClient.receiveMessages({});
+        expect(spyReceiveMessages).toBeCalled();
+        retryQueueClient.clearMessages();
     });
 });

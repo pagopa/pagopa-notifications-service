@@ -9,7 +9,8 @@ import { rootCertificates } from "tls";
 describe("error queue", () => {
     
     it("sendMessageToErrorQueue", () => {
+        const spySendMessages = jest.spyOn(errorQueueClient,'sendMessage');
         ErrorQueue.sendMessageToErrorQueue({} as TypeofApiParams<SendNotificationEmailT>);
-        //expect(errorQueueClient.sendMessage).toBeCalled();
+        expect(spySendMessages).toBeCalled();
     });
 });

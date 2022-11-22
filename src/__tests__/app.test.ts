@@ -2,6 +2,7 @@ import * as app from "../app";
 
 import * as configuration from "../util/config";
 import { Logger } from "winston";
+import { retryQueueClient } from "../util/queues";
 
 describe("app", () => {
     it("should work", async () => {
@@ -46,6 +47,8 @@ describe("app", () => {
       const serverResponse = await server(config,logger);
 
       expect(serverResponse).toBeDefined();
+
+      retryQueueClient.receiveMessages({});
 
     });
   });

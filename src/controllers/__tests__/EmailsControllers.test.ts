@@ -23,6 +23,7 @@ import { Transporter } from "nodemailer";
 import * as nodemailer from "nodemailer";
 import * as AWS from "aws-sdk";
 import * as puppeteer from "puppeteer";
+import * as registerHelpers from "handlebars-helpers";
   
 
 describe("sendMail", () => {
@@ -74,115 +75,193 @@ const mailTrasporter: Transporter = nodemailer.createTransport({
 
 var browser: Browser;
 
-    xit("should return IResponseErrorValidation", async () => {
-      //const errorOrNodoVerificaRPTInput = EmailsController.sendMail(config, mailTrasporter, browser);
-      //const req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>> = {};
+describe('testSendMail', () => {
 
-      var req = {
-        body: "testBody"
-      } as any;
+  const transactionMock = {
+    id: "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
+    timestamp: "2020-07-10 15:00:00.000",
+    amount:"300,00",
+    psp: { "name": "Nexi","fee": { "amount": "2,00"}},
+    rrn: "1234567890",
+    paymentMethod: {name:"Visa *1234",logo:"https://...",accountHolder:"Marzia Roccaraso",extraFee: false},
+    authCode: "9999999999"
+  };
+  const cartMock = {
+      items: [
+        {
+          refNumber: {
+            type: "codiceAvviso",
+            value: "123456789012345678"
+          },
+          debtor: {
+            fullName: "Giuseppe Bianchi",
+            taxCode: "BNCGSP70A12F205X"
+          },
+          payee: {
+            name: "Comune di Controguerra",
+            taxCode: "82001760675"
+          },
+          subject: "TARI 2022",
+          amount: "150,00"
+        }
+      ],
+      amountPartial: "300,00"
+  };
+  const userMock = {
+    data: {
+      firstName: "Marzia",
+      lastName: "Roccaraso",
+      taxCode: "RCCMRZ88A52C409A"
+    },
+    email: "email@test.it"
+  };
+  const mockReq = {
+    transaction: transactionMock,
+    user:userMock,
+    cart: cartMock
+  };
 
-      const handler = EmailsController.sendMail(config, mailTrasporter, browser);
+beforeAll(() => {
+  registerHelpers();
+});
 
-      const responseErrorValidation = await handler(req);
+beforeEach(() => {});
 
-      expect(responseErrorValidation.kind).toBe("IResponseErrorValidation");
-    });
+afterEach(() => {
+  browser?.close();
+});
+
+  it("should return IResponseErrorValidation", async () => {
+    var req = {
+      body: "testBody"
+    } as any;
+
+    const handler = EmailsController.sendMail(config, mailTrasporter, browser);
+
+    const responseErrorValidation = await handler(req);
+
+    expect(responseErrorValidation.kind).toBe("IResponseErrorValidation");
+  });
+
+  it("should return Invalid X-Client-Id", async () => {
+
+    const handler = EmailsController.sendMail(config, mailTrasporter, browser);
+
+    var req2 = 
+       {
+        header: (s: string) => "test",
+        body: {
+         to: "to@email.it",
+         subject: "subjectTest",
+         templateId: "success",
+         parameters: {}},
+         lang: {language: "IT" }
+       } as any;
+
+    const responseErrorValidation2 = await handler(req2);
+
+    expect(responseErrorValidation2.kind).toBe("IResponseErrorValidation");
     
-    xit("should return Invalid X-Client-Id", async () => {
-      //const errorOrNodoVerificaRPTInput = EmailsController.sendMail(config, mailTrasporter, browser);
-      //const req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>> = {};
+    expect(responseErrorValidation2.detail).toMatch("Invalid X-Client-Id");
+  });
 
-      const handler = EmailsController.sendMail(config, mailTrasporter, browser);
+  it("should return ok mock", async () => {
 
-      var req2 = 
-         {
-          header: (s: string) => "test",
-          body: {
-           to: "to@email.it",
-           subject: "subjectTest",
-           templateId: "success",
-           parameters: {}},
-           lang: {language: "IT" }
-         } as any;
+    var reqOk = 
+       {
+        header: (s: string) => "CLIENT_ECOMMERCE_TEST",
+        body: {
+         to: "to@email.it",
+         subject: "subjectTest",
+         templateId: "success",
+         parameters: mockReq},
+         lang: {language: "IT" }
+       } as any;
 
-      const responseErrorValidation2 = await handler(req2);
+    const mailTrasporterMock = {
+      sendMail: jest.fn(() => {return sentMessage;})
+    } as unknown as Transporter<SESTransport.SentMessageInfo>;
 
-      expect(responseErrorValidation2.kind).toBe("IResponseErrorValidation");
-      
-      expect(responseErrorValidation2.detail).toMatch("Invalid X-Client-Id");
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox"],
+      headless: true
     });
 
-    it("should return ok", async () => {
-      const transactionMock = {
-        id: "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
-        timestamp: "2020-07-10 15:00:00.000",
-        amount:"300,00",
-        psp: { "name": "Nexi","fee": { "amount": "2,00"}},
-        rrn: "1234567890",
-        paymentMethod: {name:"Visa *1234",logo:"https://...",accountHolder:"Marzia Roccaraso",extraFee: false},
-        authCode: "9999999999"
-      };
-      const cartMock = {
-          items: [
-            {
-              refNumber: {
-                type: "codiceAvviso",
-                value: "123456789012345678"
-              },
-              debtor: {
-                fullName: "Giuseppe Bianchi",
-                taxCode: "BNCGSP70A12F205X"
-              },
-              payee: {
-                name: "Comune di Controguerra",
-                taxCode: 82001760675
-              },
-              subject: "TARI 2022",
-              amount: "150,00"
-            }
-          ],
-          amountPartial: "300,00"
-      };
-      const userMock = {
-        data: {
-          firstName: "Marzia",
-          lastName: "Roccaraso",
-          taxCode: "RCCMRZ88A52C409A"
-        },
-        email: "email@test.it"
-      };
-      const mockReq = {
-        transaction: transactionMock,
-        user:userMock,
-        cart: cartMock
-      };
-      var reqOk = 
-         {
-          header: (s: string) => "CLIENT_ECOMMERCE_TEST",
-          body: {
-           to: "to@email.it",
-           subject: "subjectTest",
-           templateId: "success",
-           parameters: mockReq},
-           lang: {language: "IT" }
-         } as any;
+    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
 
-      const mailTrasporterMock = {
-        sendMail: jest.fn(() => {return sentMessage;})
-      } as unknown as Transporter<SESTransport.SentMessageInfo>;
+    const responseErrorValidation = await handler(reqOk);
 
-      /*puppeteer.launch({
-        args: ["--no-sandbox"],
-        headless: true
-      }).then(p => browser = p);*/
+    expect(responseErrorValidation.kind).toBe("IResponseSuccessJson");
+  });
 
-      const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
+  it("should return ok no mock", async () => {
 
-      const responseErrorValidation = await handler(reqOk);
+    var reqOk = 
+       {
+        header: (s: string) => "CLIENT_ECOMMERCE",
+        body: {
+         to: "to@email.it",
+         subject: "subjectTest",
+         templateId: "success",
+         parameters: mockReq},
+         lang: {language: "IT" }
+       } as any;
 
-      expect(responseErrorValidation.detail).toBe("IResponseSuccessJson");
+    const mailTrasporterMock = {
+      sendMail: jest.fn(() => {return sentMessage;})
+    } as unknown as Transporter<SESTransport.SentMessageInfo>;
+
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox"],
+      headless: true
     });
+
+    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
+
+    const responseErrorValidation = await handler(reqOk);
+
+    expect(responseErrorValidation.kind).toBe("IResponseSuccessJson");
+  });
+
+  xit("should return error no mock", async () => {
+    var reqOk = 
+       {
+        header: (s: string) => "CLIENT_ECOMMERCE",
+        body: {
+         to: "to@email.it",
+         subject: "subjectTest",
+         templateId: "success",
+         parameters: mockReq},
+         lang: {language: "IT" }
+       } as any;
+
+    const mailTrasporterMockError: Transporter<SESTransport.SentMessageInfo> = {
+      sendMail: jest.fn().mockRejectedValue(new Error()),
+      sendEmailWithAWS: jest.fn().mockRejectedValue(new Error())
+    } as unknown as Transporter<SESTransport.SentMessageInfo>;
+
+    //const spy = jest.spyOn(mailTrasporterMock,"sendMail");
+    //const spy2 = jest.spyOn(mailTrasporterMock,"sendEmailWithAWS");
+
+    //let spy3 = jest.spyOn(mailTrasporter, 'sendMail').mockImplementation(async () => {return sentMessage;});
+
+    //let spy4 = jest.spyOn(mailTrasporter, 'sendEmailWithAWS').mockImplementation(async () => {throw new Error("test error");});
+
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox"],
+      headless: true
+    });
+
+    const handler = EmailsController.sendMail(config, mailTrasporterMockError, browser);
+
+    const responseErrorValidation = await handler(reqOk);
+
+    //expect(spy).toBeCalled();
+    //expect(spy2).toBeCalled();
+    expect(responseErrorValidation.kind).toBe("IResponseSuccessJson");
+  });
+
+});
 
 
 });

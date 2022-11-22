@@ -41,7 +41,7 @@ import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const sendEmailWithAWS = async (
+export const sendEmailWithAWS = async (
   recipientEmail: string,
   subject: string,
   htmlData: string,
@@ -129,8 +129,6 @@ export const sendEmail = async (
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
-  console.log(schema);
-  console.log(schema.default);
   return pipe(
     params.body.parameters,
     schema.default.decode,

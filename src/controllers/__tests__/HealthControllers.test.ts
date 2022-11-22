@@ -4,6 +4,9 @@ import * as configuration from "../../util/config";
 import { right } from "fp-ts/lib/Separated";
 import { IResponseSuccessJson } from "@pagopa/ts-commons/lib/responses";
 import { GetHealthT } from "../../generated/definitions/requestTypes";
+import { GetSendQuotaCommandOutput } from "@aws-sdk/client-ses/dist-types/commands/GetSendQuotaCommand";
+import { taskEither } from "fp-ts";
+import * as TE from "fp-ts/TaskEither";
 
 
 describe("health check", () => {
@@ -40,13 +43,34 @@ describe("health check", () => {
   } as configuration.IConfig;
 
 
-    it("should return a right object",async () => {
+    it("should return a error response",async () => {
+      var handler = HealthControllers.getHealth(config, logger);
+
+      var req2 = {} as any;
+
+      const responseErrorValidation = await handler(req2);
+
+      expect(responseErrorValidation.kind).toBe("IResponseErrorGeneric");
+    });
+
+    xit("should return a success response",async () => {
+
+      const getSendQuotaCommandOutput : GetSendQuotaCommandOutput = {$metadata: {}};
+      //jest.spyOn(HealthControllers,'checkSESTask').mockResolvedValue({getSendQuotaCommandOutput});
+      //HealthControllers.checkSESTask = jest.fn().mockResolvedValue({});
+
+      jest.mock("../HealthControllers", () => ({
+        checkSESTask () {
+          return new Promise<GetSendQuotaCommandOutput>(TE.of(getSendQuotaCommandOutput)); // set some default value
+        }
+      }));
+
       var handler = HealthControllers.getHealth(config, logger);
 
       var req2 = {} as any;
 
       const responseErrorValidation2 = await handler(req2);
 
-      expect(responseErrorValidation2.kind).toBe("IResponseErrorGeneric");
+      expect(responseErrorValidation2.kind).toBe("IResponseSuccessJson");
     });
 });
