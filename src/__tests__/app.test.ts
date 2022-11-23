@@ -48,7 +48,5 @@ describe("app", () => {
 
       expect(serverResponse).toBeDefined();
 
-      retryQueueClient.receiveMessages({});
-
     });
   });

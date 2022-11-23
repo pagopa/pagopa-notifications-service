@@ -77,10 +77,10 @@ export const sendEmailWithAWS = async (
     }
   );
   logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
-
+    
   return messageInfoOk;
 };
-const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
+export const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   envelope: {
     from: "no-reply@pagopa.gov.it",
     to: [to]
@@ -167,7 +167,7 @@ export const sendEmail = async (
               (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
             ),
             O.fold(
-              async () => O.some(mockedResponse(params.body.to)),
+              async () => O.some(exports.mockedResponse(params.body.to)),
               async () =>
                 O.some(
                   await sendEmailWithAWS(
