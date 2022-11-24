@@ -1,6 +1,4 @@
-import * as RetryQueueListener from "../queues/RetryQueueListener"
-import { TypeofApiParams } from "@pagopa/ts-commons/lib/requests";
-import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
+
 import { errorQueueClient, retryQueueClient } from "../util/queues";
 import { Logger } from "winston";
 import * as configuration from "../util/config";
@@ -8,16 +6,12 @@ import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
-import * as nodemailer from "nodemailer";
-import * as AWS from "aws-sdk";
-import { healthController } from "../controllers/HealthControllers";
-import { SendEmailCommand } from "@aws-sdk/client-ses";
-import { receiveMessageOnPort } from "worker_threads";
 import { addRetryQueueListener } from "../queues/RetryQueueListener";
-import { QueueReceiveMessageResponse } from "@azure/storage-queue";
-var browser: Browser;
+import { QueueClient, QueueReceiveMessageResponse } from "@azure/storage-queue";
+import * as puppeteer from "puppeteer";
+import * as registerHelpers from "handlebars-helpers";
 
-describe("error queue", () => {
+describe("error queue",() => {
 
     var logger: Logger;
 
@@ -44,28 +38,138 @@ describe("error queue", () => {
         region: config.AWS_SES_REGION,
         secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
       };
-      
-      const mailTrasporter: Transporter = nodemailer.createTransport({
-        SES: new AWS.SES(SES_CONFIG)
-      });
+
+      const sentMessageMock = (a: number): SESTransport.SentMessageInfo => { return {
+        /** an envelope object {from:‘address’, to:[‘address’]} */
+        envelope: {from: "testFrom", to: ["testTo"]} as Envelope,
+        /** the Message-ID header value. This value is derived from the response of SES API, so it differs from the Message-ID values used in logging. */
+        messageId: ("sentMessageId "+a),
+        response: "response",
+        accepted: ["acceptedMail"],
+        rejected: ["rejectedMail"],
+        pending: ["pendingMail"]
+      } as SESTransport.SentMessageInfo};
+
+      const transactionMock = {
+        id: "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
+        timestamp: "2020-07-10 15:00:00.000",
+        amount:"300,00",
+        psp: { "name": "Nexi","fee": { "amount": "2,00"}},
+        rrn: "1234567890",
+        paymentMethod: {name:"Visa *1234",logo:"https://...",accountHolder:"Marzia Roccaraso",extraFee: false},
+        authCode: "9999999999"
+      };
+      const cartMock = {
+          items: [
+            {
+              refNumber: {
+                type: "codiceAvviso",
+                value: "123456789012345678"
+              },
+              debtor: {
+                fullName: "Giuseppe Bianchi",
+                taxCode: "BNCGSP70A12F205X"
+              },
+              payee: {
+                name: "Comune di Controguerra",
+                taxCode: "82001760675"
+              },
+              subject: "TARI 2022",
+              amount: "150,00"
+            }
+          ],
+          amountPartial: "300,00"
+      };
+      const userMock = {
+        data: {
+          firstName: "Marzia",
+          lastName: "Roccaraso",
+          taxCode: "RCCMRZ88A52C409A"
+        },
+        email: "email@test.it"
+      };
+      const mockReq = {
+        transaction: transactionMock,
+        user:userMock,
+        cart: cartMock,
+        email: "test@test.it",
+        noticeCode: "noticeCodeTest",
+        amount: 100
+      };
+
+      const requestMock = 
+       {
+        header: (s: string) => "CLIENT_ECOMMERCE",
+        body: {
+         to: "error@email.it",
+         subject: "subjectTest",
+         templateId: "success",
+         parameters: mockReq},
+         lang: {language: "IT" }
+       } as any;
+
+      var browser: Browser;
 
     it("sendMessageToRetryQueue", async () => {
-        
+      const emailMockedFunction = jest.fn();
+     /* const EmailsControllers = require('../controllers/EmailsControllers');
+      EmailsControllers.mockImplementation(() => {
+        return {
+          sendEMail: emailMockedFunction,
+        };
+      });*/
         //const spyReceiveMessages = jest.spyOn(retryQueueClient,'receiveMessages');
-        retryQueueClient.receiveMessages = jest.fn().mockResolvedValue({receivedMessageItems: 
+        registerHelpers();
+        
+        jest.useFakeTimers();
+        jest.spyOn(global, 'setInterval');
+
+        browser = await puppeteer.launch({
+          args: ["--no-sandbox"],
+          headless: true
+        });
+        
+        retryQueueClient.createIfNotExists = jest.fn().mockResolvedValue({});
+        console.log(JSON.stringify(requestMock));
+        const mockReceiveMessages = jest.fn().mockResolvedValueOnce({receivedMessageItems: 
           [{
-            messageId: "1"
+            messageId: "1",
+            popReceipt: "1PR",
+            messageText: JSON.stringify(requestMock)
           },
           {
-            messageId: "2"
+            messageId: "2",
+            popReceipt: "2PR",
+            messageText: JSON.stringify(requestMock)
           },
           {
-            messageId: "3"
+            messageId: "3",
+            popReceipt: "3PR",
+            messageText: JSON.stringify(requestMock)
           },
         ]} as QueueReceiveMessageResponse);
-        addRetryQueueListener(config,mailTrasporter,browser);
-        await retryQueueClient.receiveMessages();
-        //expect(spyReceiveMessages).toBeCalled();
-        //retryQueueClient.clearMessages();
+
+        retryQueueClient.receiveMessages = mockReceiveMessages;
+
+        const mockDeleteMessage = jest.fn().mockResolvedValueOnce("1").mockResolvedValueOnce("2").mockResolvedValueOnce("3");
+        retryQueueClient.deleteMessage = mockDeleteMessage;
+
+        const mockedMailFunction = jest.fn().mockResolvedValueOnce(sentMessageMock(1)).mockResolvedValueOnce(sentMessageMock(3)).mockResolvedValueOnce(sentMessageMock(3));
+        const mailTrasporterMock = {
+          sendMail: mockedMailFunction
+        } as unknown as Transporter<SESTransport.SentMessageInfo>;
+        const spySendMail = jest.spyOn(mailTrasporterMock,'sendMail');
+        retryQueueClient.createIfNotExists();
+        addRetryQueueListener(config,mailTrasporterMock,browser);
+
+        expect(setInterval).toHaveBeenCalledTimes(1);
+        expect(setInterval).toHaveBeenLastCalledWith(expect.any(Function), 1000);
+        jest.advanceTimersToNextTimer();
+        //jest.runOnlyPendingTimers();
+        expect(mockReceiveMessages.mock.calls.length).toBe(1);
+        //await expect(spySendMail).resolves.toBeCalledTimes(3);
+        //await expect(mockedMailFunction.mock.calls).resolves.toBeCalledTimes(3);
+        //expect(mockDeleteMessage.mock.calls.length).toBe(3);
+        //expect(mockedMailFunction.mock.calls.length).toBe(3);
     });
 });
