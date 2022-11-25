@@ -167,7 +167,7 @@ export const sendEmail = async (
               (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
             ),
             O.fold(
-              async () => O.some(exports.mockedResponse(params.body.to)),
+              async () => O.some(mockedResponse(params.body.to)),
               async () =>
                 O.some(
                   await sendEmailWithAWS(
@@ -241,7 +241,7 @@ export const sendMailController: (
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
   const templateId = params.body.templateId;
-  const schema = await import(`@dist/src/generated/templates/${templateId}/schema.js`);
+  const schema = await import(`../generated/templates/${templateId}/schema.js`);
 
   return sendEmail(
     params,
