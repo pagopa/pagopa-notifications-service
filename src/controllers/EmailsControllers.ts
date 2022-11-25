@@ -77,7 +77,7 @@ export const sendEmailWithAWS = async (
     }
   );
   logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
-    
+
   return messageInfoOk;
 };
 export const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
@@ -119,7 +119,7 @@ export const sendEmail = async (
     )
     .toString();
   const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
-  
+
   const pathExists = O.fromPredicate((path: string) => fs.existsSync(path));
 
   const pdfTemplate = pipe(

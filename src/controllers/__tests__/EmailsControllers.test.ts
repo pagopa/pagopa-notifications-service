@@ -119,7 +119,6 @@ describe("mail controller", () => {
 
 
 describe('test send mail', () => {
-
   var browser: Browser;
 
   beforeAll(async () => {
@@ -300,7 +299,7 @@ describe('test send mail', () => {
     const mailTrasporterMock = {
       sendMail: jest.fn().mockRejectedValue(new Error())
     } as unknown as Transporter<SESTransport.SentMessageInfo>;
-    
+
     const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
 
     const response = await handler(reqOk);

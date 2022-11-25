@@ -12,11 +12,10 @@ export const addRetryQueueListener = (
   browserEngine: Browser
 ): void => {
   const retrieveMessage = async (): Promise<void> => {
-    
     const messages = await retryQueueClient.receiveMessages({
       numberOfMessages: 14
     });
-    
+
     if (messages?.receivedMessageItems.length > 0) {
       logger.info(
         `Retrying ${messages.receivedMessageItems.length} enqueued messages`
