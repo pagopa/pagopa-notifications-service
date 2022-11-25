@@ -112,13 +112,6 @@ describe("error queue",() => {
 
     it("sendMessageToRetryQueue", async () => {
       const emailMockedFunction = jest.fn();
-     /* const EmailsControllers = require('../controllers/EmailsControllers');
-      EmailsControllers.mockImplementation(() => {
-        return {
-          sendEMail: emailMockedFunction,
-        };
-      });*/
-        //const spyReceiveMessages = jest.spyOn(retryQueueClient,'receiveMessages');
         registerHelpers();
         
         jest.useFakeTimers();
@@ -165,11 +158,7 @@ describe("error queue",() => {
         expect(setInterval).toHaveBeenCalledTimes(1);
         expect(setInterval).toHaveBeenLastCalledWith(expect.any(Function), 1000);
         jest.advanceTimersToNextTimer();
-        //jest.runOnlyPendingTimers();
         expect(mockReceiveMessages.mock.calls.length).toBe(1);
-        //await expect(spySendMail).resolves.toBeCalledTimes(3);
-        //await expect(mockedMailFunction.mock.calls).resolves.toBeCalledTimes(3);
-        //expect(mockDeleteMessage.mock.calls.length).toBe(3);
-        //expect(mockedMailFunction.mock.calls.length).toBe(3);
+        jest.clearAllTimers();
     });
 });

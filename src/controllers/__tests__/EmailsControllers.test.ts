@@ -300,15 +300,10 @@ describe('test send mail', () => {
     const mailTrasporterMock = {
       sendMail: jest.fn().mockRejectedValue(new Error())
     } as unknown as Transporter<SESTransport.SentMessageInfo>;
-
-    //const spy =jest.spyOn(EmailsController,'sendEmailWithAWS').mockImplementation(async () => sentMessageMock);
-
-    //const handler = EmailsController.sendMail(config, mailTrasporter, browser);
+    
     const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
 
     const response = await handler(reqOk);
-
-    //expect(EmailsController.sendEmailWithAWS).toHaveReturnedWith(sentMessageMock);
 
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -432,7 +427,6 @@ describe("test template", () => {
 
     const responseSuccessValidation = await handler(reqOk);
 
-    console.log(responseSuccessValidation.detail);
     expect(responseSuccessValidation.kind).toBe("IResponseSuccessJson");
   });
 
