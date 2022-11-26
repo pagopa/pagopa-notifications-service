@@ -60,12 +60,12 @@ stages:
           - template: templates/node-job-setup/template.yaml@pagopaCommons
           - bash: |
               npm i -g azure-functions-core-tools@3 --unsafe-perm true
-            displayName: 'Unit tests exec'
+            displayName: 'Install azure functions core tools'
           - bash: |
               yarn generate
             displayName: 'Generate definitions'  
           - bash: |
-              yarn test --config=./jest.config.js
+              yarn test --config='jest.config.js'
             displayName: 'Unit tests exec'
           - bash: |
               bash <(curl -s https://codecov.io/bash)
