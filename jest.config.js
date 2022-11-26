@@ -9,24 +9,25 @@ module.exports = {
     '^@src/(.*)$': '<rootDir>/src/$1',
     '^@dist/(.*)$': '<rootDir>/dist/$1'
   },
-  setupFiles: ["<rootDir>/.env.test"],
+  setupFiles: ["<rootDir>/jest.setup.js"],
   collectCoverage: true,
   collectCoverageFrom: [
-        "src/**/*.ts"
-    ],
-    coveragePathIgnorePatterns: [
-        "node_modules",
-        "test-config",
-        ".module.ts",
-        "<rootDir>/src/generated/",
-    ],
-    coverageDirectory: "<rootDir>/coverage/",
-    coverageThreshold: {
-        "global": {
-            "branches": 20,
-            "functions": 30,
-            "lines": 50,
-            "statements": 50
-        }
+      "src/**/*.ts"
+  ],
+  coveragePathIgnorePatterns: [
+      "node_modules",
+      "test-config",
+      ".module.ts",
+      "<rootDir>/src/generated/",
+      "<rootDir>/src/util/appInsights.ts",
+  ],
+  coverageDirectory: "<rootDir>/coverage/",
+  coverageThreshold: {
+      "global": {
+          "branches": 80,
+          "functions": 80,
+          "lines": 80,
+          "statements": 80
+      }
     }
 };
