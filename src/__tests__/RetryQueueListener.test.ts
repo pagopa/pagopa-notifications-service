@@ -159,6 +159,5 @@ describe("error queue",() => {
         expect(setInterval).toHaveBeenLastCalledWith(expect.any(Function), 1000);
         jest.advanceTimersToNextTimer();
         expect(mockReceiveMessages.mock.calls.length).toBe(1);
-        jest.clearAllTimers();
     });
 });
