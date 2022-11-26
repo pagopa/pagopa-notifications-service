@@ -9,6 +9,7 @@ module.exports = {
     '^@src/(.*)$': '<rootDir>/src/$1',
     '^@dist/(.*)$': '<rootDir>/dist/$1'
   },
+  setupFiles: ["<rootDir>/.env.test"],
   collectCoverage: true,
   collectCoverageFrom: [
         "src/**/*.ts"
