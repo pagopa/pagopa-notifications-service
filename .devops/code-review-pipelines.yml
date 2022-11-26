@@ -62,6 +62,9 @@ stages:
               npm i -g azure-functions-core-tools@3 --unsafe-perm true
             displayName: 'Unit tests exec'
           - bash: |
+              yarn generate
+            displayName: 'Generate definitions'  
+          - bash: |
               yarn test
             displayName: 'Unit tests exec'
           - bash: |
