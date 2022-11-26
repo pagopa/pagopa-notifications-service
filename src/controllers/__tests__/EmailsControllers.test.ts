@@ -1,20 +1,4 @@
 import * as EmailsController from "../EmailsControllers";
-process.env = {
-  PORT: "3030",
-  CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"success\"]}",
-  STORAGE_CONNECTION_STRING: "AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;",
-  RETRY_QUEUE_NAME:"retry-queue",
-  ERROR_QUEUE_NAME:"error-queue",
-  INITIAL_RETRY_TIMEOUT_SECONDS:"120",
-  MAX_RETRY_ATTEMPTS:"3",
-  AI_INSTRUMENTATION_KEY:"test",
-  AI_SAMPLING_PERCENTAGE:"30",
-  AI_ENABLED:"false",
-  AWS_SES_ACCESS_KEY_ID:"test-access-key",
-  AWS_SES_REGION:"test-region",
-  AWS_SES_SECRET_ACCESS_KEY:"test-secret-key"
-};
-import { Logger } from "winston";
 import * as configuration from "../../util/config";
 import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
@@ -24,11 +8,7 @@ import * as nodemailer from "nodemailer";
 import * as AWS from "aws-sdk";
 import * as puppeteer from "puppeteer";
 import * as registerHelpers from "handlebars-helpers";
-import { SendNotificationEmailT } from "../../generated/definitions/requestTypes";
-import { AsControllerFunction } from "../../util/types";
-import { IResponseSuccessAccepted } from "@pagopa/ts-commons/lib/responses";
   
-
 const transactionMock = {
   id: "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
   timestamp: "2020-07-10 15:00:00.000",
