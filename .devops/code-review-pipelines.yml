@@ -65,7 +65,7 @@ stages:
               yarn generate
             displayName: 'Generate definitions'  
           - bash: |
-              yarn test
+              yarn test --config=./jest.config.js
             displayName: 'Unit tests exec'
           - bash: |
               bash <(curl -s https://codecov.io/bash)
