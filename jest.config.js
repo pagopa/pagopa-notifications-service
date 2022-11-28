@@ -18,12 +18,12 @@ module.exports = {
       "<rootDir>/src/util/appInsights.ts",
   ],
   coverageDirectory: "<rootDir>/coverage/",
-  coverageThreshold: {
+  /*coverageThreshold: {
       "global": {
           "branches": 80,
           "functions": 80,
           "lines": 80,
           "statements": 80
       }
-    }
+    }*/
 };
