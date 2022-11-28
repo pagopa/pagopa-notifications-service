@@ -6,7 +6,7 @@ import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
-import { addRetryQueueListener, removeListener } from "../queues/RetryQueueListener";
+import { addRetryQueueListener } from "../queues/RetryQueueListener";
 import { QueueClient, QueueReceiveMessageResponse } from "@azure/storage-queue";
 import * as puppeteer from "puppeteer";
 import * as registerHelpers from "handlebars-helpers";
