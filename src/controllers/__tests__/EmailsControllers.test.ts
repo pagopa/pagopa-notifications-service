@@ -98,11 +98,14 @@ describe('test send mail', () => {
   });
 
   afterEach(async () => {
+    jest.useRealTimers();
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
 
   beforeEach(async () => {
+    jest.useFakeTimers();
+    jest.spyOn(global, 'setInterval');
   });
 
   xit("should return IResponseErrorValidation", async () => {
@@ -277,11 +280,6 @@ xdescribe("test template", () => {
 
   var browser: Browser;
   
-  afterEach(async () => {
-    jest.resetAllMocks();
-    jest.restoreAllMocks();
-  });
-  
   beforeAll(async () => {
     registerHelpers();
     browser = await puppeteer.launch({
@@ -290,7 +288,15 @@ xdescribe("test template", () => {
     });
   });
 
+  afterEach(async () => {
+    jest.useRealTimers();
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
   beforeEach(async () => {
+    jest.useFakeTimers();
+    jest.spyOn(global, 'setInterval');
   });
 
   afterAll(async () => {
