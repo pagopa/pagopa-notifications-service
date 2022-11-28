@@ -10,5 +10,13 @@ describe("config", () => {
       const confOrThrow = config.getConfigOrThrow();
       expect(confOrThrow).toBeDefined();
     });
+
+    xit("check throw", () => {
+      
+      const spyGetConfig = jest.spyOn(config,'getConfigOrThrow');
+      const confOrThrow = config.getConfigOrThrow();
+      expect(spyGetConfig).toThrowError();
+      expect(confOrThrow).toBeUndefined();
+    });
     
   });
