@@ -6,6 +6,7 @@ import { retryQueueClient } from "../util/queues";
 import { logger } from "../util/logger";
 import { sendEmail } from "../controllers/EmailsControllers";
 
+var timer: NodeJS.Timer;
 export const addRetryQueueListener = (
   config: IConfig,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
@@ -44,5 +45,9 @@ export const addRetryQueueListener = (
     }
   };
 
-  setInterval(retrieveMessage, 1000);
+  timer = setInterval(retrieveMessage, 1000);
 };
+
+export const removeListener = () => {
+  timer?.unref();
+}
