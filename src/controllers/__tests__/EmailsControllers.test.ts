@@ -213,7 +213,7 @@ describe('test send mail', () => {
     expect(responseSuccessValidation.kind).toBe("IResponseSuccessAccepted");
   });
 
-  it("should return ok no mock", async () => {
+  xit("should return ok no mock", async () => {
 
     var reqOk = 
        {
