@@ -273,7 +273,7 @@ describe('test send mail', () => {
 
 });
 
-describe("test template", () => {
+xdescribe("test template", () => {
 
   var browser: Browser;
   
