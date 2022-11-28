@@ -110,54 +110,56 @@ describe("error queue",() => {
 
       var browser: Browser;
 
-    it("sendMessageToRetryQueue", async () => {
+    it("sendMessageToRetryQueue", () => {
+      jest.useFakeTimers();
       const emailMockedFunction = jest.fn();
-        registerHelpers();
-        
-        jest.useFakeTimers();
-        jest.spyOn(global, 'setInterval');
+      registerHelpers();
+      
+      jest.spyOn(global, 'setInterval');
 
-        browser = await puppeteer.launch({
-          args: ["--no-sandbox"],
-          headless: true
-        });
-        
-        retryQueueClient.createIfNotExists = jest.fn().mockResolvedValue({});
-        console.log(JSON.stringify(requestMock));
-        const mockReceiveMessages = jest.fn().mockResolvedValueOnce({receivedMessageItems: 
-          [{
-            messageId: "1",
-            popReceipt: "1PR",
-            messageText: JSON.stringify(requestMock)
-          },
-          {
-            messageId: "2",
-            popReceipt: "2PR",
-            messageText: JSON.stringify(requestMock)
-          },
-          {
-            messageId: "3",
-            popReceipt: "3PR",
-            messageText: JSON.stringify(requestMock)
-          },
-        ]} as QueueReceiveMessageResponse);
+      /*puppeteer.launch({
+        args: ["--no-sandbox"],
+        headless: true
+      }).then(b => browser = b);*/
+      
+      retryQueueClient.createIfNotExists = jest.fn().mockResolvedValue({});
+      
+      const mockReceiveMessages = jest.fn().mockResolvedValueOnce({receivedMessageItems: 
+        [{
+          messageId: "1",
+          popReceipt: "1PR",
+          messageText: JSON.stringify(requestMock)
+        },
+        {
+          messageId: "2",
+          popReceipt: "2PR",
+          messageText: JSON.stringify(requestMock)
+        },
+        {
+          messageId: "3",
+          popReceipt: "3PR",
+          messageText: JSON.stringify(requestMock)
+        },
+      ]} as QueueReceiveMessageResponse);
 
-        retryQueueClient.receiveMessages = mockReceiveMessages;
+      retryQueueClient.receiveMessages = mockReceiveMessages;
 
-        const mockDeleteMessage = jest.fn().mockResolvedValueOnce("1").mockResolvedValueOnce("2").mockResolvedValueOnce("3");
-        retryQueueClient.deleteMessage = mockDeleteMessage;
+      const mockDeleteMessage = jest.fn().mockResolvedValueOnce("1").mockResolvedValueOnce("2").mockResolvedValueOnce("3");
+      retryQueueClient.deleteMessage = mockDeleteMessage;
 
-        const mockedMailFunction = jest.fn().mockResolvedValueOnce(sentMessageMock(1)).mockResolvedValueOnce(sentMessageMock(3)).mockResolvedValueOnce(sentMessageMock(3));
-        const mailTrasporterMock = {
-          sendMail: mockedMailFunction
-        } as unknown as Transporter<SESTransport.SentMessageInfo>;
-        const spySendMail = jest.spyOn(mailTrasporterMock,'sendMail');
-        retryQueueClient.createIfNotExists();
-        addRetryQueueListener(config,mailTrasporterMock,browser);
+      const mockedMailFunction = jest.fn().mockResolvedValueOnce(sentMessageMock(1)).mockResolvedValueOnce(sentMessageMock(3)).mockResolvedValueOnce(sentMessageMock(3));
+      const mailTrasporterMock = {
+        sendMail: mockedMailFunction
+      } as unknown as Transporter<SESTransport.SentMessageInfo>;
+      const spySendMail = jest.spyOn(mailTrasporterMock,'sendMail');
+      retryQueueClient.createIfNotExists();
+      addRetryQueueListener(config,mailTrasporterMock,browser);
 
-        expect(setInterval).toHaveBeenCalledTimes(1);
-        expect(setInterval).toHaveBeenLastCalledWith(expect.any(Function), 1000);
-        jest.advanceTimersToNextTimer();
-        expect(mockReceiveMessages.mock.calls.length).toBe(1);
+      expect(setInterval).toHaveBeenCalledTimes(1);
+      expect(setInterval).toHaveBeenLastCalledWith(expect.any(Function), 1000);
+      jest.advanceTimersByTime(1000);
+      expect(mockReceiveMessages.mock.calls.length).toBe(1);
+      //jest.clearAllTimers();
+      jest.useRealTimers();
     });
 });
