@@ -1,14 +1,10 @@
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
-  testPathIgnorePatterns: ["/node_modules"],
+  testPathIgnorePatterns: ["dist", "/node_modules"],
   testMatch: [
     "**/__tests__/*.ts"
   ],
-  moduleNameMapper: {
-    '^@src/(.*)$': '<rootDir>/src/$1',
-    '^@dist/(.*)$': '<rootDir>/dist/$1'
-  },
   setupFiles: ["<rootDir>/jest.setup.js"],
   collectCoverage: true,
   collectCoverageFrom: [
