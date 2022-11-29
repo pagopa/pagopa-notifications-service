@@ -62,7 +62,7 @@ stages:
               npm i -g azure-functions-core-tools@3 --unsafe-perm true
             displayName: 'Install azure functions core tools'
           - bash: |
-              yarn test --detectOpenHandles
+              yarn generate && yarn test
             displayName: 'Unit tests exec'
           - bash: |
               bash <(curl -s https://codecov.io/bash)
