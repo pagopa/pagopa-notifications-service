@@ -108,7 +108,7 @@ describe('test send mail', () => {
     jest.spyOn(global, 'setInterval');
   });
 
-  xit("should return IResponseErrorValidation", async () => {
+  it("should return IResponseErrorValidation", async () => {
     var req = {
       body: "testBody"
     } as any;
@@ -216,7 +216,7 @@ describe('test send mail', () => {
     expect(responseSuccessValidation.kind).toBe("IResponseSuccessAccepted");
   });
 
-  xit("should return ok no mock", async () => {
+  it("should return ok no mock", async () => {
 
     var reqOk = 
        {
@@ -276,7 +276,7 @@ describe('test send mail', () => {
 
 });
 
-xdescribe("test template", () => {
+describe("test template", () => {
 
   var browser: Browser;
   
