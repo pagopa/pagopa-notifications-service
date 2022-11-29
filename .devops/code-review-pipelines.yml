@@ -53,7 +53,7 @@ stages:
             displayName: 'Danger CI'
   
   - stage: Test
-    dependsOn: [Build]
+    dependsOn: []
     jobs:
       - job: unit_tests
         steps:
@@ -62,7 +62,7 @@ stages:
               npm i -g azure-functions-core-tools@3 --unsafe-perm true
             displayName: 'Install azure functions core tools'
           - bash: |
-              yarn generate && yarn test
+              yarn generate && yarn build && yarn test
             displayName: 'Unit tests exec'
           - bash: |
               bash <(curl -s https://codecov.io/bash)
