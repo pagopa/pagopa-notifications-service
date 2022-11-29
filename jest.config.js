@@ -8,6 +8,7 @@ module.exports = {
   setupFiles: ["<rootDir>/jest.setup.js"],
   rootDir: ".",
   moduleDirectories: ["node_modules", "src", "dist"],
+  modulePaths:["dist"],
   collectCoverage: false,
   collectCoverageFrom: [
       "src/**/*.ts"
