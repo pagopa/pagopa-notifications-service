@@ -6,14 +6,13 @@ import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { errorQueueClient } from "../util/queues";
 import { rootCertificates } from "tls";
 
-xdescribe("error queue", () => {
+describe("error queue", () => {
     
     it("sendMessageToErrorQueue", () => {
         jest.useFakeTimers();
         const spySendMessages = jest.spyOn(errorQueueClient,'sendMessage');
         ErrorQueue.sendMessageToErrorQueue({} as TypeofApiParams<SendNotificationEmailT>);
         expect(spySendMessages).toBeCalled();
-        jest.clearAllTimers();
         jest.useRealTimers();
     });
 });
