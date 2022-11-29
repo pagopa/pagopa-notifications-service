@@ -53,7 +53,7 @@ stages:
             displayName: 'Danger CI'
   
   - stage: Test
-    dependsOn: []
+    dependsOn: [Build]
     jobs:
       - job: unit_tests
         steps:
@@ -61,9 +61,6 @@ stages:
           - bash: |
               npm i -g azure-functions-core-tools@3 --unsafe-perm true
             displayName: 'Install azure functions core tools'
-          - bash: |
-              yarn generate
-            displayName: 'Generate definitions'  
           - bash: |
               yarn test --detectOpenHandles
             displayName: 'Unit tests exec'
