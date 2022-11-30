@@ -304,7 +304,7 @@ describe("test template", () => {
   afterAll(async () => {
   });
 
-  it("should return responseSuccessValidation mock template poc-1", async () => {
+  xit("should return responseSuccessValidation mock template poc-1", async () => {
 
     var reqOk = 
        {
@@ -328,7 +328,7 @@ describe("test template", () => {
     expect(responseSuccessValidation.kind).toBe("IResponseSuccessJson");
   });
 
-  it("should return responseSuccessValidation mock template poc-2", async () => {
+  xit("should return responseSuccessValidation mock template poc-2", async () => {
 
     var reqOk = 
        {
