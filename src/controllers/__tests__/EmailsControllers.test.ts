@@ -283,13 +283,10 @@ describe("test template", () => {
   
   beforeAll(async () => {
     registerHelpers();
-    browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
-      headless: true
-    });
   });
 
   afterEach(async () => {
+    await browser?.close();
     jest.useRealTimers();
     jest.resetAllMocks();
     jest.restoreAllMocks();
@@ -298,10 +295,13 @@ describe("test template", () => {
   beforeEach(async () => {
     jest.useFakeTimers();
     jest.spyOn(global, 'setInterval');
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox"],
+      headless: true
+    });
   });
 
   afterAll(async () => {
-    await browser?.close();
   });
 
   it("should return responseSuccessValidation mock template poc-1", async () => {
