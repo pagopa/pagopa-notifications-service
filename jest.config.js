@@ -1,14 +1,15 @@
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
-  testPathIgnorePatterns: ["dist","/node_modules"],
+  testPathIgnorePatterns: ["/dist","/node_modules"],
   testMatch: [
     "**/__tests__/*.ts"
   ],
   setupFiles: ["<rootDir>/jest.setup.js"],
   rootDir: ".",
-  moduleDirectories: ["node_modules", "src", "dist"],
-  modulePaths:["dist"],
+  moduleNameMapper: {
+    '^[./a-zA-Z0-9$_-]+\\/schema.js$':'<rootDir>/dist/src/generated/templates/success/schema.js'
+  },
   collectCoverage: false,
   collectCoverageFrom: [
       "src/**/*.ts"
