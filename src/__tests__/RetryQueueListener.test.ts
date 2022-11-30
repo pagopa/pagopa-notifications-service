@@ -10,7 +10,7 @@ import { addRetryQueueListener } from "../queues/RetryQueueListener";
 import { QueueClient, QueueReceiveMessageResponse } from "@azure/storage-queue";
 import * as puppeteer from "puppeteer";
 import * as registerHelpers from "handlebars-helpers";
-import { mockReq } from "../data_mock";
+import { mockReq } from "../__mocks__/data_mock";
 
 describe("error queue",() => {
 

@@ -20,7 +20,7 @@ module.exports = {
       ".module.ts",
       "<rootDir>/src/generated/",
       "<rootDir>/src/util/appInsights.ts",
-      "<rootDir>/src/data_mock.ts"
+      "<rootDir>/src/__mocks__/*.ts"
   ],
   coverageDirectory: "<rootDir>/coverage/",
   /*coverageThreshold: {

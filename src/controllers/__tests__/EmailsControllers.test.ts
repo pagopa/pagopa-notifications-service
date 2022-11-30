@@ -8,7 +8,7 @@ import * as nodemailer from "nodemailer";
 import * as AWS from "aws-sdk";
 import * as puppeteer from "puppeteer";
 import * as registerHelpers from "handlebars-helpers";
-import { mockReq } from "../../data_mock";
+import { mockReq } from "../../__mocks__/data_mock";
   
 var config = configuration.getConfigOrThrow();
 
