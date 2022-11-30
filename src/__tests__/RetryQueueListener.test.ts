@@ -10,117 +10,53 @@ import { addRetryQueueListener } from "../queues/RetryQueueListener";
 import { QueueClient, QueueReceiveMessageResponse } from "@azure/storage-queue";
 import * as puppeteer from "puppeteer";
 import * as registerHelpers from "handlebars-helpers";
+import { mockReq } from "../data_mock";
 
 describe("error queue",() => {
 
-    var logger: Logger;
-
-    var config = {
-      AI_ENABLED: false,
-      AI_INSTRUMENTATION_KEY: "key",
-      AI_SAMPLING_PERCENTAGE: 0,
-      AWS_SES_ACCESS_KEY_ID: "aws_access_key",
-      AWS_SES_REGION: "aws_region",
-      AWS_SES_SECRET_ACCESS_KEY: "aws_secret",
-      CLIENT_ECOMMERCE: {TEMPLATE_IDS: ["fake template"]} as configuration.NotificationsServiceClientConfig,
-      CLIENT_ECOMMERCE_TEST: {TEMPLATE_IDS: ["fake template test"]} as configuration.NotificationsServiceClientConfig,
-      CLIENT_PAYMENT_MANAGER: {TEMPLATE_IDS: ["fake template payment manager"]} as configuration.NotificationsServiceClientConfig,
-      ERROR_QUEUE_NAME: "error q name",
-      INITIAL_RETRY_TIMEOUT_SECONDS: 10,
-      MAX_RETRY_ATTEMPTS: 3,
-      PORT: 3240,
-      RETRY_QUEUE_NAME: "retry q name",
-      STORAGE_CONNECTION_STRING: "storageconnection"
-    } as configuration.IConfig;
+    var config = configuration.getConfigOrThrow();
     
     const SES_CONFIG = {
-        accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
-        region: config.AWS_SES_REGION,
-        secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
-      };
+      accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
+      region: config.AWS_SES_REGION,
+      secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
+    };
 
-      const sentMessageMock = (a: number): SESTransport.SentMessageInfo => { return {
-        /** an envelope object {from:‘address’, to:[‘address’]} */
-        envelope: {from: "testFrom", to: ["testTo"]} as Envelope,
-        /** the Message-ID header value. This value is derived from the response of SES API, so it differs from the Message-ID values used in logging. */
-        messageId: ("sentMessageId "+a),
-        response: "response",
-        accepted: ["acceptedMail"],
-        rejected: ["rejectedMail"],
-        pending: ["pendingMail"]
-      } as SESTransport.SentMessageInfo};
+    const sentMessageMock = (a: number): SESTransport.SentMessageInfo => { return {
+      /** an envelope object {from:‘address’, to:[‘address’]} */
+      envelope: {from: "testFrom", to: ["testTo"]} as Envelope,
+      /** the Message-ID header value. This value is derived from the response of SES API, so it differs from the Message-ID values used in logging. */
+      messageId: ("sentMessageId "+a),
+      response: "response",
+      accepted: ["acceptedMail"],
+      rejected: ["rejectedMail"],
+      pending: ["pendingMail"]
+    } as SESTransport.SentMessageInfo};
 
-      const transactionMock = {
-        id: "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
-        timestamp: "2020-07-10 15:00:00.000",
-        amount:"300,00",
-        psp: { "name": "Nexi","fee": { "amount": "2,00"}},
-        rrn: "1234567890",
-        paymentMethod: {name:"Visa *1234",logo:"https://...",accountHolder:"Marzia Roccaraso",extraFee: false},
-        authCode: "9999999999"
-      };
-      const cartMock = {
-          items: [
-            {
-              refNumber: {
-                type: "codiceAvviso",
-                value: "123456789012345678"
-              },
-              debtor: {
-                fullName: "Giuseppe Bianchi",
-                taxCode: "BNCGSP70A12F205X"
-              },
-              payee: {
-                name: "Comune di Controguerra",
-                taxCode: "82001760675"
-              },
-              subject: "TARI 2022",
-              amount: "150,00"
-            }
-          ],
-          amountPartial: "300,00"
-      };
-      const userMock = {
-        data: {
-          firstName: "Marzia",
-          lastName: "Roccaraso",
-          taxCode: "RCCMRZ88A52C409A"
-        },
-        email: "email@test.it"
-      };
-      const mockReq = {
-        transaction: transactionMock,
-        user:userMock,
-        cart: cartMock,
-        email: "test@test.it",
-        noticeCode: "noticeCodeTest",
-        amount: 100
-      };
+    const requestMock = 
+      {
+      header: (s: string) => "CLIENT_ECOMMERCE_TEST",
+      body: {
+        to: "error@email.it",
+        subject: "subjectTest",
+        templateId: "success",
+        parameters: mockReq},
+        lang: {language: "IT" }
+      } as any;
 
-      const requestMock = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE_TEST",
-        body: {
-         to: "error@email.it",
-         subject: "subjectTest",
-         templateId: "success",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
+    var browser: Browser;
 
-      var browser: Browser;
-
-    it("sendMessageToRetryQueue", () => {
+    it("sendMessageToRetryQueue", async () => {
       jest.useFakeTimers();
       const emailMockedFunction = jest.fn();
       registerHelpers();
       
       jest.spyOn(global, 'setInterval');
 
-      /*puppeteer.launch({
+      browser = await puppeteer.launch({
         args: ["--no-sandbox"],
         headless: true
-      }).then(b => browser = b);*/
+      });
       
       retryQueueClient.createIfNotExists = jest.fn().mockResolvedValue({});
       
@@ -160,6 +96,7 @@ describe("error queue",() => {
       jest.advanceTimersByTime(1000);
       expect(mockReceiveMessages.mock.calls.length).toBe(1);
       //jest.clearAllTimers();
+      await browser?.close();
       jest.useRealTimers();
     });
 });

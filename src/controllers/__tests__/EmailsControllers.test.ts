@@ -8,54 +8,8 @@ import * as nodemailer from "nodemailer";
 import * as AWS from "aws-sdk";
 import * as puppeteer from "puppeteer";
 import * as registerHelpers from "handlebars-helpers";
+import { mockReq } from "../../data_mock";
   
-const transactionMock = {
-  id: "F57E2F8E-25FF-4183-AB7B-4A5EC1A96644",
-  timestamp: "2020-07-10 15:00:00.000",
-  amount:"300,00",
-  psp: { "name": "Nexi","fee": { "amount": "2,00"}},
-  rrn: "1234567890",
-  paymentMethod: {name:"Visa *1234",logo:"https://...",accountHolder:"Marzia Roccaraso",extraFee: false},
-  authCode: "9999999999"
-};
-const cartMock = {
-    items: [
-      {
-        refNumber: {
-          type: "codiceAvviso",
-          value: "123456789012345678"
-        },
-        debtor: {
-          fullName: "Giuseppe Bianchi",
-          taxCode: "BNCGSP70A12F205X"
-        },
-        payee: {
-          name: "Comune di Controguerra",
-          taxCode: "82001760675"
-        },
-        subject: "TARI 2022",
-        amount: "150,00"
-      }
-    ],
-    amountPartial: "300,00"
-};
-const userMock = {
-  data: {
-    firstName: "Marzia",
-    lastName: "Roccaraso",
-    taxCode: "RCCMRZ88A52C409A"
-  },
-  email: "email@test.it"
-};
-const mockReq = {
-  transaction: transactionMock,
-  user:userMock,
-  cart: cartMock,
-  email: "test@test.it",
-  noticeCode: "noticeCodeTest",
-  amount: 100
-};
-
 var config = configuration.getConfigOrThrow();
 
 const sentMessage = {
@@ -70,13 +24,13 @@ const sentMessage = {
 } as SESTransport.SentMessageInfo 
 
 const SES_CONFIG = {
-accessKeyId: process.env.AWS_SES_ACCESS_KEY_ID,
-region: process.env.AWS_SES_REGION,
-secretAccessKey: process.env.AWS_SES_SECRET_ACCESS_KEY
+  accessKeyId: process.env.AWS_SES_ACCESS_KEY_ID,
+  region: process.env.AWS_SES_REGION,
+  secretAccessKey: process.env.AWS_SES_SECRET_ACCESS_KEY
 };
 
 const mailTrasporter: Transporter = nodemailer.createTransport({
-SES: new AWS.SES(SES_CONFIG)
+  SES: new AWS.SES(SES_CONFIG)
 });
 
 describe("mail controller", () => {
@@ -264,14 +218,18 @@ describe('test send mail', () => {
         pending: ["pendingMail"]
       } as SESTransport.SentMessageInfo 
 
+      const mockSendMail = jest.fn().mockImplementation(() => {
+        Promise.reject(sentMessageMock);
+      });
+
     const mailTrasporterMock = {
-      sendMail: jest.fn().mockRejectedValue(new Error())
+      sendMail: mockSendMail
     } as unknown as Transporter<SESTransport.SentMessageInfo>;
 
     const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
 
     const response = await handler(reqOk);
-
+    expect(mockSendMail).toThrowError();
     expect(response.kind).toBe("IResponseSuccessJson");
   });
 
