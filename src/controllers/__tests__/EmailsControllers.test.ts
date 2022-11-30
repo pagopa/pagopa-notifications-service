@@ -29,9 +29,13 @@ const SES_CONFIG = {
   secretAccessKey: process.env.AWS_SES_SECRET_ACCESS_KEY
 };
 
-const mailTrasporter: Transporter = nodemailer.createTransport({
+const getMailTransporter = () =>  nodemailer.createTransport({
   SES: new AWS.SES(SES_CONFIG)
 });
+
+const getMailTransporterMock = () => { return {
+  sendMail: jest.fn(() => {return sentMessage;})
+} as unknown as Transporter<SESTransport.SentMessageInfo>};
 
 describe("mail controller", () => {
 
@@ -68,7 +72,7 @@ describe('test send mail', () => {
       body: "testBody"
     } as any;
 
-    const handler = EmailsController.sendMail(config, mailTrasporter, browser);
+    const handler = EmailsController.sendMail(config, getMailTransporter(), browser);
 
     const responseErrorValidation = await handler(req);
 
@@ -77,20 +81,9 @@ describe('test send mail', () => {
 
   it("should return Invalid X-Client-Id", async () => {
 
-    const handler = EmailsController.sendMail(config, mailTrasporter, browser);
+    const handler = EmailsController.sendMail(config, getMailTransporter(), browser);
 
-    var req2 = 
-       {
-        header: (s: string) => "test",
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "success",
-         parameters: {}},
-         lang: {language: "IT" }
-       } as any;
-
-    const responseErrorValidation2 = await handler(req2);
+    const responseErrorValidation2 = await handler(getReq("success","test"));
 
     expect(responseErrorValidation2.kind).toBe("IResponseErrorValidation");
     
@@ -98,25 +91,9 @@ describe('test send mail', () => {
   });
 
   it("should return Invalid Template", async () => {
+    const handler = EmailsController.sendMail(config, getMailTransporterMock(), browser);
 
-    var reqOk = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE_TEST",
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "no-success",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
-
-    const mailTrasporterMock = {
-      sendMail: jest.fn(() => {return sentMessage;})
-    } as unknown as Transporter<SESTransport.SentMessageInfo>;
-
-    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
-
-    const responseSuccessValidation = await handler(reqOk);
+    const responseSuccessValidation = await handler(getReq("no-success", "CLIENT_ECOMMERCE_TEST"));
 
     expect(responseSuccessValidation.kind).toBe("IResponseErrorValidation");
     expect(responseSuccessValidation.detail).toBe("Error: Invalid Template");
@@ -124,88 +101,36 @@ describe('test send mail', () => {
 
   it("should return Missing X-Client-Id", async () => {
 
-    var reqOk = 
-       {
-        header: (s: string) => null,
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "success",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
+    const handler = EmailsController.sendMail(config, getMailTransporterMock(), browser);
 
-    const mailTrasporterMock = {
-      sendMail: jest.fn(() => {return sentMessage;})
-    } as unknown as Transporter<SESTransport.SentMessageInfo>;
-
-    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
-
-    const responseSuccessValidation = await handler(reqOk);
+    const responseSuccessValidation = await handler(getReq("success", undefined));
 
     expect(responseSuccessValidation.kind).toBe("IResponseErrorValidation");
     expect(responseSuccessValidation.detail).toBe("Invalid X-Client-Id: Missing X-Client-Id header");
   });
 
   xit("should return ResponseSuccessAccepted mock", async () => {
-
-    var reqOk = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE_TEST",
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "success",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
-
     const mailTrasporterMock = {
       sendMail: jest.fn(() => {return null;})
     } as unknown as Transporter<SESTransport.SentMessageInfo>;
 
     const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
 
-    const responseSuccessValidation = await handler(reqOk);
+    const responseSuccessValidation = await handler(getReq("success","CLIENT_ECOMMERCE_TEST"));
 
     expect(responseSuccessValidation.kind).toBe("IResponseSuccessAccepted");
   });
 
   it("should return ok no mock", async () => {
 
-    var reqOk = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE",
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "success",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
+    const handler = EmailsController.sendMail(config, getMailTransporterMock(), browser);
 
-    const mailTrasporterMock = {
-      sendMail: jest.fn(() => {return sentMessage;})
-    } as unknown as Transporter<SESTransport.SentMessageInfo>;
-
-    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
-
-    const responseErrorValidation = await handler(reqOk);
+    const responseErrorValidation = await handler(getReq("success","CLIENT_ECOMMERCE"));
 
     expect(responseErrorValidation.kind).toBe("IResponseSuccessJson");
   });
 
   xit("should cacth error and return none", async () => {
-    var reqOk = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE",
-        body: {
-         to: "error@email.it",
-         subject: "subjectTest",
-         templateId: "success",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
 
        const sentMessageMock = {
         /** an envelope object {from:‘address’, to:[‘address’]} */
@@ -228,7 +153,7 @@ describe('test send mail', () => {
 
     const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
 
-    const response = await handler(reqOk);
+    const response = await handler(getReq("success","CLIENT_ECOMMERCE"));
     expect(mockSendMail).toThrowError();
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -262,98 +187,18 @@ describe("test template", () => {
   afterAll(async () => {
   });
 
-  xit("should return responseSuccessValidation mock template poc-1", async () => {
-
-    var reqOk = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE_TEST",
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "poc-1",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
-
-    const mailTrasporterMock = {
-      sendMail: jest.fn(() => {return sentMessage;})
-    } as unknown as Transporter<SESTransport.SentMessageInfo>;
-
-    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
-
-    const responseSuccessValidation = await handler(reqOk);
-
-    expect(responseSuccessValidation.kind).toBe("IResponseSuccessJson");
-  });
-
-  xit("should return responseSuccessValidation mock template poc-2", async () => {
-
-    var reqOk = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE_TEST",
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "poc-2",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
-
-    const mailTrasporterMock = {
-      sendMail: jest.fn(() => {return sentMessage;})
-    } as unknown as Transporter<SESTransport.SentMessageInfo>;
-
-    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
-
-    const responseSuccessValidation = await handler(reqOk);
-
-    expect(responseSuccessValidation.kind).toBe("IResponseSuccessJson");
-  });
-
   it("should return responseSuccessValidation mock template success", async () => {
+    const handler = EmailsController.sendMail(config, getMailTransporterMock(), browser);
 
-    var reqOk = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE_TEST",
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "success",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
-
-    const mailTrasporterMock = {
-      sendMail: jest.fn(() => {return sentMessage;})
-    } as unknown as Transporter<SESTransport.SentMessageInfo>;
-
-    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
-
-    const responseSuccessValidation = await handler(reqOk);
+    const responseSuccessValidation = await handler(getReq("success","CLIENT_ECOMMERCE_TEST"));
 
     expect(responseSuccessValidation.kind).toBe("IResponseSuccessJson");
   });
 
   it("should return responseSuccessValidation mock template ko", async () => {
+    const handler = EmailsController.sendMail(config, getMailTransporterMock(), browser);
 
-    var reqOk = 
-       {
-        header: (s: string) => "CLIENT_ECOMMERCE_TEST",
-        body: {
-         to: "to@email.it",
-         subject: "subjectTest",
-         templateId: "ko",
-         parameters: mockReq},
-         lang: {language: "IT" }
-       } as any;
-
-    const mailTrasporterMock = {
-      sendMail: jest.fn(() => {return sentMessage;})
-    } as unknown as Transporter<SESTransport.SentMessageInfo>;
-
-    const handler = EmailsController.sendMail(config, mailTrasporterMock, browser);
-
-    const responseSuccessValidation = await handler(reqOk);
+    const responseSuccessValidation = await handler(getReq("ko","CLIENT_ECOMMERCE_TEST"));
 
     expect(responseSuccessValidation.kind).toBe("IResponseSuccessJson");
   });
@@ -362,3 +207,15 @@ describe("test template", () => {
 })
 
 });
+
+const getReq = (templateId: string, header: string | undefined) => {
+  return {
+    header: (s: string) => header,
+    body: {
+     to: "to@email.it",
+     subject: "subjectTest",
+     templateId: templateId,
+     parameters: mockReq},
+     lang: {language: "IT" }
+   } as any;
+}
