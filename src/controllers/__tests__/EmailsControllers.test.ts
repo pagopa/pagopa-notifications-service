@@ -87,25 +87,26 @@ describe('test send mail', () => {
 
   beforeAll(async () => {
     registerHelpers();
-    browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
-      headless: true
-    });
   });
 
   afterAll(async () => {
-    await browser?.close();
+   
   });
 
   afterEach(async () => {
     jest.useRealTimers();
     jest.resetAllMocks();
     jest.restoreAllMocks();
+    await browser?.close();
   });
 
   beforeEach(async () => {
     jest.useFakeTimers();
     jest.spyOn(global, 'setInterval');
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox"],
+      headless: true
+    });
   });
 
   it("should return IResponseErrorValidation", async () => {
