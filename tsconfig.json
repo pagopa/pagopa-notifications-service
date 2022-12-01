@@ -10,13 +10,17 @@
     "declaration": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "lib": ["dom"]
+    "lib": ["dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["src/*"],
+      "@dist/*":["dist/*"]
+    },
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
-    "node_modules",
-    "src/**/__tests__/*"
+    "node_modules"
   ]
 }

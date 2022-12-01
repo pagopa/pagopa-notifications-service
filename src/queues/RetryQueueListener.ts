@@ -16,7 +16,7 @@ export const addRetryQueueListener = (
       numberOfMessages: 14
     });
 
-    if (messages.receivedMessageItems.length > 0) {
+    if (messages?.receivedMessageItems.length > 0) {
       logger.info(
         `Retrying ${messages.receivedMessageItems.length} enqueued messages`
       );
