@@ -8,7 +8,8 @@ module.exports = {
   setupFiles: ["<rootDir>/jest.setup.js"],
   rootDir: ".",
   moduleNameMapper: {
-    '^[./a-zA-Z0-9$_-]+\\/schema.js$':'<rootDir>/dist/src/generated/templates/success/schema.js'
+    '^[./a-zA-Z0-9$_-]+\\/success/schema.js$':'<rootDir>/dist/src/generated/templates/success/schema.js',
+    '^[./a-zA-Z0-9$_-]+\\/ko/schema.js$':'<rootDir>/dist/src/generated/templates/ko/schema.js',
   },
   collectCoverage: false,
   collectCoverageFrom: [
