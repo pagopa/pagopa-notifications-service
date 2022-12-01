@@ -1,7 +1,7 @@
-import * as loggerTS from "../util/logger";
+import { logger } from "../util/logger";
 
 describe("logger", () => {
     it("get logger", () => {
-        expect(loggerTS.logger).toBeDefined();
+        expect(logger).toBeDefined();
     });
-  });
+});

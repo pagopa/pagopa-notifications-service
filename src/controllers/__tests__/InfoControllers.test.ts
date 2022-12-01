@@ -1,11 +1,11 @@
 import { Logger } from "winston";
-import * as InfoControllers from "../InfoControllers";
-import * as configuration from "../../util/config";
+import { getInfo } from "../InfoControllers";
+import { getConfigOrThrow } from "../../util/config";
 
 describe("getInfo", () => {
-  var config = configuration.getConfigOrThrow();
+  const config = getConfigOrThrow();
 
-  var logger = {
+  const logger = {
     // tslint:disable-next-line: no-console
     error: jest.fn().mockImplementation(console.log),
     // tslint:disable-next-line: no-console
@@ -18,14 +18,13 @@ describe("getInfo", () => {
     debug: jest.fn().mockImplementation(console.log)
   } as unknown as Logger;
 
-  it("should return a right response",async () => {
-      var handler = InfoControllers.getInfo(config, logger);
+  it("should return a right response", async () => {
+      const handler = getInfo(config, logger);
 
-      var req2 = {} as any;
+      const request = {} as any;
 
-      const responseErrorValidation2 = await handler(req2);
+      const response = await handler(request);
 
-      expect(responseErrorValidation2.kind).toBe("IResponseSuccessJson");
-
+      expect(response.kind).toBe("IResponseSuccessJson");
     });
 });

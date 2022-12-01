@@ -1,46 +1,39 @@
-import * as app from "../app";
-
-import * as configuration from "../util/config";
+import { startApp } from "../app";
+import { getConfigOrThrow } from "../util/config";
 import { Logger } from "winston";
-import { retryQueueClient } from "../util/queues";
-import { QueueReceiveMessageResponse } from "@azure/storage-queue";
-import { addRetryQueueListener } from "../queues/RetryQueueListener";
 
 describe("app", () => {
 
-beforeEach(() => {
-  jest.useFakeTimers();
-});
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
 
-afterEach(() => {
-  jest.useRealTimers();
-});
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   
-    it("should work", async () => {
-     
-     // jest.spyOn(global,'setInterval');
-      var logger: Logger;
+  it("should get server response", async () => {
 
-      var config = configuration.getConfigOrThrow();
-    
-      var logger = {
-        // tslint:disable-next-line: no-console
-        error: jest.fn().mockImplementation(console.log),
-        // tslint:disable-next-line: no-console
-        info: jest.fn().mockImplementation(console.log),
-        // tslint:disable-next-line: no-console
-        verbose: jest.fn().mockImplementation(console.log),
-        // tslint:disable-next-line: no-console
-        warn: jest.fn().mockImplementation(console.log),
-        // tslint:disable-next-line: no-console
-        debug: jest.fn().mockImplementation(console.log)
-      } as unknown as Logger;
+    const config = getConfigOrThrow();
+  
+    const logger = {
+      // tslint:disable-next-line: no-console
+      error: jest.fn().mockImplementation(console.log),
+      // tslint:disable-next-line: no-console
+      info: jest.fn().mockImplementation(console.log),
+      // tslint:disable-next-line: no-console
+      verbose: jest.fn().mockImplementation(console.log),
+      // tslint:disable-next-line: no-console
+      warn: jest.fn().mockImplementation(console.log),
+      // tslint:disable-next-line: no-console
+      debug: jest.fn().mockImplementation(console.log)
+    } as unknown as Logger;
 
-      var server = app.startApp;
+    const server = startApp;
 
-      const serverResponse = await server(config,logger);
+    const serverResponse = await server(config,logger);
 
-      expect(serverResponse).toBeDefined();
-    });
+    expect(serverResponse).toBeDefined();
   });
+});

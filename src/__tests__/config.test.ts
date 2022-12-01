@@ -1,8 +1,4 @@
 import * as config from "../util/config"
-import { IConfig } from "../util/config";
-import * as dotenv from "dotenv";
-import { either } from "fp-ts";
-import { Validation } from "io-ts";
 
 describe("config", () => {
     it("check getConfig", () => {
