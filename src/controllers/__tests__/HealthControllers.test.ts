@@ -56,12 +56,10 @@ describe("health check", () => {
     xit("should return a success response",async () => {
 
       const getSendQuotaCommandOutput : GetSendQuotaCommandOutput = {$metadata: {}};
-      //jest.spyOn(HealthControllers,'checkSESTask').mockResolvedValue({getSendQuotaCommandOutput});
-      //HealthControllers.checkSESTask = jest.fn().mockResolvedValue({});
 
       jest.mock("../HealthControllers", () => ({
         checkSESTask () {
-          return new Promise<GetSendQuotaCommandOutput>(TE.of(getSendQuotaCommandOutput)); // set some default value
+          return new Promise<GetSendQuotaCommandOutput>(TE.of(getSendQuotaCommandOutput));
         }
       }));
 

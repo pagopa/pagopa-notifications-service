@@ -31,7 +31,7 @@ export const addRetryQueueListener = (
         const schema = await import(
           `../generated/templates/${templateId}/schema.js`
         );
-        logger.info("Send Email");
+
         void sendEmail(
           params,
           schema,

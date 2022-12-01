@@ -18,8 +18,6 @@ describe("config", () => {
     xit("check throw", () => {  
       const spyGetConfig = jest.spyOn(config,'getConfig').mockImplementation(() => {throw new Error("")});
       const confOrThrow = config.getConfigOrThrow();
-      //expect(spyGetConfig).toThrowError();
-      //expect(confOrThrow).toEqual({});
     });
     
   });

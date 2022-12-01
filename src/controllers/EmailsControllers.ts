@@ -41,7 +41,7 @@ import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export const sendEmailWithAWS = async (
+const sendEmailWithAWS = async (
   recipientEmail: string,
   subject: string,
   htmlData: string,
@@ -80,7 +80,7 @@ export const sendEmailWithAWS = async (
 
   return messageInfoOk;
 };
-export const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
+const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   envelope: {
     from: "no-reply@pagopa.gov.it",
     to: [to]
