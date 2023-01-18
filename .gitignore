@@ -2,8 +2,10 @@ node_modules/
 dist/
 npm-debug.log
 yarn-error.log
+yarn.lock
 coverage
 .vscode
+.idea
 
 # eslint section
 !.eslintrc.js
@@ -11,3 +13,6 @@ coverage
 src/generated
 .env
 helm/charts
+__azurite_db_queue__.json
+__azurite_db_queue_extent__.json
+__queuestorage__

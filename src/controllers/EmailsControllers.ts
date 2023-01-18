@@ -241,6 +241,7 @@ export const sendMailController: (
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
   const templateId = params.body.templateId;
+
   const schema = await import(`../generated/templates/${templateId}/schema.js`);
 
   return sendEmail(
