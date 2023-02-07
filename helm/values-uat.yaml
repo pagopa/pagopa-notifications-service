@@ -52,7 +52,7 @@ microservice-chart:
   service:
     create: true
     type: ClusterIP
-    port: 
+    ports: 
     - 3000
   ingress:
     create: true
