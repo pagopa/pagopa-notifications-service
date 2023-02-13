@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "e8ef7cfc-a916-4524-9555-dc05de108073",
+		"_postman_id": "5bfcf49b-c67e-49d1-9306-58e258838865",
 		"name": "Notification API",
 		"description": "API to support notifications",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24209240"
 	},
 	"item": [
 		{
@@ -45,7 +46,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"from\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"to\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"templateId\": \"poc-2\",\n  \"pspName\": \"test\",\n  \"amount\": 100,\n  \"transactionId\": true\n}",
+					"raw": "{\n  \"to\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"subject\": \"TEST MAIL\",\n  \"templateId\": \"poc-1\",\n  \"parameters\": {\n    \"amount\": 100,\n    \"email\":\"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n    \"noticeCode\" : \"302001751670642100\"\n  },\n  \"language\": \"it\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
