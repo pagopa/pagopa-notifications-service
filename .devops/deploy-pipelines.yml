@@ -117,7 +117,7 @@ stages:
       vmImage: "ubuntu-latest"
     jobs:
       - job: API_tests
-        displayName: API test for blue deploy approval
+        displayName: API test for DEV
         steps:
           - script: |
               sleep 60
@@ -220,7 +220,7 @@ stages:
       vmImage: "ubuntu-latest"
     jobs:
       - job: API_tests
-        displayName: API test for blue deploy approval
+        displayName: API test for UAT
         steps:
           - script: |
               sleep 60
