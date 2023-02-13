@@ -109,7 +109,31 @@ stages:
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-dev.yaml"
                     GREEN_VERSION: $(Build.SourceVersion)
-                    
+ 
+  - stage: End_to_End_Tests_DEV
+    dependsOn:
+      - Deploy_for_DEV
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      - job: API_tests
+        displayName: API test for blue deploy approval
+        steps:
+          - script: |
+              sleep 60
+            displayName: "Waiting App running"
+          - script: |
+              yarn global add newman
+            displayName: "newman installation"
+          - script: |
+              newman run tests/api-tests/notifications-service.api.tests.json --environment=tests/api-tests/dev.env.json --env-var=NOTIFICATIONS_SERVICE_TESTING_API_KEY=$(NOTIFICATIONS_SERVICE_TESTING_API_KEY_DEV) --env-var=NOTIFICATIONS_SERVICE_TESTING_MAIL=$(NOTIFICATIONS_SERVICE_TESTING_MAIL) --reporters cli,junit --reporter-junit-export Results/api-TEST.xml
+            displayName: "Run api test on blue app"
+            continueOnError: true
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "**/*-TEST.xml"
+              searchFolder: "$(System.DefaultWorkingDirectory)"
   - stage: "Build_release_candidate"
     displayName: 'Build release candidate'
     dependsOn: []
@@ -188,25 +212,31 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             onTimeout: 'skip'
+
+  - stage: End_to_End_Tests_UAT
+    dependsOn:
+      - Bluegreen_WaitForApproval
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
       - job: API_tests
         displayName: API test for blue deploy approval
         steps:
           - script: |
               sleep 60
-            displayName: 'Waiting App running'
+            displayName: "Waiting App running"
           - script: |
               yarn global add newman
-            displayName: 'newman installation'
+            displayName: "newman installation"
           - script: |
-              newman run tests/api-tests/notifications-service.api.tests.json --environment=tests/api-tests/uat.env.json --env-var=NOTIFICATIONS_SERVICE_TESTING_API_KEY=$(NOTIFICATIONS_SERVICE_TESTING_API_KEY_UAT) --env-var=MAIL=$(NOTIFICATIONS_SERVICE_TESTING_MAIL) --reporters cli,junit --reporter-junit-export Results/api-TEST.xml     
-            displayName: 'Run api test on blue app'
-            continueOnError: true 
+              newman run tests/api-tests/notifications-service.api.tests.json --environment=tests/api-tests/uat.env.json --env-var=NOTIFICATIONS_SERVICE_TESTING_API_KEY=$(NOTIFICATIONS_SERVICE_TESTING_API_KEY_UAT) --env-var=NOTIFICATIONS_SERVICE_TESTING_MAIL=$(NOTIFICATIONS_SERVICE_TESTING_MAIL) --reporters cli,junit --reporter-junit-export Results/api-TEST.xml
+            displayName: "Run api test on blue app"
+            continueOnError: true
           - task: PublishTestResults@2
             inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: '**/*-TEST.xml' 
-              searchFolder: '$(System.DefaultWorkingDirectory)'          
-
+              testResultsFormat: "JUnit"
+              testResultsFiles: "**/*-TEST.xml"
+              searchFolder: "$(System.DefaultWorkingDirectory)"
   - stage: Release
     dependsOn: Bluegreen_WaitForApproval
     jobs:
