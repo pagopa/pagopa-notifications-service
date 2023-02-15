@@ -37,6 +37,11 @@
 						"key": "ocp-apim-subscription-key",
 						"value": "{{NOTIFICATIONS_SERVICE_TESTING_API_KEY}}",
 						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "blue",
+						"type": "text"
 					}
 				],
 				"body": {
