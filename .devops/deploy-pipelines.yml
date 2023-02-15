@@ -222,7 +222,7 @@ stages:
               yarn global add newman
             displayName: 'newman installation'
           - script: |
-              newman run tests/api-tests/notifications-service.api.tests.json --environment=tests/api-tests/uat.env.json --env-var=NOTIFICATIONS_SERVICE_TESTING_API_KEY=$(NOTIFICATIONS_SERVICE_TESTING_API_KEY_UAT) --env-var=NOTIFICATIONS_SERVICE_TESTING_MAIL=$(NOTIFICATIONS_SERVICE_TESTING_MAIL) --reporters cli,junit --reporter-junit-export Results/api-TEST.xml
+              newman run tests/api-tests/notifications-service.api.tests.uat-beta.json --environment=tests/api-tests/uat-beta.env.json --env-var=NOTIFICATIONS_SERVICE_TESTING_API_KEY=$(NOTIFICATIONS_SERVICE_TESTING_API_KEY_UAT) --env-var=NOTIFICATIONS_SERVICE_TESTING_MAIL=$(NOTIFICATIONS_SERVICE_TESTING_MAIL) --reporters cli,junit --reporter-junit-export Results/api-TEST.xml
             displayName: "Run api test on blue app"
             continueOnError: true 
           - task: PublishTestResults@2
