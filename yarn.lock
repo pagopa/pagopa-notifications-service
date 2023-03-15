@@ -2016,10 +2016,10 @@
     eslint-plugin-sonarjs "^0.5.0"
     prettier "^2.1.2"
 
-"@pagopa/openapi-codegen-ts@^11.2.0":
-  version "11.3.0"
-  resolved "https://registry.yarnpkg.com/@pagopa/openapi-codegen-ts/-/openapi-codegen-ts-11.3.0.tgz#9ba6763c24743570a4097964f157e31e39f933ff"
-  integrity sha512-hCHGE4rRg472oTrwe8C7KWNNduYSwgYymk0pfIF1KLYAlN8YGzmr67yHhFh4UIYh3C8RfiduyJ/I1K7qKitgOw==
+"@pagopa/openapi-codegen-ts@12.1.2":
+  version "12.1.2"
+  resolved "https://registry.yarnpkg.com/@pagopa/openapi-codegen-ts/-/openapi-codegen-ts-12.1.2.tgz#41c51850f537b0a26c311bcfe9c6fd2db2c12d17"
+  integrity sha512-pJS4WTS4XkV6fyNFRfL9J/8CBcV+VUHWnweLNYwEgRXvYuaday/aaEEy/7JRjKuMI0c0jfX0gq8SbspMb/lx0A==
   dependencies:
     "@pagopa/ts-commons" "^10.3.0"
     fs-extra "^6.0.0"
@@ -2031,7 +2031,23 @@
     write-yaml-file "^4.1.3"
     yargs "^15.0.1"
 
-"@pagopa/ts-commons@^10.3.0", "@pagopa/ts-commons@^10.7.1":
+"@pagopa/ts-commons@^10.3.0":
+  version "10.15.0"
+  resolved "https://registry.yarnpkg.com/@pagopa/ts-commons/-/ts-commons-10.15.0.tgz#8e3030a2ebc16c3edb5ef99962c6e8d534826957"
+  integrity sha512-MTmD0geIN9L9vnEYjPTE7v6Bu+IRTFMre+3K4LWYjy1AaRmYcpSrc9HTZgyCRW8uLCvw1BmDKcKtSiETM817kw==
+  dependencies:
+    abort-controller "^3.0.0"
+    agentkeepalive "^4.1.4"
+    applicationinsights "^1.8.10"
+    fp-ts "^2.11.0"
+    io-ts "^2.2.16"
+    jose "^4.11.2"
+    json-set-map "^1.1.2"
+    node-fetch "^2.6.0"
+    semver "^7.3.7"
+    validator "^13.7.0"
+
+"@pagopa/ts-commons@^10.7.1":
   version "10.13.0"
   resolved "https://registry.yarnpkg.com/@pagopa/ts-commons/-/ts-commons-10.13.0.tgz#d8828a4b4f29e6ad0674c9fcea55eab41240725f"
   integrity sha512-NE1RXpi5R7DlG9HdXCZZYj7DLodPMTEsusdDmCjJBlvsHRLlRsvGUx2mgA4oh+iFA+nGE9mDIbBoTN9lwGjqfQ==
