@@ -33,7 +33,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/NotificationEmailRequest"
+              $ref: '#/components/schemas/NotificationEmailRequest'
         required: true
       responses:
         200:
