@@ -2,13 +2,20 @@ openapi: 3.0.0
 info:
   title: Notification API
   description: API to support notifications
-  version: "0.0.1"
+  version: 0.0.1
+  contact:
+    name: pagoPA - Touchpoints team
+
+externalDocs:
+      url: https://pagopa.atlassian.net/wiki/spaces/I/pages/611745800/-servizio+notifications+service
+      description: Technical specifications
 servers:
 - url: https://api.platform.pagopa.it/notifications
 paths:
   /emails:
     post:
       summary: New Notification email
+      description: Api used to process a new email notification
       operationId: sendNotificationEmail
       parameters:
       - name: X-Client-Id
@@ -91,16 +98,21 @@ components:
       description: Request body containing info about the mail to be sent
       properties:
         to:
+          description: Email recipient
           type: string
           format: email
         subject:
+          description: Email subject
           type: string
         templateId:
+          description: Email template unique identifier
           type: string
         parameters:
+          description: Parameters used to value email templates
           type: object
           properties: {}
         language:
+          description: Language
           type: string
           format: iso639-1
       required:
@@ -109,9 +121,11 @@ components:
        - templateId
        - to
     NotificationEmailResponse:
+      description: New mail response body
       type: object
       properties:
         outcome:
+          description: Email notification outcome
           type: string
     HttpStatusCode:
       maximum: 6E+2
@@ -124,16 +138,21 @@ components:
       format: int32
       example: 200
     InfoResponse:
+      description: Info response body
       type: object
       properties:
         version:
+          description: Module version
           type: string
         name:
+          description: Module name
           type: string
     HealthResponse:
+      description: Health response body
       type: object
       properties:
         sentLast24Hours:
+          description: Number of mail sent in the last 24 hours
           type: number
     ProblemJson:
       type: object
