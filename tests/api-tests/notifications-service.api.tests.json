@@ -41,7 +41,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"to\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"subject\": \"TEST MAIL\",\n  \"templateId\": \"poc-1\",\n  \"parameters\": {\n    \"amount\": 100,\n    \"email\":\"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n    \"noticeCode\" : \"302001751670642100\"\n  },\n  \"language\": \"it\"\n}",
+					"raw": "{\n  \"to\": \"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n  \"subject\": \"{{NOTIFICATIONS_SERVICE_TESTING_SUBJECT}}\",\n  \"templateId\": \"poc-1\",\n  \"parameters\": {\n    \"amount\": 100,\n    \"email\":\"{{NOTIFICATIONS_SERVICE_TESTING_MAIL}}\",\n    \"noticeCode\" : \"302001751670642100\"\n  },\n  \"language\": \"it\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
