@@ -47,13 +47,12 @@ export const IConfig = t.interface({
   ERROR_QUEUE_NAME: t.string,
   INITIAL_RETRY_TIMEOUT_SECONDS: t.number,
   MAX_RETRY_ATTEMPTS: t.number,
+  PERSONAL_DATA_VAULT_API_BASE_PATH: t.string,
+  PERSONAL_DATA_VAULT_API_HOST: t.string,
+  PERSONAL_DATA_VAULT_API_KEY: t.string,
   PORT: t.number,
   RETRY_QUEUE_NAME: t.string,
-  STORAGE_CONNECTION_STRING: t.string,
-  PERSONAL_DATA_VAULT_API_KEY: t.string,
-  PERSONAL_DATA_VAULT_API_BASE_PATH: t.string,
-  PERSONAL_DATA_VAULT_API_HOST: t.string
-
+  STORAGE_CONNECTION_STRING: t.string
 });
 
 // No need to re-evaluate this object for each call

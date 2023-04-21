@@ -1,15 +1,15 @@
 import { Transporter } from "nodemailer";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Browser } from "puppeteer";
-import { IConfig } from "../util/config";
-import { retryQueueClient } from "../util/queues";
-import { logger } from "../util/logger";
 import * as TE from "fp-ts/lib/TaskEither";
-import { sendEmail } from "../controllers/EmailsControllers";
 import { decryptEmail } from "@src/util/confidentialDataManager";
 import { NotificationEmailRequest } from "@src/generated/definitions/NotificationEmailRequest";
 import { pipe } from "fp-ts/lib/function";
 import { EmailString } from "@pagopa/ts-commons/lib/strings";
+import { sendEmail } from "../controllers/EmailsControllers";
+import { logger } from "../util/logger";
+import { retryQueueClient } from "../util/queues";
+import { IConfig } from "../util/config";
 
 export const addRetryQueueListener = (
   config: IConfig,
@@ -37,9 +37,9 @@ export const addRetryQueueListener = (
           `../generated/templates/${templateId}/schema.js`
         );
         pipe(
-          decryptEmail( (params as NotificationEmailRequest).to),
-          TE.map((email) => {
-            (params as NotificationEmailRequest).to = email as EmailString
+          decryptEmail((params as NotificationEmailRequest).to),
+          TE.map(email => {
+            (params as NotificationEmailRequest).to = email as EmailString;
             void sendEmail(
               params,
               schema,
@@ -48,9 +48,8 @@ export const addRetryQueueListener = (
               config,
               retryCount - 1
             );
-          }) 
-        )
-       
+          })
+        );
       }
     }
   };

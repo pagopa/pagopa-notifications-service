@@ -28,6 +28,8 @@ import * as t from "io-ts";
 import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { formatValidationErrors } from "io-ts-reporters";
+import { encryptEmail } from "@src/util/confidentialDataManager";
+import { EmailString } from "@pagopa/ts-commons/lib/strings";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import {
   IConfig,
@@ -40,8 +42,6 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
-import { encryptEmail } from "@src/util/confidentialDataManager";
-import { EmailString, IEmailStringTag } from "@pagopa/ts-commons/lib/strings";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -173,7 +173,7 @@ export const sendEmail = async (
               async () => O.some(mockedResponse(params.body.to)),
               async () =>
                 O.some(
-                 await sendEmailWithAWS(
+                  await sendEmailWithAWS(
                     params.body.to,
                     params.body.subject,
                     htmlMarkup,
@@ -189,13 +189,13 @@ export const sendEmail = async (
           logger.error(`Error while trying to send email to AWS SES: ${e}`);
           pipe(
             encryptEmail(params.body.to),
-            TE.map((res) => {
+            TE.map(res => {
               if (retryCount > 0) {
                 logger.info(
                   `Enqueueing failed message with retryCount ${retryCount}`
                 );
-                params.body.to = res as EmailString
-                retryQueueClient.sendMessage(
+                params.body.to = res as EmailString;
+                void retryQueueClient.sendMessage(
                   JSON.stringify({
                     ...params,
                     retryCount
@@ -211,11 +211,11 @@ export const sendEmail = async (
                   `Message failed too many times, adding to error queue`
                 );
                 logger.error(JSON.stringify(params));
-    
-                 sendMessageToErrorQueue(params);
+
+                void sendMessageToErrorQueue(params);
               }
             })
-          )
+          );
           return O.none;
         }
       }
