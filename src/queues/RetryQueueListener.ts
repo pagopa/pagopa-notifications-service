@@ -4,7 +4,12 @@ import { Browser } from "puppeteer";
 import { IConfig } from "../util/config";
 import { retryQueueClient } from "../util/queues";
 import { logger } from "../util/logger";
+import * as TE from "fp-ts/lib/TaskEither";
 import { sendEmail } from "../controllers/EmailsControllers";
+import { decryptEmail } from "@src/util/confidentialDataManager";
+import { NotificationEmailRequest } from "@src/generated/definitions/NotificationEmailRequest";
+import { pipe } from "fp-ts/lib/function";
+import { EmailString } from "@pagopa/ts-commons/lib/strings";
 
 export const addRetryQueueListener = (
   config: IConfig,
@@ -31,15 +36,21 @@ export const addRetryQueueListener = (
         const schema = await import(
           `../generated/templates/${templateId}/schema.js`
         );
-
-        void sendEmail(
-          params,
-          schema,
-          browserEngine,
-          mailTrasporter,
-          config,
-          retryCount - 1
-        );
+        pipe(
+          decryptEmail( (params as NotificationEmailRequest).to),
+          TE.map((email) => {
+            (params as NotificationEmailRequest).to = email as EmailString
+            void sendEmail(
+              params,
+              schema,
+              browserEngine,
+              mailTrasporter,
+              config,
+              retryCount - 1
+            );
+          }) 
+        )
+       
       }
     }
   };

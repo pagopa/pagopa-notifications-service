@@ -22,6 +22,7 @@ import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
+import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import { Browser } from "puppeteer";
@@ -39,6 +40,8 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
+import { encryptEmail } from "@src/util/confidentialDataManager";
+import { EmailString, IEmailStringTag } from "@pagopa/ts-commons/lib/strings";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -170,7 +173,7 @@ export const sendEmail = async (
               async () => O.some(mockedResponse(params.body.to)),
               async () =>
                 O.some(
-                  await sendEmailWithAWS(
+                 await sendEmailWithAWS(
                     params.body.to,
                     params.body.subject,
                     htmlMarkup,
@@ -184,31 +187,35 @@ export const sendEmail = async (
           );
         } catch (e) {
           logger.error(`Error while trying to send email to AWS SES: ${e}`);
-
-          if (retryCount > 0) {
-            logger.info(
-              `Enqueueing failed message with retryCount ${retryCount}`
-            );
-            await retryQueueClient.sendMessage(
-              JSON.stringify({
-                ...params,
-                retryCount
-              }),
-              {
-                visibilityTimeout:
-                  2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
-                  config.INITIAL_RETRY_TIMEOUT_SECONDS
+          pipe(
+            encryptEmail(params.body.to),
+            TE.map((res) => {
+              if (retryCount > 0) {
+                logger.info(
+                  `Enqueueing failed message with retryCount ${retryCount}`
+                );
+                params.body.to = res as EmailString
+                retryQueueClient.sendMessage(
+                  JSON.stringify({
+                    ...params,
+                    retryCount
+                  }),
+                  {
+                    visibilityTimeout:
+                      2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
+                      config.INITIAL_RETRY_TIMEOUT_SECONDS
+                  }
+                );
+              } else {
+                logger.error(
+                  `Message failed too many times, adding to error queue`
+                );
+                logger.error(JSON.stringify(params));
+    
+                 sendMessageToErrorQueue(params);
               }
-            );
-          } else {
-            logger.error(
-              `Message failed too many times, adding to error queue`
-            );
-            logger.error(JSON.stringify(params));
-
-            await sendMessageToErrorQueue(params);
-          }
-
+            })
+          )
           return O.none;
         }
       }
