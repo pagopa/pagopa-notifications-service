@@ -5,7 +5,6 @@ import * as TE from "fp-ts/lib/TaskEither";
 import { decryptEmail } from "@src/util/confidentialDataManager";
 import { NotificationEmailRequest } from "@src/generated/definitions/NotificationEmailRequest";
 import { pipe } from "fp-ts/lib/function";
-import { EmailString } from "@pagopa/ts-commons/lib/strings";
 import { sendEmail } from "../controllers/EmailsControllers";
 import { logger } from "../util/logger";
 import { retryQueueClient } from "../util/queues";
@@ -38,10 +37,13 @@ export const addRetryQueueListener = (
         );
         pipe(
           decryptEmail((params as NotificationEmailRequest).to),
-          TE.map(email => {
-            (params as NotificationEmailRequest).to = email as EmailString;
+          TE.map(emailDecrypted => {
+            const newParamsWithDencryptedEmail = {
+              ...params,
+              to: emailDecrypted
+            };
             void sendEmail(
-              params,
+              newParamsWithDencryptedEmail,
               schema,
               browserEngine,
               mailTrasporter,

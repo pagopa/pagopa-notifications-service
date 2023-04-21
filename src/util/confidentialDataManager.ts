@@ -9,7 +9,7 @@ const config = getConfigOrThrow();
 export const apiPdvClient = createClient({
   baseUrl: config.PERSONAL_DATA_VAULT_API_HOST,
   basePath: config.PERSONAL_DATA_VAULT_API_BASE_PATH,
-  fetchApi: fetch as any
+  fetchApi: fetch
 });
 
 export const encryptEmail = (email: string): TE.TaskEither<Error, string> =>
@@ -27,7 +27,7 @@ export const encryptEmail = (email: string): TE.TaskEither<Error, string> =>
         if (res.status === 200) {
           return TE.right(res.value.token);
         } else {
-          return TE.left(new Error("foo"));
+          return TE.left(new Error(`Got error: ${res.status}`));
         }
       }
     )
@@ -48,7 +48,7 @@ export const decryptEmail = (
         if (res.status === 200) {
           return TE.right(res.value.pii);
         } else {
-          return TE.left(new Error("foo"));
+          return TE.left(new Error(`Got error: ${res.status}`));
         }
       }
     )

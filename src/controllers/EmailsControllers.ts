@@ -29,7 +29,6 @@ import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { formatValidationErrors } from "io-ts-reporters";
 import { encryptEmail } from "@src/util/confidentialDataManager";
-import { EmailString } from "@pagopa/ts-commons/lib/strings";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import {
   IConfig,
@@ -189,15 +188,18 @@ export const sendEmail = async (
           logger.error(`Error while trying to send email to AWS SES: ${e}`);
           pipe(
             encryptEmail(params.body.to),
-            TE.map(res => {
+            TE.map(emailEncrypted => {
               if (retryCount > 0) {
                 logger.info(
                   `Enqueueing failed message with retryCount ${retryCount}`
                 );
-                params.body.to = res as EmailString;
+                const newParamsWithEncryptedEmail = {
+                  ...params,
+                  to: emailEncrypted
+                };
                 void retryQueueClient.sendMessage(
                   JSON.stringify({
-                    ...params,
+                    ...newParamsWithEncryptedEmail,
                     retryCount
                   }),
                   {
