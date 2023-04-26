@@ -1,12 +1,13 @@
 import { pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
+import nodeFetch from "node-fetch";
 import { createClient } from "../generated/personal-data-vault/client";
 import { getConfigOrThrow } from "./config";
-import nodeFetch from "node-fetch";
 
 const config = getConfigOrThrow();
 
 /* eslint sort-keys: 0 */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export const apiPdvClient = createClient({
   baseUrl: config.PERSONAL_DATA_VAULT_API_HOST,
   basePath: config.PERSONAL_DATA_VAULT_API_BASE_PATH,
