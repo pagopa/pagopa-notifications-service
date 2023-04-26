@@ -1,7 +1,8 @@
 import { pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
-import { createClient } from "@src/generated/personal-data-vault/client";
+import { createClient } from "../generated/personal-data-vault/client";
 import { getConfigOrThrow } from "./config";
+import nodeFetch from "node-fetch";
 
 const config = getConfigOrThrow();
 
@@ -9,7 +10,7 @@ const config = getConfigOrThrow();
 export const apiPdvClient = createClient({
   baseUrl: config.PERSONAL_DATA_VAULT_API_HOST,
   basePath: config.PERSONAL_DATA_VAULT_API_BASE_PATH,
-  fetchApi: fetch
+  fetchApi: (nodeFetch as any) as typeof fetch
 });
 
 export const encryptEmail = (email: string): TE.TaskEither<Error, string> =>

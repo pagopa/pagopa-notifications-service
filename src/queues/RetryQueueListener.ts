@@ -2,7 +2,7 @@ import { Transporter } from "nodemailer";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Browser } from "puppeteer";
 import * as TE from "fp-ts/lib/TaskEither";
-import { decryptEmail } from "@src/util/confidentialDataManager";
+import { decryptEmail } from "../util/confidentialDataManager";
 import { NotificationEmailRequest } from "@src/generated/definitions/NotificationEmailRequest";
 import { pipe } from "fp-ts/lib/function";
 import { sendEmail } from "../controllers/EmailsControllers";

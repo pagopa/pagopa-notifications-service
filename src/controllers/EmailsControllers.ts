@@ -28,7 +28,6 @@ import * as t from "io-ts";
 import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { formatValidationErrors } from "io-ts-reporters";
-import { encryptEmail } from "@src/util/confidentialDataManager";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import {
   IConfig,
@@ -41,6 +40,7 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
+import { encryptEmail } from "../util/confidentialDataManager";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (

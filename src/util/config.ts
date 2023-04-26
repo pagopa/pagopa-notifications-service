@@ -75,6 +75,16 @@ const envConfig = {
   MAX_RETRY_ATTEMPTS: process.env.MAX_RETRY_ATTEMPTS
     ? parseInt(process.env.MAX_RETRY_ATTEMPTS, 10)
     : 3,
+  PERSONAL_DATA_VAULT_API_BASE_PATH: process.env
+    .PERSONAL_DATA_VAULT_API_BASE_PATH
+    ? process.env.PERSONAL_DATA_VAULT_API_BASE_PATH
+    : "",
+  PERSONAL_DATA_VAULT_API_HOST: process.env.PERSONAL_DATA_VAULT_API_HOST
+    ? process.env.PERSONAL_DATA_VAULT_API_HOST
+    : "",
+  PERSONAL_DATA_VAULT_API_KEY: process.env.PERSONAL_DATA_VAULT_API_KEY
+    ? process.env.PERSONAL_DATA_VAULT_API_KEY
+    : "",
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 };
 
