@@ -22,7 +22,7 @@ import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
-import { pipe } from "fp-ts/lib/function";
+ùimport { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
@@ -160,16 +160,16 @@ export const sendEmail = async (
           `[${clientId}] - Sending email with template ${templateId}`
         );
 
-        try {
-          return pipe(
-            clientId,
-            O.fromPredicate(
-              (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
-            ),
-            O.fold(
-              async () => O.some(mockedResponse(params.body.to)),
-              async () =>
-                O.some(
+        return pipe(
+          clientId,
+          O.fromPredicate(
+            (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
+          ),
+          O.fold(
+            async () => O.some(mockedResponse(params.body.to)),
+            async () => {
+              try {
+                return O.some(
                   await sendEmailWithAWS(
                     params.body.to,
                     params.body.subject,
@@ -179,38 +179,41 @@ export const sendEmail = async (
                     pdfData,
                     "test.pdf"
                   )
-                )
-            )
-          );
-        } catch (e) {
-          logger.error(`Error while trying to send email to AWS SES: ${e}`);
+                );
+              } catch (error) {
+                logger.error(
+                  `Error while trying to send email to AWS SES: ${error}`
+                );
 
-          if (retryCount > 0) {
-            logger.info(
-              `Enqueueing failed message with retryCount ${retryCount}`
-            );
-            await retryQueueClient.sendMessage(
-              JSON.stringify({
-                ...params,
-                retryCount
-              }),
-              {
-                visibilityTimeout:
-                  2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
-                  config.INITIAL_RETRY_TIMEOUT_SECONDS
+                if (retryCount > 0) {
+                  logger.info(
+                    `Enqueueing failed message with retryCount ${retryCount}`
+                  );
+                  await retryQueueClient.sendMessage(
+                    JSON.stringify({
+                      ...params,
+                      retryCount
+                    }),
+                    {
+                      visibilityTimeout:
+                        2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
+                        config.INITIAL_RETRY_TIMEOUT_SECONDS
+                    }
+                  );
+                } else {
+                  logger.error(
+                    `Message failed too many times, adding to error queue`
+                  );
+                  logger.error(JSON.stringify(params));
+
+                  await sendMessageToErrorQueue(params);
+                }
+
+                return O.none;
               }
-            );
-          } else {
-            logger.error(
-              `Message failed too many times, adding to error queue`
-            );
-            logger.error(JSON.stringify(params));
-
-            await sendMessageToErrorQueue(params);
-          }
-
-          return O.none;
-        }
+            }
+          )
+        );
       }
     ),
     E.fold(
