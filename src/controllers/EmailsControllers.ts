@@ -162,16 +162,16 @@ export const sendEmail = async (
           `[${clientId}] - Sending email with template ${templateId}`
         );
 
-        try {
-          return pipe(
-            clientId,
-            O.fromPredicate(
-              (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
-            ),
-            O.fold(
-              async () => O.some(mockedResponse(params.body.to)),
-              async () =>
-                O.some(
+        return pipe(
+          clientId,
+          O.fromPredicate(
+            (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
+          ),
+          O.fold(
+            async () => O.some(mockedResponse(params.body.to)),
+            async () => {
+              try {
+                return O.some(
                   await sendEmailWithAWS(
                     params.body.to,
                     params.body.subject,
@@ -181,45 +181,46 @@ export const sendEmail = async (
                     pdfData,
                     "test.pdf"
                   )
-                )
-            )
-          );
-        } catch (e) {
-          logger.error(`Error while trying to send email to AWS SES: ${e}`);
-          pipe(
-            encryptEmail(params.body.to),
-            TE.map(emailEncrypted => {
-              if (retryCount > 0) {
-                logger.info(
-                  `Enqueueing failed message with retryCount ${retryCount}`
                 );
-                const newParamsWithEncryptedEmail = {
-                  ...params,
-                  to: emailEncrypted
-                };
-                void retryQueueClient.sendMessage(
-                  JSON.stringify({
-                    ...newParamsWithEncryptedEmail,
-                    retryCount
-                  }),
-                  {
-                    visibilityTimeout:
-                      2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
-                      config.INITIAL_RETRY_TIMEOUT_SECONDS
-                  }
+              } catch (e) {
+                logger.error(`Error while trying to send email to AWS SES: ${e}`);
+                pipe(
+                  encryptEmail(params.body.to),
+                  TE.map(emailEncrypted => {
+                    if (retryCount > 0) {
+                      logger.info(
+                        `Enqueueing failed message with retryCount ${retryCount}`
+                      );
+                      const newParamsWithEncryptedEmail = {
+                        ...params,
+                        to: emailEncrypted
+                      };
+                      void retryQueueClient.sendMessage(
+                        JSON.stringify({
+                          ...newParamsWithEncryptedEmail,
+                          retryCount
+                        }),
+                        {
+                          visibilityTimeout:
+                            2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
+                            config.INITIAL_RETRY_TIMEOUT_SECONDS
+                        }
+                      );
+                    } else {
+                      logger.error(
+                        `Message failed too many times, adding to error queue`
+                      );
+                      logger.error(JSON.stringify(params));
+      
+                      void sendMessageToErrorQueue(params);
+                    }
+                  })
                 );
-              } else {
-                logger.error(
-                  `Message failed too many times, adding to error queue`
-                );
-                logger.error(JSON.stringify(params));
-
-                void sendMessageToErrorQueue(params);
+                return O.none;
               }
-            })
-          );
-          return O.none;
-        }
+            }
+          )
+        );
       }
     ),
     E.fold(
