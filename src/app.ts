@@ -30,6 +30,12 @@ export const startApp = async (
   );
 
   logger.info(
+    `⚡️⚡️⚡️⚡️⚡️ Start agent ELK ⚡️⚡️⚡️⚡️⚡️`
+  );
+  
+  require('elastic-apm-node').start()
+  
+  logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup puppeter for pdf generator⚡️⚡️⚡️⚡️⚡️`
   );
 
