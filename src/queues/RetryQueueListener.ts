@@ -4,6 +4,7 @@ import { Browser } from "puppeteer";
 import * as TE from "fp-ts/lib/TaskEither";
 import { NotificationEmailRequest } from "@src/generated/definitions/NotificationEmailRequest";
 import { pipe } from "fp-ts/lib/function";
+import { EmailString } from "@pagopa/ts-commons/lib/strings";
 import { decryptEmail } from "../util/confidentialDataManager";
 import { sendEmail } from "../controllers/EmailsControllers";
 import { logger } from "../util/logger";
@@ -38,12 +39,9 @@ export const addRetryQueueListener = (
         pipe(
           decryptEmail((params as NotificationEmailRequest).to),
           TE.map(emailDecrypted => {
-            const newParamsWithDencryptedEmail = {
-              ...params,
-              to: emailDecrypted
-            };
+            params.body.to = emailDecrypted as EmailString;
             void sendEmail(
-              newParamsWithDencryptedEmail,
+              params,
               schema,
               browserEngine,
               mailTrasporter,
@@ -51,7 +49,7 @@ export const addRetryQueueListener = (
               retryCount - 1
             );
           })
-        );
+        )();
       }
     }
   };
