@@ -78,7 +78,6 @@ microservice-chart:
     AI_SAMPLING_PERCENTAGE: "30"
     AI_ENABLED: "true"
     ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
-    ELASTIC_APM_APPLICATION_PACKAGES: src
     ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
     ELASTIC_APM_LOG_SENDING: "true"
   envSecret:
