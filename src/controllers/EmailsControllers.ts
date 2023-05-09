@@ -39,7 +39,6 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
-import apm = require("elastic-apm-node");
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -105,7 +104,6 @@ export const sendEmail = async (
   retryCount: number
   // eslint-disable-next-line max-params
 ): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
-  apm.startTransaction("Send email","job")
   const clientId = params["X-Client-Id"];
   const templateId = params.body.templateId;
   const textTemplateRaw = fs
@@ -183,7 +181,6 @@ export const sendEmail = async (
                   )
                 );
               } catch (error) {
-                apm.captureError(`Error while trying to send email to AWS SES: ${error}`)
                 logger.error(
                   `Error while trying to send email to AWS SES: ${error}`
                 );
