@@ -14,6 +14,7 @@ import { infoController } from "./controllers/InfoControllers";
 import { healthController } from "./controllers/HealthControllers";
 import { addRetryQueueListener } from "./queues/RetryQueueListener";
 
+
 /**
  * Define and start an express Server
  * to expose RESTful and SOAP endpoints for BackendApp and Proxy requests.
@@ -29,12 +30,6 @@ export const startApp = async (
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server Starting at https://localhost:${config.PORT} ⚡️⚡️⚡️⚡️⚡️`
   );
 
-  logger.info(
-    `⚡️⚡️⚡️⚡️⚡️ Start agent ELK ⚡️⚡️⚡️⚡️⚡️`
-  );
-  
-  var apm = require('elastic-apm-node').start()
-  
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup puppeter for pdf generator⚡️⚡️⚡️⚡️⚡️`
   );
