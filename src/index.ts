@@ -9,7 +9,10 @@ logger.info(
   `⚡️⚡️⚡️⚡️⚡️ Start agent ELK ⚡️⚡️⚡️⚡️⚡️`
 );
 
-require('elastic-apm-node').start()
+const apm = require('elastic-apm-node').start()
+var err = new Error('Ups, something broke!')
+
+apm.captureError(err)
 
 // Retrieve server configuration
 const config = getConfigOrThrow();
