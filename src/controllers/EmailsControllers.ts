@@ -129,6 +129,9 @@ export const sendEmail = async (
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
+  const parameters:any = params.body.parameters;
+  //add pagopa logo URI taken from configuration
+  parameters.logos.pagopa.cdnUri = config.PAGOPA_MAIL_LOGO_URI;
   return pipe(
     params.body.parameters,
     schema.default.decode,

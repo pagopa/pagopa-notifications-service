@@ -49,7 +49,8 @@ export const IConfig = t.interface({
   MAX_RETRY_ATTEMPTS: t.number,
   PORT: t.number,
   RETRY_QUEUE_NAME: t.string,
-  STORAGE_CONNECTION_STRING: t.string
+  STORAGE_CONNECTION_STRING: t.string,
+  PAGOPA_MAIL_LOGO_URI: t.string
 });
 
 // No need to re-evaluate this object for each call
