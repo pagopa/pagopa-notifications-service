@@ -167,7 +167,6 @@ export const sendEmail = async (
         logger.info(
           `[${clientId}] - Sending email with template ${templateId}`
         );
-        logger.info(htmlMarkup);
         return pipe(
           clientId,
           O.fromPredicate(
