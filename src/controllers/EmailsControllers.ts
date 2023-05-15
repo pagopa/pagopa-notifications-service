@@ -28,7 +28,6 @@ import * as t from "io-ts";
 import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { formatValidationErrors } from "io-ts-reporters";
-import { EmailString } from "@pagopa/ts-commons/lib/strings";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 import {
   IConfig,
@@ -41,7 +40,7 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
-import { encryptEmail } from "../util/confidentialDataManager";
+import { encryptBody } from "../util/confidentialDataManager";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -68,7 +67,6 @@ const sendEmailWithAWS = async (
     )
   );
   */
-
   const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
     {
       from: "no-reply@pagopa.it",
@@ -187,17 +185,16 @@ export const sendEmail = async (
                 logger.error(
                   `Error while trying to send email to AWS SES: ${e}`
                 );
-                pipe(
-                  encryptEmail(params.body.to),
-                  TE.map(emailEncrypted => {
+                await pipe(
+                  encryptBody(JSON.stringify(params)),
+                  TE.map(paramsEncrypted => {
                     if (retryCount > 0) {
                       logger.info(
                         `Enqueueing failed message with retryCount ${retryCount}`
                       );
-                      params.body.to = emailEncrypted as EmailString;
                       void retryQueueClient.sendMessage(
                         JSON.stringify({
-                          ...params,
+                          paramsEncrypted,
                           retryCount
                         }),
                         {

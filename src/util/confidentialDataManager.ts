@@ -14,13 +14,13 @@ export const apiPdvClient = createClient({
   fetchApi: (nodeFetch as any) as typeof fetch
 });
 
-export const encryptEmail = (email: string): TE.TaskEither<Error, string> =>
+export const encryptBody = (body: string): TE.TaskEither<Error, string> =>
   pipe(
     () =>
       apiPdvClient.saveUsingPUT({
         api_key: config.PERSONAL_DATA_VAULT_API_KEY,
         body: {
-          pii: email
+          pii: body
         }
       }),
     TE.fold(
@@ -35,9 +35,7 @@ export const encryptEmail = (email: string): TE.TaskEither<Error, string> =>
     )
   );
 
-export const decryptEmail = (
-  opaqueData: string
-): TE.TaskEither<Error, string> =>
+export const decryptBody = (opaqueData: string): TE.TaskEither<Error, string> =>
   pipe(
     () =>
       apiPdvClient.findPiiUsingGET({
