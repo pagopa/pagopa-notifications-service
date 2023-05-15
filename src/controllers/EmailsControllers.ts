@@ -106,6 +106,7 @@ export const sendEmail = async (
   // eslint-disable-next-line max-params
 ): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
   const clientId = params["X-Client-Id"];
+
   const templateId = params.body.templateId;
   const textTemplateRaw = fs
     .readFileSync(
@@ -193,14 +194,16 @@ export const sendEmail = async (
                   `Error while trying to send email to AWS SES: ${e}`
                 );
                 await pipe(
-                  encryptBody(JSON.stringify(params)),
+                  encryptBody(JSON.stringify(params.body)),
                   TE.map(paramsEncrypted => {
                     if (retryCount > 0) {
                       logger.info(
                         `Enqueueing failed message with retryCount ${retryCount}`
                       );
+
                       void retryQueueClient.sendMessage(
                         JSON.stringify({
+                          clientId,
                           paramsEncrypted,
                           retryCount
                         }),

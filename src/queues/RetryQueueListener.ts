@@ -3,6 +3,7 @@ import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Browser } from "puppeteer";
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
+import { NotificationEmailRequest } from "@src/generated/definitions/NotificationEmailRequest";
 import { decryptBody } from "../util/confidentialDataManager";
 import { sendEmail } from "../controllers/EmailsControllers";
 import { logger } from "../util/logger";
@@ -28,17 +29,24 @@ export const addRetryQueueListener = (
           message.messageId,
           message.popReceipt
         );
-        const { retryCount, ...params } = JSON.parse(message.messageText);
-        logger.info(params);
+        const { clientId, paramsEncrypted, retryCount } = JSON.parse(
+          message.messageText
+        );
         await pipe(
-          decryptBody(params),
-          TE.map(async bodyDecrypted => {
-            const templateId = params.body.templateId;
+          decryptBody(paramsEncrypted),
+          TE.map(async paramsDecrypted => {
+            const bodyRequest = JSON.parse(
+              paramsDecrypted
+            ) as NotificationEmailRequest;
+            const templateId = bodyRequest.templateId;
             const schema = await import(
               `../generated/templates/${templateId}/schema.js`
             );
             void sendEmail(
-              JSON.parse(bodyDecrypted),
+              {
+                "X-Client-Id": clientId,
+                body: bodyRequest
+              },
               schema,
               browserEngine,
               mailTrasporter,
