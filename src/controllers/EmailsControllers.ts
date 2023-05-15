@@ -189,13 +189,13 @@ export const sendEmail = async (
                     "test.pdf"
                   )
                 );
-              } catch (e) {
+              } catch (error) {
                 logger.error(
-                  `Error while trying to send email to AWS SES: ${e}`
+                  `Error while trying to send email to AWS SES: ${error}`
                 );
                 await pipe(
                   encryptBody(JSON.stringify(params.body)),
-                  TE.map(paramsEncrypted => {
+                  TE.map(bodyEncrypted => {
                     if (retryCount > 0) {
                       logger.info(
                         `Enqueueing failed message with retryCount ${retryCount}`
@@ -204,7 +204,7 @@ export const sendEmail = async (
                       void retryQueueClient.sendMessage(
                         JSON.stringify({
                           clientId,
-                          paramsEncrypted,
+                          bodyEncrypted,
                           retryCount
                         }),
                         {
@@ -217,9 +217,7 @@ export const sendEmail = async (
                       logger.error(
                         `Message failed too many times, adding to error queue`
                       );
-                      logger.error(JSON.stringify(params));
-
-                      void sendMessageToErrorQueue(params);
+                      void sendMessageToErrorQueue(bodyEncrypted, clientId);
                     }
                   })
                 )();
