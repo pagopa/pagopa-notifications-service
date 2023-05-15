@@ -26,6 +26,13 @@ export const startApp = async (
   config: IConfig,
   logger: Logger
 ): Promise<http.Server> => {
+
+  logger.info(
+    `⚡️⚡️⚡️⚡️⚡️ Start agent ELK ⚡️⚡️⚡️⚡️⚡️`
+  );
+  
+  const apm = require('elastic-apm-node').start()
+  
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server Starting at https://localhost:${config.PORT} ⚡️⚡️⚡️⚡️⚡️`
   );

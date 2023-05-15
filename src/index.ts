@@ -5,12 +5,6 @@ import * as app from "./app";
 import { getConfigOrThrow } from "./util/config";
 import { logger } from "./util/logger";
 
-logger.info(
-  `⚡️⚡️⚡️⚡️⚡️ Start agent ELK ⚡️⚡️⚡️⚡️⚡️`
-);
-
-const apm = require('elastic-apm-node').start()
-
 // Retrieve server configuration
 const config = getConfigOrThrow();
 
