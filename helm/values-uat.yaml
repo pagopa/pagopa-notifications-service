@@ -14,7 +14,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-        tag: "0.1.10"
+        tag: "0.1.11"
         pullPolicy: Always
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
@@ -28,6 +28,7 @@ microservice-chart:
         AI_ENABLED: "true"
         PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
         PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
+        PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
@@ -36,7 +37,7 @@ microservice-chart:
         PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.1.10"
+    tag: "0.1.11"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -107,6 +108,7 @@ microservice-chart:
     ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue"
     AI_SAMPLING_PERCENTAGE: "30"
     AI_ENABLED: "true"
+    PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key

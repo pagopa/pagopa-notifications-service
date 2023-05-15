@@ -130,8 +130,16 @@ export const sendEmail = async (
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
+  // add pagopa logo URI taken from configuration
+  const enrichedParameters = {
+    ...params.body.parameters,
+    logos: {
+      pagopaCdnUri: config.PAGOPA_MAIL_LOGO_URI
+    }
+  };
+
   return pipe(
-    params.body.parameters,
+    enrichedParameters,
     schema.default.decode,
     E.map<unknown, readonly [string, string, O.Option<string>]>(
       (templateParams: unknown) => [
@@ -160,7 +168,6 @@ export const sendEmail = async (
         logger.info(
           `[${clientId}] - Sending email with template ${templateId}`
         );
-
         return pipe(
           clientId,
           O.fromPredicate(
