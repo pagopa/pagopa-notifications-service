@@ -36,7 +36,11 @@ microservice-chart:
     create: false
     annotations: {}
     name: ""
-  podAnnotations: {}
+  podAnnotations: {
+    co.elastic.logs/json.overwrite_keys: true,
+    co.elastic.logs/json.add_error_key: true,
+    co.elastic.logs/json.expand_keys: true
+  }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
