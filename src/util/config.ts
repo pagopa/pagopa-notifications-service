@@ -47,6 +47,7 @@ export const IConfig = t.interface({
   ERROR_QUEUE_NAME: t.string,
   INITIAL_RETRY_TIMEOUT_SECONDS: t.number,
   MAX_RETRY_ATTEMPTS: t.number,
+  PAGOPA_MAIL_LOGO_URI: t.string,
   PORT: t.number,
   RETRY_QUEUE_NAME: t.string,
   STORAGE_CONNECTION_STRING: t.string

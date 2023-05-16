@@ -129,8 +129,16 @@ export const sendEmail = async (
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
+  // add pagopa logo URI taken from configuration
+  const enrichedParameters = {
+    ...params.body.parameters,
+    logos: {
+      pagopaCdnUri: config.PAGOPA_MAIL_LOGO_URI
+    }
+  };
+
   return pipe(
-    params.body.parameters,
+    enrichedParameters,
     schema.default.decode,
     E.map<unknown, readonly [string, string, O.Option<string>]>(
       (templateParams: unknown) => [
@@ -159,17 +167,16 @@ export const sendEmail = async (
         logger.info(
           `[${clientId}] - Sending email with template ${templateId}`
         );
-
-        try {
-          return pipe(
-            clientId,
-            O.fromPredicate(
-              (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
-            ),
-            O.fold(
-              async () => O.some(mockedResponse(params.body.to)),
-              async () =>
-                O.some(
+        return pipe(
+          clientId,
+          O.fromPredicate(
+            (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
+          ),
+          O.fold(
+            async () => O.some(mockedResponse(params.body.to)),
+            async () => {
+              try {
+                return O.some(
                   await sendEmailWithAWS(
                     params.body.to,
                     params.body.subject,
@@ -179,38 +186,41 @@ export const sendEmail = async (
                     pdfData,
                     "test.pdf"
                   )
-                )
-            )
-          );
-        } catch (e) {
-          logger.error(`Error while trying to send email to AWS SES: ${e}`);
+                );
+              } catch (error) {
+                logger.error(
+                  `Error while trying to send email to AWS SES: ${error}`
+                );
 
-          if (retryCount > 0) {
-            logger.info(
-              `Enqueueing failed message with retryCount ${retryCount}`
-            );
-            await retryQueueClient.sendMessage(
-              JSON.stringify({
-                ...params,
-                retryCount
-              }),
-              {
-                visibilityTimeout:
-                  2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
-                  config.INITIAL_RETRY_TIMEOUT_SECONDS
+                if (retryCount > 0) {
+                  logger.info(
+                    `Enqueueing failed message with retryCount ${retryCount}`
+                  );
+                  await retryQueueClient.sendMessage(
+                    JSON.stringify({
+                      ...params,
+                      retryCount
+                    }),
+                    {
+                      visibilityTimeout:
+                        2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
+                        config.INITIAL_RETRY_TIMEOUT_SECONDS
+                    }
+                  );
+                } else {
+                  logger.error(
+                    `Message failed too many times, adding to error queue`
+                  );
+                  logger.error(JSON.stringify(params));
+
+                  await sendMessageToErrorQueue(params);
+                }
+
+                return O.none;
               }
-            );
-          } else {
-            logger.error(
-              `Message failed too many times, adding to error queue`
-            );
-            logger.error(JSON.stringify(params));
-
-            await sendMessageToErrorQueue(params);
-          }
-
-          return O.none;
-        }
+            }
+          )
+        );
       }
     ),
     E.fold(
