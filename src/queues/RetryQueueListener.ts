@@ -29,11 +29,11 @@ export const addRetryQueueListener = (
           message.messageId,
           message.popReceipt
         );
-        const { clientId, paramsEncrypted, retryCount } = JSON.parse(
+        const { clientId, bodyEncrypted, retryCount } = JSON.parse(
           message.messageText
         );
         await pipe(
-          decryptBody(paramsEncrypted),
+          decryptBody(bodyEncrypted),
           TE.map(async paramsDecrypted => {
             const bodyRequest = JSON.parse(
               paramsDecrypted
@@ -53,6 +53,10 @@ export const addRetryQueueListener = (
               config,
               retryCount - 1
             );
+          }),
+          TE.mapLeft(() => {
+            logger.error("Error while invoke PDV while decrypt body");
+            throw Error();
           })
         )();
       }

@@ -219,6 +219,10 @@ export const sendEmail = async (
                       );
                       void sendMessageToErrorQueue(bodyEncrypted, clientId);
                     }
+                  }),
+                  TE.mapLeft(() => {
+                    logger.error("Error while invoke PDV while encrypt body");
+                    throw Error();
                   })
                 )();
                 return O.none;
