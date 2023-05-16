@@ -44,6 +44,7 @@ import { encryptBody } from "../util/confidentialDataManager";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
+  senderEmail: string,
   recipientEmail: string,
   subject: string,
   htmlData: string,
@@ -69,7 +70,7 @@ const sendEmailWithAWS = async (
   */
   const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
     {
-      from: "no-reply@pagopa.it",
+      from: senderEmail,
       to: recipientEmail,
       subject,
       html: htmlData,
@@ -180,6 +181,7 @@ export const sendEmail = async (
               try {
                 return O.some(
                   await sendEmailWithAWS(
+                    config.ECOMMERCE_NOTIFICATIONS_SENDER,
                     params.body.to,
                     params.body.subject,
                     htmlMarkup,
