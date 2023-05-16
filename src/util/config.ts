@@ -44,6 +44,7 @@ export const IConfig = t.interface({
   CLIENT_ECOMMERCE: NotificationsServiceClientConfig,
   CLIENT_ECOMMERCE_TEST: NotificationsServiceClientConfig,
   CLIENT_PAYMENT_MANAGER: NotificationsServiceClientConfig,
+  ECOMMERCE_NOTIFICATIONS_SENDER: t.string,
   ERROR_QUEUE_NAME: t.string,
   INITIAL_RETRY_TIMEOUT_SECONDS: t.number,
   MAX_RETRY_ATTEMPTS: t.number,

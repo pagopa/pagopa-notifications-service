@@ -32,6 +32,7 @@ microservice-chart:
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
         STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
         AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
+        ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
     tag: "0.1.11"
@@ -111,6 +112,7 @@ microservice-chart:
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
     STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
     AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
+    ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
   keyvault:
     name: "pagopa-u-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
