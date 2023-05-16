@@ -14,7 +14,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-        tag: "0.2.1"
+        tag: "0.3.0"
         pullPolicy: Always
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
@@ -35,7 +35,7 @@ microservice-chart:
         ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.2.1"
+    tag: "0.3.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
