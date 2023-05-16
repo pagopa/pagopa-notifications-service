@@ -54,9 +54,9 @@ export const addRetryQueueListener = (
               retryCount - 1
             );
           }),
-          TE.mapLeft(() => {
+          TE.mapLeft(e => {
             logger.error("Error while invoke PDV while decrypt body");
-            throw Error();
+            throw e;
           })
         )();
       }
