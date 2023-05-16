@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "lib": ["dom"],
     "baseUrl": ".",
+    "esModuleInterop" :true,
     "paths": {
       "@src/*": ["src/*"],
       "@dist/*":["dist/*"]

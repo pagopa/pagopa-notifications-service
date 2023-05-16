@@ -1,4 +1,4 @@
-const apm = require('elastic-apm-node').start()
+import 'elastic-apm-node/start'
 import { logger } from "./util/logger";
 
 /**
