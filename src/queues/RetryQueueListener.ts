@@ -34,7 +34,12 @@ export const addRetryQueueListener = (
         );
         await pipe(
           decryptBody(bodyEncrypted),
+          TE.mapLeft(e => {
+            logger.error("Error while invoke PDV while decrypt body");
+            throw e;
+          }),
           TE.map(async paramsDecrypted => {
+            console.log(paramsDecrypted);
             const bodyRequest = JSON.parse(
               paramsDecrypted
             ) as NotificationEmailRequest;
@@ -53,10 +58,6 @@ export const addRetryQueueListener = (
               config,
               retryCount - 1
             );
-          }),
-          TE.mapLeft(e => {
-            logger.error("Error while invoke PDV while decrypt body");
-            throw e;
           })
         )();
       }
