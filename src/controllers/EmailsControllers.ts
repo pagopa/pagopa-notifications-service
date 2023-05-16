@@ -42,6 +42,7 @@ import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
+  senderEmail: string,
   recipientEmail: string,
   subject: string,
   htmlData: string,
@@ -68,7 +69,7 @@ const sendEmailWithAWS = async (
 
   const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
     {
-      from: "no-reply@pagopa.it",
+      from: senderEmail,
       to: recipientEmail,
       subject,
       html: htmlData,
@@ -129,8 +130,16 @@ export const sendEmail = async (
     O.map(path => fs.readFileSync(path).toString()),
     O.map(Handlebars.compile)
   );
+  // add pagopa logo URI taken from configuration
+  const enrichedParameters = {
+    ...params.body.parameters,
+    logos: {
+      pagopaCdnUri: config.PAGOPA_MAIL_LOGO_URI
+    }
+  };
+
   return pipe(
-    params.body.parameters,
+    enrichedParameters,
     schema.default.decode,
     E.map<unknown, readonly [string, string, O.Option<string>]>(
       (templateParams: unknown) => [
@@ -159,7 +168,6 @@ export const sendEmail = async (
         logger.info(
           `[${clientId}] - Sending email with template ${templateId}`
         );
-
         return pipe(
           clientId,
           O.fromPredicate(
@@ -171,6 +179,7 @@ export const sendEmail = async (
               try {
                 return O.some(
                   await sendEmailWithAWS(
+                    config.ECOMMERCE_NOTIFICATIONS_SENDER,
                     params.body.to,
                     params.body.subject,
                     htmlMarkup,

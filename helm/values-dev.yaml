@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: pagopadcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.1.10"
+    tag: "0.2.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -84,12 +84,14 @@ microservice-chart:
     AI_ENABLED: "true"
     ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
     ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
+    PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
   envSecret:
     ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
     STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
     AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
+    ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
   keyvault:
     name: "pagopa-d-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
@@ -98,7 +100,7 @@ microservice-chart:
   canaryDelivery:
     deployment:
       image:
-        tag: 0.1.10
+        tag: 0.2.1
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
