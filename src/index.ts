@@ -1,9 +1,5 @@
-import { logger } from "./util/logger";
-logger.info(
-  `⚡️⚡️⚡️⚡️⚡️ Start agent ELK ⚡️⚡️⚡️⚡️⚡️`
-);
-
 const apm = require('elastic-apm-node').start()
+import { logger } from "./util/logger";
 
 /**
  * Create and Run the server
