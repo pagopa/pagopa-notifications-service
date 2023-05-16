@@ -76,6 +76,9 @@ const envConfig = {
   MAX_RETRY_ATTEMPTS: process.env.MAX_RETRY_ATTEMPTS
     ? parseInt(process.env.MAX_RETRY_ATTEMPTS, 10)
     : 3,
+  PAGOPA_MAIL_LOGO_URI: process.env.PAGOPA_MAIL_LOGO_URI
+    ? process.env.PAGOPA_MAIL_LOGO_URI
+    : "",
   PERSONAL_DATA_VAULT_API_BASE_PATH: process.env
     .PERSONAL_DATA_VAULT_API_BASE_PATH
     ? process.env.PERSONAL_DATA_VAULT_API_BASE_PATH
