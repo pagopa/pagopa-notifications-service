@@ -13,3 +13,4 @@ process.env.AI_ENABLED=false
 process.env.AWS_SES_ACCESS_KEY_ID="test-access-key"
 process.env.AWS_SES_REGION="test-region"
 process.env.AWS_SES_SECRET_ACCESS_KEY="test-secret-key"
+process.env.PAGOPA_MAIL_LOGO_URI="https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
