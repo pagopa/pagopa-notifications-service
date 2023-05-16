@@ -6,7 +6,7 @@ import { SentMessageInfo } from "nodemailer/lib/ses-transport";
 import { Transporter, createTransport } from "nodemailer";
 import { SES } from "aws-sdk";
 import * as puppeteer from "puppeteer";
-import * as registerHelpers from "handlebars-helpers";
+import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../../__mocks__/data_mock";
   
 var config = getConfigOrThrow();

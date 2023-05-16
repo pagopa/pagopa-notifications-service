@@ -36,7 +36,12 @@ microservice-chart:
     create: false
     annotations: {}
     name: ""
-  podAnnotations: {}
+  podAnnotations: {
+    "co.elastic.logs/json.overwrite_keys": "true",
+    "co.elastic.logs/json.add_error_key": "true",
+    "co.elastic.logs/json.expand_keys": "true",
+    "co.elastic.logs/enabled": "true"
+  }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -78,12 +83,15 @@ microservice-chart:
     AI_SAMPLING_PERCENTAGE: "30"
     AI_ENABLED: "true"
     PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
+    ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
+    ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
     STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
     AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
     ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
+    ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
   keyvault:
     name: "pagopa-d-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

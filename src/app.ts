@@ -1,5 +1,5 @@
 import * as http from "http";
-import * as express from "express";
+import express from "express";
 import { Logger } from "winston";
 import { toExpressHandler } from "@pagopa/ts-commons/lib/express";
 import * as bodyParser from "body-parser";
@@ -7,7 +7,7 @@ import * as AWS from "aws-sdk";
 import * as nodemailer from "nodemailer";
 import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
-import * as registerHelpers from "handlebars-helpers";
+import registerHelpers from "handlebars-helpers";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
