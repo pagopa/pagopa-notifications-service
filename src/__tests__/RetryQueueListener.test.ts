@@ -8,7 +8,7 @@ import { Transporter } from "nodemailer";
 import { addRetryQueueListener } from "../queues/RetryQueueListener";
 import { QueueReceiveMessageResponse } from "@azure/storage-queue";
 import * as puppeteer from "puppeteer";
-import * as registerHelpers from "handlebars-helpers";
+import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../__mocks__/data_mock";
 
 describe("retry queue", () => {
