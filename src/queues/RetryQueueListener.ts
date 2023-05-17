@@ -39,7 +39,6 @@ export const addRetryQueueListener = (
             throw e;
           }),
           TE.map(async paramsDecrypted => {
-            console.log(paramsDecrypted);
             const bodyRequest = JSON.parse(
               paramsDecrypted
             ) as NotificationEmailRequest;
