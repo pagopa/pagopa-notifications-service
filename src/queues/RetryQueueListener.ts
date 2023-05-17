@@ -4,7 +4,6 @@ import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Browser } from "puppeteer";
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
-import { NotificationEmailRequest } from "@src/generated/definitions/NotificationEmailRequest";
 import { decryptBody } from "../util/confidentialDataManager";
 import {
   sendEmail,
@@ -13,6 +12,7 @@ import {
 import { logger } from "../util/logger";
 import { retryQueueClient } from "../util/queues";
 import { IConfig } from "../util/config";
+import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 
 export const addRetryQueueListener = (
   config: IConfig,
