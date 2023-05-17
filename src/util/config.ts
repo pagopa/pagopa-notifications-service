@@ -10,8 +10,6 @@ import * as t from "io-ts";
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { pipe } from "fp-ts/lib/function";
 import { enumType } from "@pagopa/ts-commons/lib/types";
-import { error } from "console";
-import { throws } from "assert";
 
 dotenv.config();
 
@@ -86,8 +84,12 @@ const envConfig = {
     .PERSONAL_DATA_VAULT_API_BASE_PATH
     ? process.env.PERSONAL_DATA_VAULT_API_BASE_PATH
     : "",
-  PERSONAL_DATA_VAULT_API_HOST: process.env.PERSONAL_DATA_VAULT_API_HOST,
-  PERSONAL_DATA_VAULT_API_KEY: process.env.PERSONAL_DATA_VAULT_API_KEY,
+  PERSONAL_DATA_VAULT_API_HOST: process.env.PERSONAL_DATA_VAULT_API_HOST
+    ? process.env.PERSONAL_DATA_VAULT_API_HOST
+    : "",
+  PERSONAL_DATA_VAULT_API_KEY: process.env.PERSONAL_DATA_VAULT_API_KEY
+    ? process.env.PERSONAL_DATA_VAULT_API_KEY
+    : "",
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 };
 
