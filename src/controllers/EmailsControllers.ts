@@ -230,11 +230,11 @@ export const sendEmail = async (
                       if (retryCount === config.MAX_RETRY_ATTEMPTS) {
                         throw e;
                       } else {
-                        //Service retry with aws and pdv ko rewrites on the queue with retry retryCount -1
+                        // Service retry with aws and pdv ko rewrites on the queue with retry retryCount -1
                         writeMessageIntoQueue(
                           JSON.stringify(params.body),
                           clientId,
-                          retryCount -1,
+                          retryCount - 1,
                           config
                         );
                       }
@@ -246,7 +246,7 @@ export const sendEmail = async (
                         retryCount,
                         config
                       );
-                    },
+                    }
                   )
                 )();
                 return O.none;

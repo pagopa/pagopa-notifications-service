@@ -36,11 +36,11 @@ export const addRetryQueueListener = (
         const { clientId, bodyEncrypted, retryCount } = JSON.parse(
           message.messageText
         );
-        logger.info(bodyEncrypted)
+        logger.info(bodyEncrypted);
         await pipe(
           decryptBody(bodyEncrypted),
           TE.bimap(
-            (e) => {
+            e => {
               logger.error(`Error while invoke PDV while decrypt body: ${e} `);
               // Error while decrypt body with writing on retry queque with retryCount - 1
               writeMessageIntoQueue(
@@ -48,10 +48,10 @@ export const addRetryQueueListener = (
                 clientId,
                 retryCount - 1,
                 config
-            );
+              );
             },
             // Decrypt body OK call method sendEmail
-            async (bodyDecrypted) => {
+            async bodyDecrypted => {
               const bodyRequest = JSON.parse(
                 bodyDecrypted
               ) as NotificationEmailRequest;
