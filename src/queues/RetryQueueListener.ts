@@ -42,7 +42,7 @@ export const addRetryQueueListener = (
           TE.bimap(
             e => {
               logger.error(`Error while invoke PDV while decrypt body: ${e} `);
-              // Error while decrypt body with writing on retry queque with retryCount - 1
+              // Error case: we fail to decrypt  the request body -> we write the same event on the retry queque with a decremented retryCount
               writeMessageIntoQueue(
                 bodyEncrypted,
                 clientId,
@@ -50,7 +50,7 @@ export const addRetryQueueListener = (
                 config
               );
             },
-            // Decrypt body OK call method sendEmail
+            // Happy path: we successfully decrypted the request body and can retry sending the email
             async bodyDecrypted => {
               const bodyRequest = JSON.parse(
                 bodyDecrypted
