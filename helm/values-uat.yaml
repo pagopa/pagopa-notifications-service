@@ -29,7 +29,7 @@ microservice-chart:
         PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
         PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
         PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
-        ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
+        ELASTIC_APM_SERVICE_NAME: pagopa-notification-service-blue
         ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
