@@ -21,6 +21,7 @@ import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import * as O from "fp-ts/lib/Option";
+import * as T from "fp-ts/lib/Task";
 import * as E from "fp-ts/lib/Either";
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
@@ -99,24 +100,41 @@ export const writeMessageIntoQueue: (
   clientId: string,
   retryCount: number,
   config: IConfig
-) => void = (bodyEncrypted, clientId, retryCount, config) => {
+) => T.Task<void> = (bodyEncrypted, clientId, retryCount, config) => {
   if (retryCount > 0) {
     logger.info(`Enqueueing failed message with retryCount ${retryCount}`);
-    void retryQueueClient.sendMessage(
-      JSON.stringify({
-        clientId,
-        bodyEncrypted,
-        retryCount
-      }),
-      {
-        visibilityTimeout:
-          2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
-          config.INITIAL_RETRY_TIMEOUT_SECONDS
-      }
+    return pipe(
+      TE.fromTask(
+        async () =>
+          await retryQueueClient.sendMessage(
+            JSON.stringify({
+              clientId,
+              bodyEncrypted,
+              retryCount
+            }),
+            {
+              visibilityTimeout:
+                2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
+                config.INITIAL_RETRY_TIMEOUT_SECONDS
+            }
+          )
+      ),
+      TE.fold(
+        () =>
+          T.fromIO(() => {
+            logger.error(`Error `);
+          }),
+        () =>
+          T.fromIO(() => {
+            logger.error(`success`);
+          })
+      )
     );
   } else {
-    logger.error(`Message failed too many times, adding to error queue`);
-    void sendMessageToErrorQueue(bodyEncrypted, clientId);
+    return T.fromIO(() => {
+      void sendMessageToErrorQueue(bodyEncrypted, clientId);
+      logger.info(`Scrittura nella coda di errore`);
+    });
   }
 };
 
@@ -224,28 +242,28 @@ export const sendEmail = async (
                 await pipe(
                   encryptBody(JSON.stringify(params.body)),
                   TE.bimap(
-                    e => {
+                    async e => {
                       logger.error("Error while invoke PDV while encrypt body");
                       // First invoking the service with aws and pdv KO returns an error.
                       if (retryCount === config.MAX_RETRY_ATTEMPTS) {
                         throw e;
                       } else {
                         // Service retry with aws and pdv ko rewrites on the queue with retry retryCount -1
-                        writeMessageIntoQueue(
+                        await writeMessageIntoQueue(
                           JSON.stringify(params.body),
                           clientId,
                           retryCount - 1,
                           config
-                        );
+                        )();
                       }
                     },
-                    bodyEncrypted => {
-                      writeMessageIntoQueue(
+                    async bodyEncrypted => {
+                      await writeMessageIntoQueue(
                         bodyEncrypted,
                         clientId,
                         retryCount,
                         config
-                      );
+                      )();
                     }
                   )
                 )();
