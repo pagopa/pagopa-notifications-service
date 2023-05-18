@@ -22,6 +22,7 @@ import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
+import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import { Browser } from "puppeteer";
@@ -39,6 +40,7 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
+import { encryptBody } from "../util/confidentialDataManager";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -66,7 +68,6 @@ const sendEmailWithAWS = async (
     )
   );
   */
-
   const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
     {
       from: senderEmail,
@@ -93,6 +94,32 @@ const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   pending: []
 });
 
+export const writeMessageIntoQueue: (
+  bodyEncrypted: string,
+  clientId: string,
+  retryCount: number,
+  config: IConfig
+) => void = (bodyEncrypted, clientId, retryCount, config) => {
+  if (retryCount > 0) {
+    logger.info(`Enqueueing failed message with retryCount ${retryCount}`);
+    void retryQueueClient.sendMessage(
+      JSON.stringify({
+        clientId,
+        bodyEncrypted,
+        retryCount
+      }),
+      {
+        visibilityTimeout:
+          2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
+          config.INITIAL_RETRY_TIMEOUT_SECONDS
+      }
+    );
+  } else {
+    logger.error(`Message failed too many times, adding to error queue`);
+    void sendMessageToErrorQueue(bodyEncrypted, clientId);
+  }
+};
+
 // eslint-disable-next-line max-params
 export const sendEmail = async (
   params: TypeofApiParams<SendNotificationEmailT>,
@@ -106,6 +133,7 @@ export const sendEmail = async (
   // eslint-disable-next-line max-params
 ): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
   const clientId = params["X-Client-Id"];
+
   const templateId = params.body.templateId;
   const textTemplateRaw = fs
     .readFileSync(
@@ -193,31 +221,34 @@ export const sendEmail = async (
                 logger.error(
                   `Error while trying to send email to AWS SES: ${error}`
                 );
-
-                if (retryCount > 0) {
-                  logger.info(
-                    `Enqueueing failed message with retryCount ${retryCount}`
-                  );
-                  await retryQueueClient.sendMessage(
-                    JSON.stringify({
-                      ...params,
-                      retryCount
-                    }),
-                    {
-                      visibilityTimeout:
-                        2 ** (config.MAX_RETRY_ATTEMPTS - retryCount) *
-                        config.INITIAL_RETRY_TIMEOUT_SECONDS
+                await pipe(
+                  encryptBody(JSON.stringify(params.body)),
+                  TE.bimap(
+                    e => {
+                      logger.error("Error while invoke PDV while encrypt body");
+                      // First invoking the service with aws and pdv KO returns an error.
+                      if (retryCount === config.MAX_RETRY_ATTEMPTS) {
+                        throw e;
+                      } else {
+                        // Service retry with aws and pdv ko rewrites on the queue with retry retryCount -1
+                        writeMessageIntoQueue(
+                          JSON.stringify(params.body),
+                          clientId,
+                          retryCount - 1,
+                          config
+                        );
+                      }
+                    },
+                    bodyEncrypted => {
+                      writeMessageIntoQueue(
+                        bodyEncrypted,
+                        clientId,
+                        retryCount,
+                        config
+                      );
                     }
-                  );
-                } else {
-                  logger.error(
-                    `Message failed too many times, adding to error queue`
-                  );
-                  logger.error(JSON.stringify(params));
-
-                  await sendMessageToErrorQueue(params);
-                }
-
+                  )
+                )();
                 return O.none;
               }
             }
