@@ -1,11 +1,11 @@
 prefix    = "pagopa"
-env_short = "p"
-
+env       = "uat"
+env_short = "u"
 
 tags = {
   CreatedBy   = "Terraform"
-  Environment = "Prod"
+  Environment = "UAT"
   Owner       = "pagoPA"
-  Source      = "https://github.com/pagopa/pagopa-ecommerce-payment-methods-service"
+  Source      = "https://github.com/pagopa/pagopa-notifications-service"
   CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
 }
