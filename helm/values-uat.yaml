@@ -14,7 +14,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-        tag: "0.3.0"
+        tag: "0.4.1"
         pullPolicy: Always
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
@@ -26,16 +26,22 @@ microservice-chart:
         ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue"
         AI_SAMPLING_PERCENTAGE: "30"
         AI_ENABLED: "true"
+        PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
+        PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
         PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
+        ELASTIC_APM_SERVICE_NAME: pagopa-notification-service-blue
+        ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
         STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
         AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
+        PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
         ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
+        ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.3.0"
+    tag: "0.4.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -107,12 +113,18 @@ microservice-chart:
     AI_SAMPLING_PERCENTAGE: "30"
     AI_ENABLED: "true"
     PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
+    PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
+    PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
+    ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
+    ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
     STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
     AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
+    PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
     ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
+    ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
   keyvault:
     name: "pagopa-u-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
