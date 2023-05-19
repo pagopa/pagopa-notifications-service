@@ -1,5 +1,6 @@
 
 import { retryQueueClient } from "../util/queues";
+import { apiPdvClient } from "../util/confidentialDataManager";
 import { getConfigOrThrow } from "../util/config";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { SentMessageInfo } from "nodemailer/lib/ses-transport";
@@ -84,6 +85,7 @@ describe("retry queue", () => {
     } as unknown as Transporter<SentMessageInfo>;
     const spySendMail = jest.spyOn(mailTrasporterMock,'sendMail');
     retryQueueClient.createIfNotExists();
+    const spyDecrypt = jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue({_tag: "Right", right:{ status:200 , value: {pii: JSON.stringify(requestMock.body)}, headers: "" as any} });
     addRetryQueueListener(config,mailTrasporterMock,browser);
 
     expect(setInterval).toHaveBeenCalledTimes(1);

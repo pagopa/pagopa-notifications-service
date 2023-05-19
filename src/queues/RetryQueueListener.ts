@@ -1,10 +1,18 @@
+/* eslint-disable sort-keys */
 import { Transporter } from "nodemailer";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Browser } from "puppeteer";
-import { IConfig } from "../util/config";
-import { retryQueueClient } from "../util/queues";
+import * as TE from "fp-ts/lib/TaskEither";
+import { pipe } from "fp-ts/lib/function";
+import { decryptBody } from "../util/confidentialDataManager";
+import {
+  sendEmail,
+  writeMessageIntoQueue
+} from "../controllers/EmailsControllers";
 import { logger } from "../util/logger";
-import { sendEmail } from "../controllers/EmailsControllers";
+import { retryQueueClient } from "../util/queues";
+import { IConfig } from "../util/config";
+import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 
 export const addRetryQueueListener = (
   config: IConfig,
@@ -25,21 +33,46 @@ export const addRetryQueueListener = (
           message.messageId,
           message.popReceipt
         );
-
-        const { retryCount, ...params } = JSON.parse(message.messageText);
-        const templateId = params.body.templateId;
-        const schema = await import(
-          `../generated/templates/${templateId}/schema.js`
+        const { clientId, bodyEncrypted, retryCount } = JSON.parse(
+          message.messageText
         );
-
-        void sendEmail(
-          params,
-          schema,
-          browserEngine,
-          mailTrasporter,
-          config,
-          retryCount - 1
-        );
+        logger.info(bodyEncrypted);
+        await pipe(
+          decryptBody(bodyEncrypted),
+          TE.bimap(
+            e => {
+              logger.error(`Error while invoke PDV while decrypt body: ${e} `);
+              // Error case: we fail to decrypt  the request body -> we write the same event on the retry queque with a decremented retryCount
+              writeMessageIntoQueue(
+                bodyEncrypted,
+                clientId,
+                retryCount - 1,
+                config
+              );
+            },
+            // Happy path: we successfully decrypted the request body and can retry sending the email
+            async bodyDecrypted => {
+              const bodyRequest = JSON.parse(
+                bodyDecrypted
+              ) as NotificationEmailRequest;
+              const templateId = bodyRequest.templateId;
+              const schema = await import(
+                `../generated/templates/${templateId}/schema.js`
+              );
+              void sendEmail(
+                {
+                  "X-Client-Id": clientId,
+                  body: bodyRequest
+                },
+                schema,
+                browserEngine,
+                mailTrasporter,
+                config,
+                retryCount - 1
+              );
+            }
+          )
+        )();
       }
     }
   };

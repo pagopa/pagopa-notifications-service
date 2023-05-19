@@ -49,6 +49,9 @@ export const IConfig = t.interface({
   INITIAL_RETRY_TIMEOUT_SECONDS: t.number,
   MAX_RETRY_ATTEMPTS: t.number,
   PAGOPA_MAIL_LOGO_URI: t.string,
+  PERSONAL_DATA_VAULT_API_BASE_PATH: t.string,
+  PERSONAL_DATA_VAULT_API_HOST: t.string,
+  PERSONAL_DATA_VAULT_API_KEY: t.string,
   PORT: t.number,
   RETRY_QUEUE_NAME: t.string,
   STORAGE_CONNECTION_STRING: t.string
@@ -74,6 +77,15 @@ const envConfig = {
   MAX_RETRY_ATTEMPTS: process.env.MAX_RETRY_ATTEMPTS
     ? parseInt(process.env.MAX_RETRY_ATTEMPTS, 10)
     : 3,
+  PAGOPA_MAIL_LOGO_URI: process.env.PAGOPA_MAIL_LOGO_URI
+    ? process.env.PAGOPA_MAIL_LOGO_URI
+    : "",
+  PERSONAL_DATA_VAULT_API_BASE_PATH: process.env
+    .PERSONAL_DATA_VAULT_API_BASE_PATH
+    ? process.env.PERSONAL_DATA_VAULT_API_BASE_PATH
+    : "",
+  PERSONAL_DATA_VAULT_API_HOST: process.env.PERSONAL_DATA_VAULT_API_HOST,
+  PERSONAL_DATA_VAULT_API_KEY: process.env.PERSONAL_DATA_VAULT_API_KEY,
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 };
 

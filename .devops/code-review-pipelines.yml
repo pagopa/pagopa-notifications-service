@@ -62,6 +62,10 @@ stages:
               npm i -g azure-functions-core-tools@3 --unsafe-perm true
             displayName: 'Install azure functions core tools'
           - bash: |
+              cp .env.example .env
+            displayName: 'Setup env for test'
+          - script: cp .env.example .env
+          - bash: |
               yarn generate && yarn build && yarn test
             displayName: 'Unit tests exec'
           - bash: |
