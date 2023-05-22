@@ -17,7 +17,7 @@ describe("confidential data manager tests", () => {
       } as any;
       
 it("decrypt OK from PDV", async () => {
-   jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue({_tag: "Right", right:{ status:200 , value: {pii: JSON.stringify(requestMock.body)}, headers: "" as any} });
+   jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue(E.right({ status:200 , value: {pii: JSON.stringify(requestMock.body)}, headers: "" as any}));
    const result = await decryptBody(token)();
    expect(E.isRight(result)).toBe(true);
 })
@@ -29,25 +29,25 @@ it("decrypt KO from PDV", async () => {
 })
 
 it("decrypt OK from PDV with ko http status", async () => {
-    jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue({_tag: "Right", right:{ status: 403 , value: undefined, headers: "" as any} });
+    jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue(E.right({ status:200 , value: {pii: JSON.stringify(requestMock.body)}, headers: "" as any}));
     const result = await decryptBody(token)();
     expect(E.isRight(result)).toBe(false);
 })
 
 it("encrypt OK from PDV", async () => {
-    jest.spyOn(apiPdvClient, 'saveUsingPUT').mockResolvedValue({_tag: "Right", right:{ status: 200 , value: {token: token}, headers: "" as any} });
+    jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue(E.right({ status:200 , value: {pii: JSON.stringify(requestMock.body)}, headers: "" as any}));
     const result = await encryptBody(requestMock.body)();
     expect(E.isRight(result)).toBe(true);
 })
 
 it("encrypt KO from PDV", async () => {
-    jest.spyOn(apiPdvClient, 'saveUsingPUT').mockResolvedValue({_tag:"Left", left: "" as any });
+    jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue(E.left([]));
     const result = await encryptBody(requestMock.body)();
     expect(E.isRight(result)).toBe(false);
 })
 
 it("encrypt OK from PDV with ko http status", async () => {
-    jest.spyOn(apiPdvClient, 'saveUsingPUT').mockResolvedValue({_tag: "Right", right:{ status: 403 , value: undefined, headers: "" as any} });
+    jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue(E.right({ status:200 , value: {pii: JSON.stringify(requestMock.body)}, headers: "" as any}));
     const result = await encryptBody(requestMock.body)();
     expect(E.isRight(result)).toBe(false);
 })
