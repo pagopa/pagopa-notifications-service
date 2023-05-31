@@ -41,6 +41,7 @@ import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 import { encryptBody } from "../util/confidentialDataManager";
+import apm from "elastic-apm-node";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -100,6 +101,8 @@ export const writeMessageIntoQueue: (
   retryCount: number,
   config: IConfig
 ) => void = (bodyEncrypted, clientId, retryCount, config) => {
+  var span = apm.startSpan("notification", "sendEmail", "write in queue")
+  span?.setLabel("clientId", clientId)
   if (retryCount > 0) {
     logger.info(`Enqueueing failed message with retryCount ${retryCount}`);
     void retryQueueClient.sendMessage(
@@ -118,6 +121,7 @@ export const writeMessageIntoQueue: (
     logger.error(`Message failed too many times, adding to error queue`);
     void sendMessageToErrorQueue(bodyEncrypted, clientId);
   }
+  span?.end
 };
 
 // eslint-disable-next-line max-params
