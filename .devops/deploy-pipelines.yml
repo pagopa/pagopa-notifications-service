@@ -179,6 +179,7 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
+                - task: KubectlInstaller@0
                 - task: Bash@3
                   name: update_chart_version
                   displayName: 'Setup helm microservice chart'
@@ -282,8 +283,8 @@ stages:
     variables:
       green_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
-      - deployment: "Blue_deployment"
-        displayName: "Blue deployment"
+      - deployment: "Green_deployment"
+        displayName: "Green deployment"
         pool:
           name: pagopa-uat-linux
         environment: 'UAT'
@@ -293,6 +294,7 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
+                - task: KubectlInstaller@0
                 - task: Bash@3
                   name: update_chart_version
                   displayName: 'Setup helm microservice chart'
