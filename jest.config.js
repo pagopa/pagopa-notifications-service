@@ -15,6 +15,7 @@ module.exports = {
   collectCoverageFrom: [
       "src/**/*.ts"
   ],
+  testResultsProcessor: "jest-sonar-reporter",
   coveragePathIgnorePatterns: [
       "node_modules",
       "test-config",
