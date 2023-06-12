@@ -11,7 +11,7 @@ module.exports = {
     '^[./a-zA-Z0-9$_-]+\\/success/schema.js$':'<rootDir>/dist/src/generated/templates/success/schema.js',
     '^[./a-zA-Z0-9$_-]+\\/ko/schema.js$':'<rootDir>/dist/src/generated/templates/ko/schema.js',
   },
-  collectCoverage: false,
+  collectCoverage: true,
   collectCoverageFrom: [
       "src/**/*.ts"
   ],

@@ -15,3 +15,4 @@ helm/charts
 __azurite_db_queue__.json
 __azurite_db_queue_extent__.json
 __queuestorage__
+test-report.xml
