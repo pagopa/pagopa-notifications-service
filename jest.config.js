@@ -13,8 +13,10 @@ module.exports = {
   },
   collectCoverage: true,
   collectCoverageFrom: [
-      "src/**/*.ts"
+      "src/**/*.ts",
+      "!<rootDir>/src/index.ts"
   ],
+  coveragePathIgnorePatterns: ["index.ts"],
   testResultsProcessor: "jest-sonar-reporter",
   coveragePathIgnorePatterns: [
       "node_modules",
