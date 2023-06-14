@@ -11,10 +11,15 @@ module.exports = {
     '^[./a-zA-Z0-9$_-]+\\/success/schema.js$':'<rootDir>/dist/src/generated/templates/success/schema.js',
     '^[./a-zA-Z0-9$_-]+\\/ko/schema.js$':'<rootDir>/dist/src/generated/templates/ko/schema.js',
   },
-  collectCoverage: false,
+  collectCoverage: true,
   collectCoverageFrom: [
-      "src/**/*.ts"
+      "src/**/*.ts",
+      "!<rootDir>/src/index.ts",
+      "!<rootDir>/src/__tests__/**/*",
+      "!<rootDir>/src/__mocks__/**/*"
   ],
+  coveragePathIgnorePatterns: ["index.ts"],
+  testResultsProcessor: "jest-sonar-reporter",
   coveragePathIgnorePatterns: [
       "node_modules",
       "test-config",

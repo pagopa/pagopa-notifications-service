@@ -15,3 +15,9 @@ helm/charts
 __azurite_db_queue__.json
 __azurite_db_queue_extent__.json
 __queuestorage__
+
+## Sonar files
+test-report.xml
+.sonar_lock
+**/*.ucfgs
+**/*.scannerwork
