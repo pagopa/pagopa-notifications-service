@@ -548,7 +548,6 @@ stages:
             command: rollback
             chartName: $(K8S_IMAGE_REPOSITORY_NAME)
             releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
-            valueFile: ${{ parameters.VALUE_FILE }}
             install: true
             waitForExecution: true
 # --- START ROLLBACK PROD --- # 
