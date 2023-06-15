@@ -555,5 +555,6 @@ stages:
             chartName: $(K8S_IMAGE_REPOSITORY_NAME)
             releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
             install: true
-            waitForExecution: true        
+            waitForExecution: true     
+            arguments: $(K8S_IMAGE_REPOSITORY_NAME)
 # --- START ROLLBACK PROD --- # 
