@@ -525,7 +525,7 @@ stages:
 # --- START ROLLBACK PROD --- # 
   - stage: "Prod_RollbackForApproval"
     displayName: 'PROD approval ROLLBACK'
-    dependsOn: [Deploy_UAT_Green,Release]
+    dependsOn: [Deploy_PROD_Green,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
