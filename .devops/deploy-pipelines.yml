@@ -553,15 +553,17 @@ stages:
   - stage: "Prod_RollbackToLatestRelease"
     displayName: 'PROD rollback to the latest Release'
     dependsOn: [Prod_RollbackForApproval]
-    steps:
-      - task: HelmDeploy@0
-        displayName: Rollback PROD
-        inputs:
-          kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
-          namespace: ecommerce
-          command: rollback
-          chartName: $(K8S_IMAGE_REPOSITORY_NAME)
-          releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
-          install: true
-          waitForExecution: true        
+    jobs:
+      - job: Prod_Rollback
+        steps:
+        - task: HelmDeploy@0
+          displayName: Helm Rollback PROD
+          inputs:
+            kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
+            namespace: ecommerce
+            command: rollback
+            chartName: $(K8S_IMAGE_REPOSITORY_NAME)
+            releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
+            install: true
+            waitForExecution: true        
 # --- START ROLLBACK PROD --- # 
