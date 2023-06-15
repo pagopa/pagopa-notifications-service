@@ -540,16 +540,6 @@ stages:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
             instructions: "Please approve or reject $(prod_version) for PROD promotions"
             onTimeout: 'skip'
-        - task: HelmDeploy@0
-          displayName: Rollback PROD
-          inputs:
-            kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
-            namespace: ecommerce
-            command: rollback
-            chartName: $(K8S_IMAGE_REPOSITORY_NAME)
-            releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
-            install: true
-            waitForExecution: true
   - stage: "Prod_RollbackToLatestRelease"
     displayName: 'PROD rollback to the latest Release'
     dependsOn: [Prod_RollbackForApproval]
