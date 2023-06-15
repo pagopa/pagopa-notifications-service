@@ -467,6 +467,17 @@ stages:
         displayName: 'Build PROD image'
         steps:
         - task: Docker@2
+          displayName: "docker login for UAT"
+          inputs:
+            containerRegistry: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
+            command: "login"
+        - task: Bash@3
+          displayName: "docker tag new version for PROD"
+          inputs:
+            targetType: "inline"
+            script: |
+              docker pull $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+        - task: Docker@2
           displayName: "docker login for PROD"
           inputs:
             containerRegistry: $(PROD_CONTAINER_REGISTRY_SERVICE_CONN)
@@ -476,8 +487,7 @@ stages:
           inputs:
             targetType: "inline"
             script: |
-              docker pull $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion)
-              docker tag $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
               docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
   - stage: "Deploy_PROD_Green"
     displayName: 'PROD green deployment'
