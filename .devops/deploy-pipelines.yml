@@ -52,7 +52,20 @@ parameters:
     values:
       - False
       - True
-
+  - name: "UAT_SKIP_BLUE_DEPLOYMENT"
+    displayName: "Skip blue/green UAT deployment strategy: activating this parameter no blue version will be created and the pipeline proceed building and deploy artifact green version"
+    type: boolean
+    default: True
+    values:
+      - False
+      - True
+  - name: "PROD_SKIP_BLUE_DEPLOYMENT"
+    displayName: "Skip blue/green PROD deployment strategy: activating this parameter no blue version will be created and the pipeline proceed building and deploy artifact green version"
+    type: boolean
+    default: True
+    values:
+      - False
+      - True    
 resources:
   repositories:
     - repository: pagopaCommons
@@ -171,6 +184,11 @@ stages:
   - stage: "Deploy_UAT_Blue"
     displayName: 'UAT blue deployment'
     dependsOn: Build_release_candidate
+    condition:
+      and(
+      succeeded(),
+      eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False)
+      )
     variables:
       green_version: $[ stageDependencies.Build_release_candidate.build.outputs['current_version.value'] ]
     jobs:
@@ -240,7 +258,11 @@ stages:
               testResultsFiles: '**/*-TEST.xml' 
               searchFolder: '$(System.DefaultWorkingDirectory)'
   - stage: Release
-    dependsOn: Bluegreen_WaitForApproval
+    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], True) }}:
+      dependsOn: Build_release_candidate
+    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
+      dependsOn: Bluegreen_WaitForApproval
+      condition: succeeded()
     jobs:
       - job: make_release
         steps:
@@ -343,6 +365,11 @@ stages:
 
   - stage: "Deploy_PROD_Blue"
     displayName: 'PROD blue deployment'
+    condition:
+      and(
+      succeeded(),
+      eq(${{parameters.PROD_SKIP_BLUE_DEPLOYMENT}}, False)
+      )
     dependsOn: [Prod_WaitForApproval,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
@@ -423,7 +450,11 @@ stages:
 
   - stage: "Deploy_PROD_Green"
     displayName: 'PROD green deployment'
-    dependsOn: PROD_Green_WaitForApproval
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
+      dependsOn: Build_release_candidate
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
+      dependsOn: PROD_Green_WaitForApproval
+      condition: succeeded()
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
