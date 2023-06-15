@@ -434,6 +434,10 @@ stages:
   - stage: "PROD_Green_WaitForApproval"
     displayName: 'PROD green approval deployment'
     dependsOn: Deploy_PROD_Blue
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
+      dependsOn: Prod_WaitForApproval
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
+      dependsOn: Blue_PROD_deployment
     jobs:
       - job: Bluegreen_PROD_WaitForApproval
         displayName: Manual green deploy approval
@@ -450,11 +454,7 @@ stages:
 
   - stage: "Deploy_PROD_Green"
     displayName: 'PROD green deployment'
-    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
-      dependsOn: Build_release_candidate
-    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
-      dependsOn: PROD_Green_WaitForApproval
-      condition: succeeded()
+    dependsOn: PROD_Green_WaitForApproval
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
