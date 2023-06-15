@@ -459,7 +459,7 @@ stages:
 
   - stage: "Build_PROD_Green"
     displayName: 'PROD green Build'
-    dependsOn: PROD_Green_WaitForApproval
+    dependsOn: [PROD_Green_WaitForApproval,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
