@@ -543,7 +543,7 @@ stages:
         - task: HelmDeploy@0
           displayName: Rollback PROD
           inputs:
-            kubernetesServiceEndpoint: ${{ parameters.PROD_KUBERNETES_SERVICE_CONN }}
+            kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
             namespace: ecommerce
             command: rollback
             chartName: $(K8S_IMAGE_REPOSITORY_NAME)
