@@ -324,7 +324,7 @@ stages:
 # --- START Deploy PROD --- # 
   - stage: "Prod_WaitForApproval"
     displayName: 'PROD approval deployment'
-    dependsOn: Deploy_UAT_Green
+    dependsOn: [Deploy_UAT_Green,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
@@ -343,7 +343,7 @@ stages:
 
   - stage: "Deploy_PROD_Blue"
     displayName: 'PROD blue deployment'
-    dependsOn: Prod_WaitForApproval
+    dependsOn: [Prod_WaitForApproval,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
