@@ -405,37 +405,37 @@ stages:
     dependsOn: [Build_PROD_Blue,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
-      jobs:
-        - deployment: "Blue_PROD_deployment"
-          displayName: "Blue PROD deployment"
-          pool:
-            name: pagopa-prod-linux
-          environment: 'PROD'
-          strategy:
-            runOnce:
-              deploy:
-                steps:
-                  - checkout: self
-                    displayName: "Checkout"
-                  - task: Bash@3
-                    name: update_chart_version
-                    displayName: 'Setup helm microservice chart'
-                    inputs:
-                      targetType: "inline"
-                      script: |
-                        helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
-                        helm dep build helm
-                  - template: azure-templates/helm-microservice-chart-deploy.yml
-                    parameters:
-                      DO_DEPLOY: true
-                      DO_BLUE_GREEN_DEPLOY: true
-                      ENV: 'PROD'
-                      KUBERNETES_SERVICE_CONN: $(PROD_KUBERNETES_SERVICE_CONN)
-                      NAMESPACE: ecommerce
-                      APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-                      VALUE_FILE: "helm/values-prod.yaml"
-                      GREEN_VERSION: $(prod_version)
-                      BLUE_VERSION: $(Build.SourceVersion)
+    jobs:
+      - deployment: "Blue_PROD_deployment"
+        displayName: "Blue PROD deployment"
+        pool:
+          name: pagopa-prod-linux
+        environment: 'PROD'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: "Checkout"
+                - task: Bash@3
+                  name: update_chart_version
+                  displayName: 'Setup helm microservice chart'
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+                      helm dep build helm
+                - template: azure-templates/helm-microservice-chart-deploy.yml
+                  parameters:
+                    DO_DEPLOY: true
+                    DO_BLUE_GREEN_DEPLOY: true
+                    ENV: 'PROD'
+                    KUBERNETES_SERVICE_CONN: $(PROD_KUBERNETES_SERVICE_CONN)
+                    NAMESPACE: ecommerce
+                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                    VALUE_FILE: "helm/values-prod.yaml"
+                    GREEN_VERSION: $(prod_version)
+                    BLUE_VERSION: $(Build.SourceVersion)
 
   - stage: "PROD_Green_WaitForApproval"
     displayName: 'PROD green approval deployment'
