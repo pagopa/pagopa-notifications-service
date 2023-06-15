@@ -235,8 +235,7 @@ stages:
         - task: ManualValidation@0
           timeoutInMinutes: 4320 # 3 days
           inputs:
-            notifyUsers: |
-              $(APPROVE_TOUCHPOINT_MAIL)
+            notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
             instructions: "Please approve or reject UAT blue green promotions"
             onTimeout: 'reject'
       - job: API_tests
@@ -358,8 +357,7 @@ stages:
         - task: ManualValidation@0
           timeoutInMinutes: 4320 # 3 days
           inputs:
-            notifyUsers: |
-              $(APPROVE_TOUCHPOINT_MAIL)
+            notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
             instructions: "Please approve or reject $(prod_version) for PROD promotions"
             onTimeout: 'reject'
 
@@ -452,8 +450,7 @@ stages:
         - task: ManualValidation@0
           timeoutInMinutes: 4320 # 3 days
           inputs:
-            notifyUsers: |
-              $(APPROVE_TOUCHPOINT_MAIL)
+            notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
             instructions: "Please approve or reject PROD green promotions v${prod_version}"
             onTimeout: 'reject'                
 
@@ -524,3 +521,34 @@ stages:
                   VALUE_FILE: "helm/values-prod.yaml"
                   GREEN_VERSION: $(prod_version)
 # --- END Deploy PROD --- # 
+
+# --- START ROLLBACK PROD --- # 
+  - stage: "Prod_RollbackForApproval"
+    displayName: 'PROD approval ROLLBACK'
+    dependsOn: [Deploy_UAT_Green,Release]
+    variables:
+      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+    jobs:
+      - job: Prod_Rollback_Approval
+        displayName: Manual prod rollback approval
+        pool: server
+        timeoutInMinutes: 30
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 30
+          inputs:
+            notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+            instructions: "Please approve or reject $(prod_version) for PROD promotions"
+            onTimeout: 'skip'
+        - task: HelmDeploy@0
+          displayName: Rollback PROD
+          inputs:
+            kubernetesServiceEndpoint: ${{ parameters.PROD_KUBERNETES_SERVICE_CONN }}
+            namespace: ecommerce
+            command: rollback
+            chartName: $(K8S_IMAGE_REPOSITORY_NAME)
+            releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
+            valueFile: ${{ parameters.VALUE_FILE }}
+            install: true
+            waitForExecution: true
+# --- START ROLLBACK PROD --- # 
