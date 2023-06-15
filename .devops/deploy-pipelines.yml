@@ -64,7 +64,9 @@ resources:
 pool:
   vmImage: ubuntu-latest
 
+# --- START Deploy DEV --- # 
 stages:
+  
   - stage: 'Build_for_DEV'
     displayName: 'Build for DEV'
     condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.DEV_DEPLOY}}, true))
@@ -79,6 +81,7 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+  
   - stage: 'Deploy_for_DEV'
     displayName: 'Deploy DEV'
     dependsOn: Build_for_DEV
@@ -109,7 +112,7 @@ stages:
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-dev.yaml"
                     GREEN_VERSION: $(Build.SourceVersion)
- 
+
   - stage: End_to_End_Tests_DEV
     dependsOn:
       - Deploy_for_DEV
@@ -134,21 +137,24 @@ stages:
               testResultsFormat: "JUnit"
               testResultsFiles: "**/*-TEST.xml"
               searchFolder: "$(System.DefaultWorkingDirectory)"
+# --- END Deploy DEV --- # 
+
+# --- START Deploy UAT --- # 
   - stage: "Build_release_candidate"
     displayName: 'Build release candidate'
     dependsOn: []
-    condition:
-      and(
-        succeeded(),
-        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-          and(
-            startsWith(variables['Build.SourceBranch'], 'refs/tags'),
-            endsWith(variables['Build.SourceBranch'], '-RELEASE')
-          )
-        )
-      )
+    # condition:
+    #   and(
+    #     succeeded(),
+    #     eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+    #     or(
+    #       eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+    #       and(
+    #         startsWith(variables['Build.SourceBranch'], 'refs/tags'),
+    #         endsWith(variables['Build.SourceBranch'], '-RELEASE')
+    #       )
+    #     )
+    #   )
     jobs:
       - job: "build"
         displayName: 'Build UAT service Blue'
@@ -276,8 +282,8 @@ stages:
             targetType: "inline"
             script: |
               docker pull $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion)
-              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(next_version)
-              docker push $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(next_version)
+              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(next_version)@$(Build.SourceVersion)
+              docker push $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(next_version)@$(Build.SourceVersion)
 
   - stage: "Deploy_UAT_Green"
     displayName: 'UAT green deployment'
@@ -312,8 +318,10 @@ stages:
                     NAMESPACE: ecommerce
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
-                    GREEN_VERSION: $(green_version)
+                    GREEN_VERSION: $(green_version)@$(Build.SourceVersion)
+# --- END Deploy UAT --- # 
 
+# --- START Deploy PROD --- # 
   - stage: "Prod_WaitForApproval"
     displayName: 'PROD approval deployment'
     dependsOn: Deploy_UAT_Green
@@ -433,8 +441,8 @@ stages:
             targetType: "inline"
             script: |
               docker pull $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion)
-              docker tag $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
-              docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+              docker tag $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)@$(Build.SourceVersion)
+              docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)@$(Build.SourceVersion)
       - deployment: "Green_PROD_deployment"
         displayName: "Green PROD deployment"
         pool:
@@ -462,4 +470,5 @@ stages:
                     NAMESPACE: ecommerce
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-prod.yaml"
-                    GREEN_VERSION: $(prod_version)
+                    GREEN_VERSION: $(prod_version)@$(Build.SourceVersion)
+# --- END Deploy PROD --- # 
