@@ -545,6 +545,8 @@ stages:
     dependsOn: [Prod_RollbackForApproval]
     jobs:
       - job: Prod_Rollback
+        pool:
+          name: pagopa-prod-linux
         steps:
         - task: HelmDeploy@0
           displayName: Helm Rollback PROD
