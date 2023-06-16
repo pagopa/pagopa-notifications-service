@@ -348,7 +348,7 @@ stages:
     dependsOn: [Deploy_UAT_Green,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
-      release_url: $(Build.Repository.Uri)/releases/tag/$[replace($(prod_version),'\"','')]
+      release_url: $[ join('/releases/tag/',{$(Build.Repository.Uri), $[replace($(prod_version),'"','')]}) ]
     jobs:
       - job: Prod_Approval
         displayName: Manual prod deploy approval
@@ -443,7 +443,7 @@ stages:
     ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
       dependsOn: Blue_PROD_deployment
     variables:
-      release_url: $(Build.Repository.Uri)/releases/tag/$[replace($(prod_version),'\"','')]
+      release_url: $[ join('/releases/tag/',{$(Build.Repository.Uri), $[replace($(prod_version),'"','')]}) ]
     jobs:
       - job: Bluegreen_PROD_WaitForApproval
         displayName: Manual green deploy approval
@@ -532,7 +532,7 @@ stages:
     dependsOn: [Deploy_PROD_Green,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
-      release_url: $(Build.Repository.Uri)/releases/tag/$[replace($(prod_version),'\"','')]
+      release_url: $[ join('/releases/tag/',{$(Build.Repository.Uri), $[replace($(prod_version),'"','')]}) ]
     jobs:
       - job: Prod_Rollback_Approval
         displayName: Manual prod rollback approval
