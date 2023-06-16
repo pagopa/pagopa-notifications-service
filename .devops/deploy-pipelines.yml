@@ -347,7 +347,7 @@ stages:
     displayName: 'PROD approval deployment'
     dependsOn: [Deploy_UAT_Green,Release]
     variables:
-      prod_version: ${{ stageDependencies.Release.make_release.outputs['current_version.value'] }}
+      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
     jobs:
       - job: Prod_Approval
         displayName: Manual prod deploy approval
@@ -358,7 +358,7 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject ${{ replace (format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'], variables['prod_version']), '\"', '' ) }} for PROD promotions"
+            instructions: "Please approve or reject ${{ replace (format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'], variables['prod_version'].value), '\"', '' ) }} for PROD promotions"
             onTimeout: 'reject'
 
   - stage: "Build_PROD_Blue"
