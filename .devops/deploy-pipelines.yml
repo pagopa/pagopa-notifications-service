@@ -347,7 +347,7 @@ stages:
     displayName: 'PROD approval deployment'
     dependsOn: [Deploy_UAT_Green,Release]
     variables:
-      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      prod_version: ${{ stageDependencies.Release.make_release.outputs['current_version.value'] }}
     jobs:
       - job: Prod_Approval
         displayName: Manual prod deploy approval
@@ -440,7 +440,7 @@ stages:
     ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
       dependsOn: Prod_WaitForApproval
     ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
-      dependsOn: Blue_PROD_deployment
+      dependsOn: Blue_PROD_deployment 
     jobs:
       - job: Bluegreen_PROD_WaitForApproval
         displayName: Manual green deploy approval
