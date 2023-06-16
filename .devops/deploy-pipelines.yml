@@ -179,7 +179,7 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
-          - template: templates/node-github-current-version/template.yaml@pagopaCommons
+          - template: azure-templates/chart-current-version.yml
         
   - stage: "Deploy_UAT_Blue"
     displayName: 'UAT blue deployment'
@@ -190,7 +190,7 @@ stages:
       eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False)
       )
     variables:
-      green_version: $[ stageDependencies.Build_release_candidate.build.outputs['current_version.value'] ]
+      green_version: $[ stageDependencies.Build_release_candidate.build.outputs['chart_current_version.appVersion'] ]
     jobs:
       - deployment: "Blue_deployment"
         displayName: "Blue deployment"
@@ -226,6 +226,9 @@ stages:
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
     dependsOn: Deploy_UAT_Blue
+    variables:
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+      release_url: $[ stageDependencies.Release.make_release.outputs['chart_current_version.releaseUrl'] ]
     jobs:
       - job: Bluegreen_WaitForApproval
         displayName: Manual blue deploy approval
@@ -236,7 +239,7 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject UAT blue green promotions"
+            instructions: "Please approve or reject UAT blue green promotions for release $(release_url)"
             onTimeout: 'reject'
       - job: API_tests
         displayName: API test for blue deploy approval
@@ -278,16 +281,16 @@ stages:
                 release_branch: main
                 release_chart_semver: '${{ parameters.RELEASE_CHART_SEMVER }}'
           - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
-            - template: templates/node-github-current-version/template.yaml@pagopaCommons
+            - template: azure-templates/chart-current-version.yml
       - job: tag_version
         steps:
-          - template: templates/node-github-current-version/template.yaml@pagopaCommons
+          - template: azure-templates/chart-current-version.yml
 
   - stage: "Release_tag_docker"
     displayName: 'Docker tag release'
     dependsOn: Release
     variables:
-      next_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      next_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
       - job: "build"
         displayName: 'Build UAT service beta'
@@ -310,7 +313,7 @@ stages:
     displayName: 'UAT green deployment'
     dependsOn: [Release_tag_docker,Release]
     variables:
-      green_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      green_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
       - deployment: "Green_deployment"
         displayName: "Green deployment"
@@ -347,7 +350,8 @@ stages:
     displayName: 'PROD approval deployment'
     dependsOn: [Deploy_UAT_Green,Release]
     variables:
-      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+      release_url: $[ stageDependencies.Release.make_release.outputs['chart_current_version.releaseUrl'] ]
     jobs:
       - job: Prod_Approval
         displayName: Manual prod deploy approval
@@ -358,7 +362,7 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject ${{ replace (format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'],$(prod_version)), '\"', '' ) }} for PROD promotions"
+            instructions: "Please approve or reject PROD promotions for release $(release_url)"
             onTimeout: 'reject'
 
   - stage: "Build_PROD_Blue"
@@ -370,7 +374,7 @@ stages:
       )
     dependsOn: [Prod_WaitForApproval,Release]
     variables:
-      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
       - job: "PROD_image"
         displayName: 'Build PROD image'
@@ -402,7 +406,7 @@ stages:
     displayName: 'PROD blue deployment'
     dependsOn: [Build_PROD_Blue,Release]
     variables:
-      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
       - deployment: "Blue_PROD_deployment"
         displayName: "Blue PROD deployment"
@@ -440,7 +444,10 @@ stages:
     ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
       dependsOn: Prod_WaitForApproval
     ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
-      dependsOn: Blue_PROD_deployment 
+      dependsOn: Blue_PROD_deployment
+    variables:
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+      release_url: $[ stageDependencies.Release.make_release.outputs['chart_current_version.releaseUrl'] ]
     jobs:
       - job: Bluegreen_PROD_WaitForApproval
         displayName: Manual green deploy approval
@@ -451,14 +458,14 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject PROD green promotions ${{ replace (format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'],$(prod_version)), '\"', '' ) }}"
+            instructions: "Please approve or reject PROD green promotions for release $(release_url)"
             onTimeout: 'reject'                
 
   - stage: "Build_PROD_Green"
     displayName: 'PROD green Build'
     dependsOn: [PROD_Green_WaitForApproval,Release]
     variables:
-      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
       - job: "PROD_image"
         displayName: 'Build PROD image'
@@ -490,7 +497,7 @@ stages:
     displayName: 'PROD green deployment'
     dependsOn: [Build_PROD_Green,Release]
     variables:
-      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
     - deployment: "Green_PROD_deployment"
       displayName: "Green PROD deployment"
@@ -528,7 +535,8 @@ stages:
     displayName: 'PROD approval ROLLBACK'
     dependsOn: [Deploy_PROD_Green,Release]
     variables:
-      prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+      release_url: $[ stageDependencies.Release.make_release.outputs['chart_current_version.releaseUrl'] ]
     jobs:
       - job: Prod_Rollback_Approval
         displayName: Manual prod rollback approval
@@ -539,7 +547,7 @@ stages:
           timeoutInMinutes: 30
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject ${{ replace (format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'],$(prod_version)), '\"', '' ) }} for PROD promotions"
+            instructions: "Please approve or reject PROD promotions for release $(release_url)"
             onTimeout: 'skip'
   - stage: "Prod_RollbackToLatestRelease"
     displayName: 'PROD rollback to the latest Release'
