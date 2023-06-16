@@ -359,7 +359,7 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject $[ replace(variables['release_url'],'\"','') ] for PROD promotions"
+            instructions: "Please approve or reject ${{ replace(variables['release_url'],'\"','') }} for PROD promotions"
             onTimeout: 'reject'
 
   - stage: "Build_PROD_Blue"
@@ -454,7 +454,7 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject PROD green promotions $[ replace(variables['release_url'],'\"','') ]"
+            instructions: "Please approve or reject PROD green promotions ${{ replace(variables['release_url'],'\"','') }}"
             onTimeout: 'reject'                
 
   - stage: "Build_PROD_Green"
@@ -543,7 +543,7 @@ stages:
           timeoutInMinutes: 30
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject $[ replace(variables['release_url'],'\"','') ] for PROD promotions"
+            instructions: "Please approve or reject ${{ replace(variables['release_url'],'\"','') }} for PROD promotions"
             onTimeout: 'skip'
   - stage: "Prod_RollbackToLatestRelease"
     displayName: 'PROD rollback to the latest Release'
