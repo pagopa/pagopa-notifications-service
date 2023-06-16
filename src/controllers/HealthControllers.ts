@@ -24,8 +24,7 @@ import { GetHealthT } from "../generated/definitions/requestTypes";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 
 export const checkSESTask = (
-  config: IConfig,
-  logger: Logger
+  config: IConfig
 ): TE.TaskEither<string, GetSendQuotaCommandOutput> => {
   const sesClient = new SESClient({
     credentials: {
@@ -50,7 +49,7 @@ const healthcheck = (
   logger.debug("Healthcheck started");
 
   return pipe(
-    checkSESTask(config, logger),
+    checkSESTask(config),
     TE.mapLeft(err =>
       ResponseErrorGeneric(
         HttpStatusCodeEnum.HTTP_STATUS_500,
