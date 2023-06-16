@@ -1,6 +1,6 @@
 {
   "name": "pagopa-notifications-service",
-  "version": "0.5.22",
+  "version": "0.5.23",
   "description": "POC for pagopa-notifications-service",
   "repository": "https://github.com/pagopa/pagopa-notifications-service",
   "author": "https://pagopa.gov.it",
