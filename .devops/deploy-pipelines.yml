@@ -348,7 +348,7 @@ stages:
     dependsOn: [Deploy_UAT_Green,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
-      release_url: $[replace( $[ format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'], variables['prod_version'] '\"','')]
+      release_url: $[ format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'], variables['prod_version'] ]
     jobs:
       - job: Prod_Approval
         displayName: Manual prod deploy approval
@@ -359,7 +359,7 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject $(release_url) for PROD promotions"
+            instructions: "Please approve or reject $[ replace(variables['release_url'],'\"','') ] for PROD promotions"
             onTimeout: 'reject'
 
   - stage: "Build_PROD_Blue"
@@ -443,7 +443,7 @@ stages:
     ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
       dependsOn: Blue_PROD_deployment
     variables:
-      release_url: $[replace( $[ format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'], variables['prod_version'] '\"','')]
+      release_url: $[ format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'], variables['prod_version'] ]
     jobs:
       - job: Bluegreen_PROD_WaitForApproval
         displayName: Manual green deploy approval
@@ -454,7 +454,7 @@ stages:
           timeoutInMinutes: 4320 # 3 days
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject PROD green promotions $(release_url)"
+            instructions: "Please approve or reject PROD green promotions $[ replace(variables['release_url'],'\"','') ]"
             onTimeout: 'reject'                
 
   - stage: "Build_PROD_Green"
@@ -532,7 +532,7 @@ stages:
     dependsOn: [Deploy_PROD_Green,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
-      release_url: $[replace( $[ format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'], variables['prod_version'] '\"','')]
+      release_url: $[ format('{0}/releases/tag/{1}',variables['Build.Repository.Uri'], variables['prod_version'] ]
     jobs:
       - job: Prod_Rollback_Approval
         displayName: Manual prod rollback approval
@@ -543,7 +543,7 @@ stages:
           timeoutInMinutes: 30
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-            instructions: "Please approve or reject $(release_url) for PROD promotions"
+            instructions: "Please approve or reject $[ replace(variables['release_url'],'\"','') ] for PROD promotions"
             onTimeout: 'skip'
   - stage: "Prod_RollbackToLatestRelease"
     displayName: 'PROD rollback to the latest Release'
