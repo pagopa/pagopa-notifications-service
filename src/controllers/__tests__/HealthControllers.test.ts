@@ -35,7 +35,7 @@ describe("health check", () => {
     MAX_RETRY_ATTEMPTS: 3,
     PORT: 3240,
     RETRY_QUEUE_NAME: "retry q name",
-    STORAGE_TRANSIENT_CONNECTION_STRING: "storagetransientconnection"
+    STORAGE_TRANSIENT_CONNECTION_STRING: "storagetransientconnection",
     STORAGE_DEADLETTER_CONNECTION_STRING: "storagedeadletterconnection"
   } as IConfig;
 
