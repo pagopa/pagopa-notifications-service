@@ -541,10 +541,10 @@ stages:
       - job: Prod_Rollback_Approval
         displayName: Manual prod rollback approval
         pool: server
+        failOnTimeout: false
         steps:
         - task: ManualValidation@0
           timeoutInMinutes: 30
-          failOnTimeout: false
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
             instructions: "Please approve or reject PROD promotions for release $(release_url)"
