@@ -541,7 +541,6 @@ stages:
       - job: Prod_Rollback_Approval
         displayName: Manual prod rollback approval
         pool: server
-        failOnTimeout: false
         steps:
         - task: ManualValidation@0
           timeoutInMinutes: 30
