@@ -288,7 +288,7 @@ stages:
     condition:
       and(
         succeeded(),
-        ne(${{parameters.RELEASE_SEMVER}}, 'none')
+        ne(${{parameters.RELEASE_SEMVER}}, none)
       )
     variables:
       app_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
