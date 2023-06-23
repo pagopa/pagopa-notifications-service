@@ -466,7 +466,7 @@ stages:
     displayName: 'PROD green Build'
     dependsOn: [PROD_Green_WaitForApproval,Release]
     variables:
-      pp_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
       - job: "PROD_image"
         displayName: 'Build PROD image'
