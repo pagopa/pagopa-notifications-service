@@ -534,7 +534,7 @@ stages:
 
 # --- START ROLLBACK PROD --- # 
   - stage: "Prod_RollbackForApproval"
-    displayName: 'PROD approval ROLLBACK'
+    displayName: 'PROD ROLLBACK'
     dependsOn: [Deploy_PROD_Green,Release]
     variables:
       release_url: $[ stageDependencies.Release.make_release.outputs['chart_current_version.releaseUrl'] ]
