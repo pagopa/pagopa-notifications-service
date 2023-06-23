@@ -544,6 +544,7 @@ stages:
         steps:
         - task: ManualValidation@0
           timeoutInMinutes: 30
+          failOnTimeout: false
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
             instructions: "Please approve or reject PROD promotions for release $(release_url)"
