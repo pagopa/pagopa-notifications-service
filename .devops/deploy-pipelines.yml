@@ -498,7 +498,7 @@ stages:
     displayName: 'PROD green deployment'
     dependsOn: [Build_PROD_Green,Release]
     variables:
-      prod_app_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
     - deployment: "Green_PROD_deployment"
       displayName: "Green PROD deployment"
@@ -528,7 +528,7 @@ stages:
                   NAMESPACE: ecommerce
                   APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                   VALUE_FILE: "helm/values-prod.yaml"
-                  GREEN_VERSION: $(app_version)
+                  GREEN_VERSION: $(prod_version)
 # --- END Deploy PROD --- # 
 
 # --- START ROLLBACK PROD --- # 
