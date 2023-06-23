@@ -541,14 +541,13 @@ stages:
         displayName: Manual prod rollback approval
         pool: server
         timeoutInMinutes: 30
-        onTimeout: 'skip'
         steps:
         - task: ManualValidation@0
           timeoutInMinutes: 30
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
             instructions: "Please approve or reject PROD promotions for release $(release_url)"
-            onTimeout: 'skip'
+            onTimeout: 'resume'
   - stage: "Prod_RollbackToLatestRelease"
     displayName: 'PROD rollback to the latest Release'
     dependsOn: [Prod_RollbackForApproval]
