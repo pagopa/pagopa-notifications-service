@@ -279,7 +279,7 @@ stages:
                 gitUsername: $(GIT_USERNAME)
                 gitHubConnection: $(GITHUB_CONNECTION)
                 release_branch: main
-                release_chart_semver: '${{ parameters.RELEASE_CHART_SEMVER }}'
+                semver_chart: '${{ parameters.RELEASE_CHART_SEMVER }}'
           - template: azure-templates/chart-current-version.yml
 
   - stage: "tag_docker_release"
