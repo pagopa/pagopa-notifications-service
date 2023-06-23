@@ -312,7 +312,7 @@ stages:
 
   - stage: "Deploy_UAT_Green"
     displayName: 'UAT green deployment'
-    dependsOn: [Release_tag_docker,Release]
+    dependsOn: [tag_docker_release,Release]
     condition: succeeded()
     variables:
       app_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
