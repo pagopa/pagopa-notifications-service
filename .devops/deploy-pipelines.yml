@@ -31,6 +31,7 @@ parameters:
       - minor
       - patch
       - none
+    default: patch
   - name: 'RELEASE_CHART_SEMVER'
     displayName: 'When upgrading helm chart, define the version bump to apply'
     type: string
@@ -38,7 +39,7 @@ parameters:
       - major
       - minor
       - patch  
-    default: minor
+    default: patch
   - name: "FORCE_REPLACE_DOCKER_IMAGE"
     displayName: "Force the existing docker image to be replaced (latest tag)"
     type: boolean
