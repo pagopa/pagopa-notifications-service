@@ -547,7 +547,7 @@ stages:
           inputs:
             notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
             instructions: "Please approve or reject PROD promotions for release $(release_url)"
-            onTimeout: 'resume'
+            onTimeout: 'skip'
   - stage: "Prod_RollbackToLatestRelease"
     displayName: 'PROD rollback to the latest Release'
     dependsOn: [Prod_RollbackForApproval]
