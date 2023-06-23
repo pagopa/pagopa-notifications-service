@@ -542,6 +542,7 @@ stages:
         displayName: Manual prod rollback approval
         pool: server
         timeoutInMinutes: 30
+        onTimeout: 'resume'
         steps:
         - task: ManualValidation@0
           timeoutInMinutes: 30
@@ -552,6 +553,7 @@ stages:
   - stage: "Prod_RollbackToLatestRelease"
     displayName: 'PROD rollback to the latest Release'
     dependsOn: [Prod_RollbackForApproval]
+    condition: succeeded()
     jobs:
       - job: Prod_Rollback
         pool:
