@@ -14,7 +14,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-        tag: ""
+        tag: "0.5.0"
         pullPolicy: Always
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
@@ -35,13 +35,12 @@ microservice-chart:
         AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
         STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
-        AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
         PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
         ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
         ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
   image:
     repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.5.32"
+    tag: "0.5.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -121,7 +120,6 @@ microservice-chart:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
     STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
-    AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
     PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
     ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
     ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
