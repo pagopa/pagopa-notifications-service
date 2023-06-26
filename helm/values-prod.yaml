@@ -14,7 +14,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-        tag: "0.5.31"
+        tag: ""
         pullPolicy: Always
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
@@ -42,7 +42,7 @@ microservice-chart:
         ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
   image:
     repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.5.31"
+    tag: "0.5.32"
     pullPolicy: Always
   livenessProbe:
     httpGet:
