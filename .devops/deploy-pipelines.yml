@@ -30,6 +30,8 @@ parameters:
       - major
       - minor
       - patch
+      - none
+    default: patch
   - name: 'RELEASE_CHART_SEMVER'
     displayName: 'When upgrading helm chart, define the version bump to apply'
     type: string
@@ -37,7 +39,7 @@ parameters:
       - major
       - minor
       - patch  
-    default: minor
+    default: patch
   - name: "FORCE_REPLACE_DOCKER_IMAGE"
     displayName: "Force the existing docker image to be replaced (latest tag)"
     type: boolean
@@ -52,7 +54,20 @@ parameters:
     values:
       - False
       - True
-
+  - name: "UAT_SKIP_BLUE_DEPLOYMENT"
+    displayName: "Skip blue/green UAT deployment strategy: activating this parameter no blue version will be created and the pipeline proceed building and deploy artifact green version"
+    type: boolean
+    default: True
+    values:
+      - False
+      - True
+  - name: "PROD_SKIP_BLUE_DEPLOYMENT"
+    displayName: "Skip blue/green PROD deployment strategy: activating this parameter no blue version will be created and the pipeline proceed building and deploy artifact green version"
+    type: boolean
+    default: True
+    values:
+      - False
+      - True    
 resources:
   repositories:
     - repository: pagopaCommons
@@ -64,7 +79,9 @@ resources:
 pool:
   vmImage: ubuntu-latest
 
+# --- START Deploy DEV --- # 
 stages:
+  
   - stage: 'Build_for_DEV'
     displayName: 'Build for DEV'
     condition: and(succeeded(), not(${{ parameters.skipBuild }}), eq(${{parameters.DEV_DEPLOY}}, true))
@@ -79,6 +96,7 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+  
   - stage: 'Deploy_for_DEV'
     displayName: 'Deploy DEV'
     dependsOn: Build_for_DEV
@@ -109,7 +127,7 @@ stages:
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-dev.yaml"
                     GREEN_VERSION: $(Build.SourceVersion)
- 
+
   - stage: End_to_End_Tests_DEV
     dependsOn:
       - Deploy_for_DEV
@@ -134,6 +152,9 @@ stages:
               testResultsFormat: "JUnit"
               testResultsFiles: "**/*-TEST.xml"
               searchFolder: "$(System.DefaultWorkingDirectory)"
+# --- END Deploy DEV --- # 
+
+# --- START Deploy UAT --- # 
   - stage: "Build_release_candidate"
     displayName: 'Build release candidate'
     dependsOn: []
@@ -151,7 +172,7 @@ stages:
       )
     jobs:
       - job: "build"
-        displayName: 'Build UAT service beta'
+        displayName: 'Build release candidate docker image'
         steps:
           - template: templates/docker-release/template.yaml@pagopaCommons
             parameters:
@@ -160,13 +181,18 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
-          - template: templates/node-github-current-version/template.yaml@pagopaCommons
+          - template: azure-templates/chart-current-version.yml
         
   - stage: "Deploy_UAT_Blue"
     displayName: 'UAT blue deployment'
     dependsOn: Build_release_candidate
+    condition:
+      and(
+      succeeded(),
+      eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False)
+      )
     variables:
-      green_version: $[ stageDependencies.Build_release_candidate.build.outputs['current_version.value'] ]
+      green_app_version: $[ stageDependencies.Build_release_candidate.build.outputs['chart_current_version.appVersion'] ]
     jobs:
       - deployment: "Blue_deployment"
         displayName: "Blue deployment"
@@ -179,7 +205,6 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
-                - task: KubectlInstaller@0
                 - task: Bash@3
                   name: update_chart_version
                   displayName: 'Setup helm microservice chart'
@@ -197,12 +222,14 @@ stages:
                     NAMESPACE: ecommerce
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
-                    GREEN_VERSION: $(green_version)
+                    GREEN_VERSION: $(green_app_version)
                     BLUE_VERSION: $(Build.SourceVersion)
 
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
     dependsOn: Deploy_UAT_Blue
+    variables:
+      commitUrl: $[ stageDependencies.Build_release_candidate.build.outputs['chart_current_version.commitUrl'] ]
     jobs:
       - job: Bluegreen_WaitForApproval
         displayName: Manual blue deploy approval
@@ -212,7 +239,9 @@ stages:
         - task: ManualValidation@0
           timeoutInMinutes: 4320 # 3 days
           inputs:
-            onTimeout: 'skip'
+            notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+            instructions: "Please approve or reject UAT blue green promotions for $(commitUrl)"
+            onTimeout: 'reject'
       - job: API_tests
         displayName: API test for blue deploy approval
         steps:
@@ -232,7 +261,10 @@ stages:
               testResultsFiles: '**/*-TEST.xml' 
               searchFolder: '$(System.DefaultWorkingDirectory)'
   - stage: Release
-    dependsOn: Bluegreen_WaitForApproval
+    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], True) }}:
+      dependsOn: Build_release_candidate
+    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
+      dependsOn: Bluegreen_WaitForApproval
     jobs:
       - job: make_release
         steps:
@@ -247,18 +279,19 @@ stages:
                 gitUsername: $(GIT_USERNAME)
                 gitHubConnection: $(GITHUB_CONNECTION)
                 release_branch: main
-                release_chart_semver: '${{ parameters.RELEASE_CHART_SEMVER }}'
-          - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
-            - template: templates/node-github-current-version/template.yaml@pagopaCommons
-      - job: tag_version
-        steps:
-          - template: templates/node-github-current-version/template.yaml@pagopaCommons
+                semver_chart: '${{ parameters.RELEASE_CHART_SEMVER }}'
+          - template: azure-templates/chart-current-version.yml
 
-  - stage: "Release_tag_docker"
-    displayName: 'Docker tag release'
+  - stage: "tag_docker_release"
+    displayName: 'Tag Docker image to be release'
     dependsOn: Release
+    condition:
+      and(
+        succeeded(),
+        ne('${{parameters.RELEASE_SEMVER}}', 'none')
+      )
     variables:
-      next_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      app_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
       - job: "build"
         displayName: 'Build UAT service beta'
@@ -274,14 +307,15 @@ stages:
             targetType: "inline"
             script: |
               docker pull $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion)
-              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(next_version)
-              docker push $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(next_version)
+              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(app_version)
+              docker push $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(app_version)
 
   - stage: "Deploy_UAT_Green"
     displayName: 'UAT green deployment'
-    dependsOn: [Release_tag_docker,Release]
+    dependsOn: [tag_docker_release,Release]
+    condition: succeeded()
     variables:
-      green_version: $[ stageDependencies.Release.make_release.outputs['current_version.value'] ]
+      app_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     jobs:
       - deployment: "Green_deployment"
         displayName: "Green deployment"
@@ -294,13 +328,13 @@ stages:
               steps:
                 - checkout: self
                   displayName: "Checkout"
-                - task: KubectlInstaller@0
                 - task: Bash@3
                   name: update_chart_version
                   displayName: 'Setup helm microservice chart'
                   inputs:
                     targetType: "inline"
                     script: |
+                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
                       helm dep build helm
                 - template: azure-templates/helm-microservice-chart-deploy.yml
                   parameters:
@@ -311,4 +345,228 @@ stages:
                     NAMESPACE: ecommerce
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
-                    GREEN_VERSION: $(green_version)
+                    GREEN_VERSION: $(app_version)
+# --- END Deploy UAT --- # 
+
+# --- START Deploy PROD --- # 
+  - stage: "Prod_WaitForApproval"
+    displayName: 'PROD approval deployment'
+    dependsOn: [Deploy_UAT_Green,Release]
+    condition: succeeded()
+    variables:
+      release_url: $[ stageDependencies.Release.make_release.outputs['chart_current_version.releaseUrl'] ]
+    jobs:
+      - job: Prod_Approval
+        displayName: Manual prod deploy approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 4320 # 3 days
+          inputs:
+            notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+            instructions: "Please approve or reject PROD promotions for release $(release_url)"
+            onTimeout: 'reject'
+
+  - stage: "Build_PROD_Blue"
+    displayName: 'PROD blue Build'
+    condition:
+      and(
+      succeeded(),
+      eq(${{parameters.PROD_SKIP_BLUE_DEPLOYMENT}}, False)
+      )
+    dependsOn: [Prod_WaitForApproval,Release]
+    variables:
+      app_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+    jobs:
+      - job: "PROD_image"
+        displayName: 'Build PROD image'
+        steps:
+        - task: Docker@2
+          displayName: "docker login for UAT"
+          inputs:
+            containerRegistry: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
+            command: "login"
+        - task: Bash@3
+          displayName: "docker tag new version for PROD"
+          inputs:
+            targetType: "inline"
+            script: |
+              docker pull $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(app_version)
+              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(app_version) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion)
+        - task: Docker@2
+          displayName: "docker login for PROD"
+          inputs:
+            containerRegistry: $(PROD_CONTAINER_REGISTRY_SERVICE_CONN)
+            command: "login"
+        - task: Bash@3
+          displayName: "Push new version for PROD"
+          inputs:
+            targetType: "inline"
+            script: |
+              docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion)
+  - stage: "Deploy_PROD_Blue"
+    displayName: 'PROD blue deployment'
+    dependsOn: [Build_PROD_Blue,Release]
+    variables:
+      app_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+    jobs:
+      - deployment: "Blue_PROD_deployment"
+        displayName: "Blue PROD deployment"
+        pool:
+          name: pagopa-prod-linux
+        environment: 'PROD'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: "Checkout"
+                - task: Bash@3
+                  name: update_chart_version
+                  displayName: 'Setup helm microservice chart'
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+                      helm dep build helm
+                - template: azure-templates/helm-microservice-chart-deploy.yml
+                  parameters:
+                    DO_DEPLOY: true
+                    DO_BLUE_GREEN_DEPLOY: true
+                    ENV: 'PROD'
+                    KUBERNETES_SERVICE_CONN: $(PROD_KUBERNETES_SERVICE_CONN)
+                    NAMESPACE: ecommerce
+                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                    VALUE_FILE: "helm/values-prod.yaml"
+                    GREEN_VERSION: $(app_version)
+                    BLUE_VERSION: $(Build.SourceVersion)
+
+  - stage: "PROD_Green_WaitForApproval"
+    displayName: 'PROD green approval deployment'
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
+      dependsOn: Prod_WaitForApproval
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
+      dependsOn: Blue_PROD_deployment
+    variables:
+      release_url: $[ stageDependencies.Release.make_release.outputs['chart_current_version.releaseUrl'] ]
+    jobs:
+      - job: Bluegreen_PROD_WaitForApproval
+        displayName: Manual green deploy approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 4320 # 3 days
+          inputs:
+            notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+            instructions: "Please approve or reject PROD green promotions for release $(release_url)"
+            onTimeout: 'reject'                
+
+  - stage: "Build_PROD_Green"
+    displayName: 'PROD green Build'
+    dependsOn: [PROD_Green_WaitForApproval,Release]
+    variables:
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+    jobs:
+      - job: "PROD_image"
+        displayName: 'Build PROD image'
+        steps:
+        - task: Docker@2
+          displayName: "docker login for UAT"
+          inputs:
+            containerRegistry: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
+            command: "login"
+        - task: Bash@3
+          displayName: "docker tag new version for PROD"
+          inputs:
+            targetType: "inline"
+            script: |
+              docker pull $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+        - task: Docker@2
+          displayName: "docker login for PROD"
+          inputs:
+            containerRegistry: $(PROD_CONTAINER_REGISTRY_SERVICE_CONN)
+            command: "login"
+        - task: Bash@3
+          displayName: "docker tag new version for PROD"
+          inputs:
+            targetType: "inline"
+            script: |
+              docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+              docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+  - stage: "Deploy_PROD_Green"
+    displayName: 'PROD green deployment'
+    dependsOn: [Build_PROD_Green,Release]
+    variables:
+      prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
+    jobs:
+    - deployment: "Green_PROD_deployment"
+      displayName: "Green PROD deployment"
+      pool:
+        name: pagopa-prod-linux
+      environment: 'PROD'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+                displayName: "Checkout"
+              - task: Bash@3
+                name: update_chart_version
+                displayName: 'Setup helm microservice chart'
+                inputs:
+                  targetType: "inline"
+                  script: |
+                    helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+                    helm dep build helm
+              - template: azure-templates/helm-microservice-chart-deploy.yml
+                parameters:
+                  DO_DEPLOY: true
+                  DO_BLUE_GREEN_DEPLOY: false
+                  ENV: 'PROD'
+                  KUBERNETES_SERVICE_CONN: $(PROD_KUBERNETES_SERVICE_CONN)
+                  NAMESPACE: ecommerce
+                  APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                  VALUE_FILE: "helm/values-prod.yaml"
+                  GREEN_VERSION: $(prod_version)
+# --- END Deploy PROD --- # 
+
+# --- START ROLLBACK PROD --- # 
+  - stage: "Prod_RollbackForApproval"
+    displayName: 'PROD ROLLBACK'
+    dependsOn: [Deploy_PROD_Green,Release]
+    variables:
+      release_url: $[ stageDependencies.Release.make_release.outputs['chart_current_version.releaseUrl'] ]
+    jobs:
+      - job: Prod_Rollback_Approval
+        displayName: Manual prod rollback approval
+        pool: server
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 30
+          inputs:
+            notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+            instructions: "Please approve or reject PROD promotions for release $(release_url)"
+            onTimeout: 'skip'
+  - stage: "Prod_RollbackToLatestRelease"
+    displayName: 'PROD rollback to the latest Release'
+    dependsOn: [Prod_RollbackForApproval]
+    condition: succeeded()
+    jobs:
+      - job: Prod_Rollback
+        pool:
+          name: pagopa-prod-linux
+        steps:
+        - task: HelmDeploy@0
+          displayName: Helm Rollback PROD
+          inputs:
+            kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
+            namespace: ecommerce
+            command: rollback
+            chartName: $(K8S_IMAGE_REPOSITORY_NAME)
+            releaseName: $(K8S_IMAGE_REPOSITORY_NAME)
+            install: true
+            waitForExecution: true     
+            arguments: $(K8S_IMAGE_REPOSITORY_NAME)
+# --- START ROLLBACK PROD --- # 

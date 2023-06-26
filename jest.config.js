@@ -25,7 +25,6 @@ module.exports = {
       "test-config",
       ".module.ts",
       "<rootDir>/src/generated/",
-      "<rootDir>/src/util/appInsights.ts",
       "<rootDir>/src/__mocks__/*.ts"
   ],
   coverageDirectory: "<rootDir>/coverage/",
