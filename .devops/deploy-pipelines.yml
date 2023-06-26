@@ -390,6 +390,7 @@ stages:
     condition: |
       and(
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+        eq(${{parameters.PROD_SKIP_BLUE_DEPLOYMENT}}, False),
         in(dependencies.Prod_WaitForApproval.result, 'Succeeded'),
         in(dependencies.Release.result, 'Succeeded', 'Skipped')
       )  
@@ -429,6 +430,7 @@ stages:
     condition: |
       and(
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+        eq(${{parameters.PROD_SKIP_BLUE_DEPLOYMENT}}, False),
         in(dependencies.Build_PROD_Blue.result, 'Succeeded'),
         in(dependencies.Release.result, 'Succeeded', 'Skipped')
       )
