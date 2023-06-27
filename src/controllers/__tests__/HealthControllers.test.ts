@@ -22,7 +22,6 @@ describe("health check", () => {
 
   const config = {
     AI_ENABLED: false,
-    AI_INSTRUMENTATION_KEY: "key",
     AI_SAMPLING_PERCENTAGE: 0,
     AWS_SES_ACCESS_KEY_ID: "aws_access_key",
     AWS_SES_REGION: "aws_region",

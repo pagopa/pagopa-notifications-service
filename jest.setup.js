@@ -8,7 +8,6 @@ process.env.RETRY_QUEUE_NAME="retry-queue"
 process.env.ERROR_QUEUE_NAME="error-queue"
 process.env.INITIAL_RETRY_TIMEOUT_SECONDS="120"
 process.env.MAX_RETRY_ATTEMPTS="3"
-process.env.AI_INSTRUMENTATION_KEY="test"
 process.env.AI_SAMPLING_PERCENTAGE="30"
 process.env.AI_ENABLED=false
 process.env.AWS_SES_ACCESS_KEY_ID="test-access-key"
