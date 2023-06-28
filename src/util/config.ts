@@ -53,7 +53,8 @@ export const IConfig = t.interface({
   PERSONAL_DATA_VAULT_API_KEY: t.string,
   PORT: t.number,
   RETRY_QUEUE_NAME: t.string,
-  STORAGE_CONNECTION_STRING: t.string
+  STORAGE_DEADLETTER_CONNECTION_STRING: t.string,
+  STORAGE_TRANSIENT_CONNECTION_STRING: t.string
 });
 
 // No need to re-evaluate this object for each call

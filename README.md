@@ -25,6 +25,9 @@ Create a file `.env` in your cloned repo, with the contents similar to `.env.exa
 |PERSONAL_DATA_VAULT_API_KEY                     | API Key for Personal Data Vault (PDV is used to safely encrypt PIIs, in this case it will be used to encrypt the body with sensitive data to write on the queues)        | string |   yes    |    
 |PERSONAL_DATA_VAULT_API_HOST                    | API base host for Personal Data Vault                                                                                                                                    | string |   yes    |    
 |PERSONAL_DATA_VAULT_API_BASE_PATH               | API base path for Personal Data Vault                                                                                                                                    | string |   no     |
+|STORAGE_TRANSIENT_CONNECTION_STRING               | Storage transient queues connection string                                                                                        | string |   yes     |
+|STORAGE_DEADLETTER_CONNECTION_STRING               | Storage deadletter queues connection string                                                                                        | string |   yes     |
+
 ### Starting the API runtime
 
 ```
