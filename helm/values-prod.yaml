@@ -14,7 +14,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-        tag: "0.4.1"
+        tag: ""
         pullPolicy: Always
       envConfig:
         NOTIFICATIONS_EMAIL_ENABLED: "true"
@@ -28,20 +28,20 @@ microservice-chart:
         AI_ENABLED: "true"
         PERSONAL_DATA_VAULT_API_HOST: "https://api.tokenizer.pdv.pagopa.it"
         PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
-        PAGOPA_MAIL_LOGO_URI: "https://checkout.pagopa.it/assets/logos/pagopa-logo.svg"
+        PAGOPA_MAIL_LOGO_URI: "https://checkout.pagopa.it/assets/logos/logo_pagopa.png"
         ELASTIC_APM_SERVICE_NAME: pagopa-notification-service-blue
         ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
-        STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
-        AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
+        STORAGE_TRANSIENT_CONNECTION_STRING: ecommerce-storage-transient-connection-string
+        STORAGE_DEADLETTER_CONNECTION_STRING: ecommerce-storage-deadletter-connection-string
         PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
         ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
         ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
   image:
     repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "0.4.1"
+    tag: "0.5.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -106,7 +106,7 @@ microservice-chart:
     ERROR_QUEUE_NAME: "pagopa-p-weu-ecommerce-notifications-service-errors-queue"
     AI_SAMPLING_PERCENTAGE: "30"
     AI_ENABLED: "true"
-    PAGOPA_MAIL_LOGO_URI: "https://checkout.pagopa.it/assets/logos/pagopa-logo.svg"
+    PAGOPA_MAIL_LOGO_URI: "https://checkout.pagopa.it/assets/logos/logo_pagopa.png"
     PERSONAL_DATA_VAULT_API_HOST: "https://api.tokenizer.pdv.pagopa.it"
     PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
     ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
@@ -114,8 +114,8 @@ microservice-chart:
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
-    STORAGE_CONNECTION_STRING: ecommerce-storage-connection-string
-    AI_INSTRUMENTATION_KEY: notifications-service-ai-instrumentation-key
+    STORAGE_TRANSIENT_CONNECTION_STRING: ecommerce-storage-transient-connection-string
+    STORAGE_DEADLETTER_CONNECTION_STRING: ecommerce-storage-deadletter-connection-string
     PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
     ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
     ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token

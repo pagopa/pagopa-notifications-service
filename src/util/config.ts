@@ -36,7 +36,6 @@ export const NotificationsServiceClientType = enumType<
 export type IConfig = t.TypeOf<typeof IConfig>;
 export const IConfig = t.interface({
   AI_ENABLED: t.boolean,
-  AI_INSTRUMENTATION_KEY: t.string,
   AI_SAMPLING_PERCENTAGE: t.number,
   AWS_SES_ACCESS_KEY_ID: t.string,
   AWS_SES_REGION: t.string,
@@ -54,7 +53,8 @@ export const IConfig = t.interface({
   PERSONAL_DATA_VAULT_API_KEY: t.string,
   PORT: t.number,
   RETRY_QUEUE_NAME: t.string,
-  STORAGE_CONNECTION_STRING: t.string
+  STORAGE_DEADLETTER_CONNECTION_STRING: t.string,
+  STORAGE_TRANSIENT_CONNECTION_STRING: t.string
 });
 
 // No need to re-evaluate this object for each call

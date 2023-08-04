@@ -11,7 +11,7 @@ describe("config", () => {
       expect(confOrThrow).toBeDefined();
     });
 
-    xit("check throw", () => {  
+    it("check throw", () => {  
       const spyGetConfig = jest.spyOn(config,'getConfig').mockImplementation(() => {throw new Error("")});
       const confOrThrow = config.getConfigOrThrow();
     });
