@@ -23,7 +23,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: CHK-1871-local-ecommerce-reorganization
+      ref: CHK-1871-notification-collection-tests
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
