@@ -89,7 +89,7 @@ stages:
               echo "##[debug] Change placeholder for notification-service set branch: $(BRANCH_NAME)"
               sed -i "s/^NOTIFICATIONS_SERVICE_COMMIT_SHA=.*$/NOTIFICATIONS_SERVICE_COMMIT_SHA=$(BRANCH_NAME)/" .env
             displayName: 'Change notification branch name ecommerce-local .env'
-          - script: docker compose up pagopa-notification-service pagopa-pdv-mock storage azurite-init -d
+          - script: docker compose up pagopa-notifications-service pagopa-pdv-mock storage azurite-init -d
             displayName: 'Run app with docker-compose'
           - script: |
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8086/)" != "304" ]]; do sleep 5; done' || exit 1
