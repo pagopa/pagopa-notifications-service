@@ -20,60 +20,75 @@ export const addRetryQueueListener = (
   browserEngine: Browser
 ): void => {
   const retrieveMessage = async (): Promise<void> => {
-    const messages = await retryQueueClient.receiveMessages({
-      numberOfMessages: 14
-    });
+    try {
+      const messages = await retryQueueClient.receiveMessages({
+        numberOfMessages: 14
+      });
 
-    if (messages?.receivedMessageItems.length > 0) {
-      logger.info(
-        `Retrying ${messages.receivedMessageItems.length} enqueued messages`
-      );
-      for (const message of messages.receivedMessageItems) {
-        await retryQueueClient.deleteMessage(
-          message.messageId,
-          message.popReceipt
+      if (messages?.receivedMessageItems.length > 0) {
+        logger.info(
+          `Retrying ${messages.receivedMessageItems.length} enqueued messages`
         );
-        const { clientId, bodyEncrypted, retryCount } = JSON.parse(
-          message.messageText
-        );
-        logger.info(bodyEncrypted);
-        await pipe(
-          decryptBody(bodyEncrypted),
-          TE.bimap(
-            e => {
-              logger.error(`Error while invoke PDV while decrypt body: ${e} `);
-              // Error case: we fail to decrypt  the request body -> we write the same event on the retry queque with a decremented retryCount
-              writeMessageIntoQueue(
-                bodyEncrypted,
-                clientId,
-                retryCount - 1,
-                config
-              );
-            },
-            // Happy path: we successfully decrypted the request body and can retry sending the email
-            async bodyDecrypted => {
-              const bodyRequest = JSON.parse(
-                bodyDecrypted
-              ) as NotificationEmailRequest;
-              const templateId = bodyRequest.templateId;
-              const schema = await import(
-                `../generated/templates/${templateId}/schema.js`
-              );
-              void sendEmail(
-                {
-                  "X-Client-Id": clientId,
-                  body: bodyRequest
+        for (const message of messages.receivedMessageItems) {
+          try {
+            await retryQueueClient.deleteMessage(
+              message.messageId,
+              message.popReceipt
+            );
+
+            const { clientId, bodyEncrypted, retryCount } = JSON.parse(
+              message.messageText
+            );
+            logger.info(bodyEncrypted);
+            await pipe(
+              decryptBody(bodyEncrypted),
+              TE.bimap(
+                e => {
+                  logger.error(
+                    `Error while invoke PDV while decrypt body: ${e} `
+                  );
+                  // Error case: we fail to decrypt  the request body -> we write the same event on the retry queque with a decremented retryCount
+                  writeMessageIntoQueue(
+                    bodyEncrypted,
+                    clientId,
+                    retryCount - 1,
+                    config
+                  );
                 },
-                schema,
-                browserEngine,
-                mailTrasporter,
-                config,
-                retryCount - 1
-              );
-            }
-          )
-        )();
+                // Happy path: we successfully decrypted the request body and can retry sending the email
+                async bodyDecrypted => {
+                  const bodyRequest = JSON.parse(
+                    bodyDecrypted
+                  ) as NotificationEmailRequest;
+                  const templateId = bodyRequest.templateId;
+                  const schema = await import(
+                    `../generated/templates/${templateId}/schema.js`
+                  );
+                  void sendEmail(
+                    {
+                      "X-Client-Id": clientId,
+                      body: bodyRequest
+                    },
+                    schema,
+                    browserEngine,
+                    mailTrasporter,
+                    config,
+                    retryCount - 1
+                  );
+                }
+              )
+            )();
+          } catch (e) {
+            logger.error(
+              `Caught exception while processing message from retry queue with messageId ${message.messageId}`
+            );
+          }
+        }
       }
+    } catch (e) {
+      logger.error(
+        `Caught exception while retrieving messages from queue: ${e}`
+      );
     }
   };
 
