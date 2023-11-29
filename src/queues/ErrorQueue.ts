@@ -2,9 +2,12 @@ import { pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import apm = require("elastic-apm-node");
 import { errorQueueClient } from "../util/queues";
+
 const deadLetterErrorLabels: apm.Labels = {
-  "deadLetterEvent.category": "RETRY_EVENT_NO_ATTEMPTS_LEFT",
-  "deadLetterEvent.serviceName": "pagopa-notifications-service"
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  deadLetterEvent_category: "RETRY_EVENT_NO_ATTEMPTS_LEFT",
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  deadLetterEvent_serviceName: "pagopa-notifications-service"
 };
 export const sendMessageToErrorQueue = async (
   bodyEncrypted: string,
@@ -17,8 +20,13 @@ export const sendMessageToErrorQueue = async (
     })
   );
   await pipe(
-    O.fromNullable(apm.startSpan("No attempts left for retry user mail send")),
-    O.map(span => {
+    O.fromNullable(
+      apm.startTransaction("No attempts left for retry user mail send")
+    ),
+    O.chainNullableK(transaction =>
+      transaction.startSpan("Writing event to dead letter queue")
+    ),
+    O.chainNullableK(span => {
       span.addLabels(deadLetterErrorLabels);
       return span;
     }),
