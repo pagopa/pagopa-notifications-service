@@ -23,17 +23,19 @@ export const sendMessageToErrorQueue = async (
     O.fromNullable(
       apm.startTransaction("No attempts left for retry user mail send")
     ),
-    O.chainNullableK(transaction =>
-      transaction.startSpan("Writing event to dead letter queue")
-    ),
-    O.chainNullableK(span => {
-      span.addLabels(deadLetterErrorLabels);
-      return span;
+    O.map(transaction => {
+      const span = transaction.startSpan("Writing event to dead letter queue");
+      return { span, transaction };
+    }),
+    O.map(({ span, transaction }) => {
+      span?.addLabels(deadLetterErrorLabels);
+      return { span, transaction };
     }),
     O.fold(
       async () => sendDeadLetterQueueMessage,
-      async span => {
-        span.end();
+      async ({ span, transaction }) => {
+        span?.end();
+        transaction?.end();
         return sendDeadLetterQueueMessage;
       }
     )

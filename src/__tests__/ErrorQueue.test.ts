@@ -14,6 +14,7 @@ describe("error queue", () => {
         const span = transaction!.startSpan("test span");
         const addLabelsSpanSpy = jest.spyOn(span!, "addLabels");
         const endSpanSpy = jest.spyOn(span!, "end");
+        const endTransactionSpy = jest.spyOn(transaction!, "end");
         const apmStartTransactionSpy = jest.spyOn(apm, 'startTransaction').mockReturnValue(transaction);
         const transactionStartSpanSpy = jest.spyOn(transaction!, 'startSpan').mockReturnValue(span);
         sendMessageToErrorQueue("clientId", "bodyEncryted");
@@ -24,6 +25,7 @@ describe("error queue", () => {
             "deadLetterEvent_serviceName": "pagopa-notifications-service"
           });
         expect(endSpanSpy).toBeCalledTimes(1);
+        expect(endTransactionSpy).toBeCalledTimes(1);
         expect(spySendMessages).toBeCalledTimes(1);
         jest.useRealTimers();
     });
