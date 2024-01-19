@@ -145,6 +145,18 @@
       color: #17324D !important;
     }
 
+    .centered-text {
+      padding-top: 3px;
+      padding-bottom: 3px;
+      display: inline-block;
+    }
+
+    .mail-address,
+    .mail-address div {
+      word-break: break-all;
+      color: #17324D !important;
+    }
+
     .mobile {
       display: block;
     }
@@ -163,7 +175,7 @@
     }
 
     .link {
-      color: #0066CC !important;
+      color: #0066cc !important;
     }
 
     @media (prefers-color-scheme: light) {
@@ -206,7 +218,7 @@
 
       .header {
         background-color: #323232;
-        border-top: 8px solid #3DA2FF;
+        border-top: 8px solid #3da2ff;
       }
 
       .section {
@@ -214,30 +226,35 @@
       }
 
       .title div {
-        color: #FFFFFF !important;
+        color: #ffffff !important;
       }
 
       .text div {
-        color: #EEEEEE !important;
+        color: #eeeeee !important;
       }
 
       .caption,
       .caption div {
-        color: #EEEEEE !important;
+        color: #eeeeee !important;
       }
 
       .key,
       .key div {
-        color: #EEEEEE !important;
+        color: #eeeeee !important;
       }
 
       .value,
       .value div {
-        color: #FFFFFF !important;
+        color: #ffffff !important;
+      }
+
+      .mail-address,
+      .mail-address div {
+        color: #ffffff !important;
       }
 
       .link {
-        color: #3DA2FF !important;
+        color: #3da2ff !important;
       }
 
       /* IMAGES */
@@ -430,7 +447,7 @@
                                 </td>
                               </tr>
                               <tr>
-                                <td align="left" class="value" style="font-size:0px;padding:10px 25px;padding-top:4px;padding-bottom:8px;word-break:break-word;">
+                                <td align="left" class="mail-address" style="font-size:0px;padding:10px 25px;padding-top:4px;padding-bottom:8px;word-break:break-word;">
                                   <div style="font-family:Titillium Web, system-ui, sans-serif;font-size:16px;font-weight:bold;line-height:20px;text-align:left;color:#17324D;">{{user.email}}</div>
                                 </td>
                               </tr>
@@ -467,10 +484,10 @@
                                 </td>
                               </tr>
                               <tr>
-                                <td align="left" class="value" style="font-size:0px;padding:10px 25px;padding-top:4px;padding-bottom:8px;word-break:break-word;">
+                                <td align="left" vertical-align="middle" class="value" style="font-size:0px;padding:10px 25px;padding-top:4px;padding-bottom:8px;word-break:break-word;">
                                   <div style="font-family:Titillium Web, system-ui, sans-serif;font-size:16px;font-weight:bold;line-height:16px;text-align:left;color:#17324D;">
                                     <mj-raw>{{#if transaction.paymentMethod.logo}}</mj-raw>
-                                    <img src="{{transaction.paymentMethod.logo}}" width="24" align="left" aria-hidden="true">&nbsp;{{transaction.paymentMethod.name}}
+                                    <img src="{{transaction.paymentMethod.logo}}" width="24" height="24" align="left" aria-hidden="true"> &nbsp;<span class="centered-text">{{transaction.paymentMethod.name}}</span>
                                     <mj-raw>
                                       {{else}}
                                     </mj-raw>
@@ -798,7 +815,7 @@
                               <tr>
                                 <td align="left" class="text" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                   <div style="font-family:Titillium Web, system-ui, sans-serif;font-size:16px;font-weight:regular;line-height:24px;text-align:left;color:#000000;">
-                                    <p> Non rispondere a questa email. Questa casella di posta &egrave; utilizzata solo per l&rsquo;invio della presente mail e, non essendo monitorata, non riceveresti risposta. </p>
+                                    <p> Non rispondere a questo indirizzo email: &egrave; utilizzato solo per l'invio di questa comunicazione e, non essendo monitorato, non riceveresti risposta. </p>
                                   </div>
                                 </td>
                               </tr>
