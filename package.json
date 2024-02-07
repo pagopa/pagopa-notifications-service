@@ -1,6 +1,6 @@
 {
   "name": "pagopa-notifications-service",
-  "version": "0.5.0",
+  "version": "1.0.1",
   "description": "POC for pagopa-notifications-service",
   "repository": "https://github.com/pagopa/pagopa-notifications-service",
   "author": "https://pagopa.gov.it",
@@ -8,7 +8,6 @@
   "scripts": {
     "prebuild": "rimraf dist && yarn generate",
     "build": "tsc && cp -r src/templates dist/src",
-    "postversion": "git push && git push --tags",
     "generate": "npm-run-all generate:*",
     "generate:definitions": "rimraf ./src/generated/definitions && shx mkdir -p ./src/generated/definitions && gen-api-models --api-spec ./api-spec/index.yaml --no-strict --out-dir ./src/generated/definitions --request-types",
     "generate:personal-data-vault": "rimraf ./src/generated/personal-data-vault && shx mkdir -p ./src/generated/personal-data-vault && gen-api-models --api-spec https://api.uat.tokenizer.pdv.pagopa.it/docs/tokenizeruapis/openapi.json  --no-strict --out-dir ./src/generated/personal-data-vault --request-types  --response-decoders --client",
