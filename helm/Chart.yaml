@@ -2,7 +2,7 @@ apiVersion: v2
 name: pagopa-notifications-service
 description: Microservice that handles notifications in pagoPA platform
 type: application
-version: 1.0.2
+version: 1.0.3
 appVersion: 1.0.2
 dependencies:
   - name: microservice-chart
