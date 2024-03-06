@@ -53,7 +53,7 @@ const sendEmailWithAWS = async (
   _pdfData: O.Option<Promise<Buffer>>,
   _pdfName: string
   // eslint-disable-next-line max-params
-) => {
+) =>
   /*
   logger.info("Attachment configurations...");
   const attachments = await Promise.all(
@@ -68,20 +68,14 @@ const sendEmailWithAWS = async (
     )
   );
   */
-  const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
-    {
-      from: senderEmail,
-      to: recipientEmail,
-      subject,
-      html: htmlData,
-      text: textData
-      // attachments
-    }
-  );
-  logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
-
-  return messageInfoOk;
-};
+  await mailTrasporter.sendMail({
+    from: senderEmail,
+    to: recipientEmail,
+    subject,
+    html: htmlData,
+    text: textData
+    // attachments
+  });
 const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   envelope: {
     from: "no-reply@pagopa.gov.it",
@@ -226,14 +220,8 @@ export const sendEmail = async (
 
                   O.map(identity),
                   O.map(sentMessageInfo => {
-                    // eslint-disable-next-line no-console
-                    console.log(sentMessageInfo);
                     logger.info(
-                      `[${clientId}] - [correlationId : ${correlationId}] - email sent with sentMessageInfo 
-                      {messageId: ${sentMessageInfo.messageId},
-                       isAccepted: ${sentMessageInfo.accepted}, 
-                       isPending: ${sentMessageInfo.pending}, 
-                       isRejected: ${sentMessageInfo.rejected} }`
+                      `[${clientId}] - [correlationId : ${correlationId}] - email sent with SES messageId: ${sentMessageInfo.messageId}`
                     );
                     return sentMessageInfo;
                   })
