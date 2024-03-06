@@ -29,6 +29,13 @@ paths:
             - CLIENT_ECOMMERCE
             - CLIENT_PAYMENT_MANAGER
         example: CLIENT_ECOMMERCE
+      - name: x-correlation-id
+        in: header
+        description: ID to correlate the client request, for example the transactionId for the eCommerce client
+        required: false
+        schema:
+          minLength: 1
+          type: string 
       requestBody:
         content:
           application/json:
