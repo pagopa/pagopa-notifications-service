@@ -226,6 +226,8 @@ export const sendEmail = async (
 
                   O.map(identity),
                   O.map(sentMessageInfo => {
+                    // eslint-disable-next-line no-console
+                    console.log(sentMessageInfo);
                     logger.info(
                       `[${clientId}] - [correlationId : ${correlationId}] - email sent with sentMessageInfo 
                       {messageId: ${sentMessageInfo.messageId},
@@ -395,7 +397,8 @@ export function sendMail(
         ({ body, clientId }) =>
           controller({
             body,
-            "X-Client-Id": clientId
+            "X-Client-Id": clientId,
+            "x-correlation-id": req.header("x-correlation-id")
           })
       )
     );
