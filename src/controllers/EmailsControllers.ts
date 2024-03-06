@@ -229,9 +229,9 @@ export const sendEmail = async (
                     logger.info(
                       `[${clientId}] - [correlationId : ${correlationId}] - email sent with sentMessageInfo 
                       {messageId: ${sentMessageInfo.messageId},
-                       isAccepted: ${sentMessageInfo.accepted.length > 0}, 
-                       isPending: ${sentMessageInfo.pending.length > 0}, 
-                       isRejected: ${sentMessageInfo.rejected.length > 0} }`
+                       isAccepted: ${sentMessageInfo.accepted}, 
+                       isPending: ${sentMessageInfo.pending}, 
+                       isRejected: ${sentMessageInfo.rejected} }`
                     );
                     return sentMessageInfo;
                   })
