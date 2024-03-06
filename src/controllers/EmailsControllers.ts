@@ -23,7 +23,7 @@ import { Transporter } from "nodemailer";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
 import * as TE from "fp-ts/lib/TaskEither";
-import { pipe } from "fp-ts/lib/function";
+import { identity, pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
@@ -133,8 +133,13 @@ export const sendEmail = async (
   // eslint-disable-next-line max-params
 ): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
   const clientId = params["X-Client-Id"];
-
   const templateId = params.body.templateId;
+
+  const correlationId = pipe(
+    O.fromNullable(params["x-correlation-id"]),
+    O.getOrElse(() => "correlation-id-not-found")
+  );
+
   const textTemplateRaw = fs
     .readFileSync(
       `./dist/src/templates/${templateId}/${templateId}.template.txt`
@@ -194,7 +199,7 @@ export const sendEmail = async (
           O.map(async v => await v)
         );
         logger.info(
-          `[${clientId}] - Sending email with template ${templateId}`
+          `[${clientId}] - [correlationId : ${correlationId}] - Sending email with template ${templateId}`
         );
         return pipe(
           clientId,
@@ -205,27 +210,43 @@ export const sendEmail = async (
             async () => O.some(mockedResponse(params.body.to)),
             async () => {
               try {
-                return O.some(
-                  await sendEmailWithAWS(
-                    config.ECOMMERCE_NOTIFICATIONS_SENDER,
-                    params.body.to,
-                    params.body.subject,
-                    htmlMarkup,
-                    textMarkup,
-                    mailTrasporter,
-                    pdfData,
-                    "test.pdf"
-                  )
+                return pipe(
+                  O.some(
+                    await sendEmailWithAWS(
+                      config.ECOMMERCE_NOTIFICATIONS_SENDER,
+                      params.body.to,
+                      params.body.subject,
+                      htmlMarkup,
+                      textMarkup,
+                      mailTrasporter,
+                      pdfData,
+                      "test.pdf"
+                    )
+                  ),
+
+                  O.map(identity),
+                  O.map(sentMessageInfo => {
+                    logger.info(
+                      `[${clientId}] - [correlationId : ${correlationId}] - email sent with sentMessageInfo 
+                      {messageId: ${sentMessageInfo.messageId},
+                       isAccepted: ${sentMessageInfo.accepted.length > 0}, 
+                       isPending: ${sentMessageInfo.pending.length > 0}, 
+                       isRejected: ${sentMessageInfo.rejected.length > 0} }`
+                    );
+                    return sentMessageInfo;
+                  })
                 );
               } catch (error) {
                 logger.error(
-                  `Error while trying to send email to AWS SES: ${error}`
+                  `[${clientId}] - [correlationId : ${correlationId}] - Error while trying to send email to AWS SES: ${error}`
                 );
                 await pipe(
                   encryptBody(JSON.stringify(params.body)),
                   TE.bimap(
                     e => {
-                      logger.error("Error while invoke PDV while encrypt body");
+                      logger.error(
+                        `[${clientId}] - [correlationId : ${correlationId}] - Error while invoke PDV while encrypt body`
+                      );
                       // First invoking the service with aws and pdv KO returns an error.
                       if (retryCount === config.MAX_RETRY_ATTEMPTS) {
                         throw e;
