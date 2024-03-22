@@ -8,6 +8,7 @@ import * as nodemailer from "nodemailer";
 import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
 import registerHelpers from "handlebars-helpers";
+import { SendRawEmailCommand } from "@aws-sdk/client-ses";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
@@ -44,7 +45,10 @@ export const startApp = async (
   };
 
   const mailTrasporter: Transporter = nodemailer.createTransport({
-    SES: new AWS.SES(SES_CONFIG)
+    SES: {
+      aws: { SendRawEmailCommand },
+      ses: new AWS.SES(SES_CONFIG)
+    }
   });
 
   registerHelpers();
