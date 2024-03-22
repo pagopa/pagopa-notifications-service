@@ -97,7 +97,7 @@
     "@aws-sdk/util-utf8-browser" "^3.0.0"
     tslib "^1.11.1"
 
-"@aws-sdk/client-ses@^3.535.0    ":
+"@aws-sdk/client-ses@^3.535.0":
   version "3.535.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/client-ses/-/client-ses-3.535.0.tgz#a6689abc07b11b81f0e16eed779ef8cb3839dc2c"
   integrity sha512-fzT9vvG0a5j7/Tvjo5nsoSjn5+sDsa6p0EYvPd4XaOIAdIq0cUvkeYBw2vUnTKWG5MM5VNElbQciTzC3J79a1A==
