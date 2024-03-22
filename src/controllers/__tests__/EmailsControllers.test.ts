@@ -4,7 +4,7 @@ import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { SentMessageInfo } from "nodemailer/lib/ses-transport";
 import { Transporter, createTransport } from "nodemailer";
-import { SES } from "aws-sdk";
+import { SES } from "@aws-sdk/client-ses";
 import * as puppeteer from "puppeteer";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../../__mocks__/data_mock";

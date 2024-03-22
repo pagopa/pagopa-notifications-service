@@ -3,7 +3,7 @@ import express from "express";
 import { Logger } from "winston";
 import { toExpressHandler } from "@pagopa/ts-commons/lib/express";
 import * as bodyParser from "body-parser";
-import * as AWS from "aws-sdk";
+import { SES } from "@aws-sdk/client-ses";
 import * as nodemailer from "nodemailer";
 import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
@@ -44,7 +44,7 @@ export const startApp = async (
   };
 
   const mailTrasporter: Transporter = nodemailer.createTransport({
-    SES: new AWS.SES(SES_CONFIG)
+    SES: new SES(SES_CONFIG)
   });
 
   registerHelpers();
