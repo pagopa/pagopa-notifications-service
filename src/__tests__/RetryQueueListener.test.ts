@@ -16,9 +16,11 @@ describe("retry queue", () => {
   const config = getConfigOrThrow();
     
   const SES_CONFIG = {
-    accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
-    region: config.AWS_SES_REGION,
-    secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
+    credentials: {
+      accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
+      secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
+    },
+    region: config.AWS_SES_REGION
   };
 
   const sentMessageMock = (a: number): SentMessageInfo => { return {

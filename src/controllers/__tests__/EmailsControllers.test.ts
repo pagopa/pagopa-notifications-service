@@ -4,7 +4,7 @@ import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { SentMessageInfo } from "nodemailer/lib/ses-transport";
 import { Transporter, createTransport } from "nodemailer";
-import { SES } from "aws-sdk";
+import { SES, SendRawEmailCommand } from "@aws-sdk/client-ses";
 import * as puppeteer from "puppeteer";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../../__mocks__/data_mock";
@@ -23,13 +23,18 @@ const sentMessage = {
 } as SentMessageInfo 
 
 const SES_CONFIG = {
-  accessKeyId: process.env.AWS_SES_ACCESS_KEY_ID,
-  region: process.env.AWS_SES_REGION,
-  secretAccessKey: process.env.AWS_SES_SECRET_ACCESS_KEY
+  credentials: {
+    accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
+    secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
+  },
+  region: config.AWS_SES_REGION
 };
 
 const getMailTransporter = () =>  createTransport({
-  SES: new SES(SES_CONFIG)
+  SES: {
+    aws: { SendRawEmailCommand },
+    ses: new SES(SES_CONFIG)
+  }
 });
 
 const getMailTransporterMock = () => { return {
