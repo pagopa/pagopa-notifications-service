@@ -1,6 +1,6 @@
 # pagoPA notifications service
 
-This project implements the APIs to enable user receipts for _ecommerce platform_.
+This project implements the APIs to enable user receipts for _ecommerce platform_. 
 
 ## Architecture overview
 
