@@ -22,7 +22,6 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
-    replicas: 3
   service:
     create: true
     type: ClusterIP
@@ -52,7 +51,7 @@ microservice-chart:
       cpu: "200m"
   autoscaling:
     minReplica: 1
-    maxReplica: 10
+    maxReplica: 2
     pollingInterval: 30 # seconds
     cooldownPeriod: 300 # seconds
     triggers:
