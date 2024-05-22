@@ -57,6 +57,9 @@ microservice-chart:
     initialDelaySeconds: 30
     failureThreshold: 6
     periodSeconds: 10
+  deployment:
+    create: true
+    replicas: 1
   service:
     create: true
     type: ClusterIP
@@ -102,6 +105,12 @@ microservice-chart:
           # metricAggregationInterval: "-1:1:0"
           metricAggregationType: Count
           targetValue: "30"
+  terminationGracePeriodSeconds: 30
+  strategy:
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   envConfig:
     NOTIFICATIONS_EMAIL_ENABLED: "true"
     AWS_SES_REGION: "eu-south-1"
