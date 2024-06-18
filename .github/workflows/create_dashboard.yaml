@@ -12,12 +12,10 @@ on:
 
   workflow_dispatch:
 
-env:
-  TEMPLATE_DIR: azure-dashboard
-
 permissions:
   id-token: write
   contents: read
+  deployments: write
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -28,6 +26,8 @@ jobs:
     strategy:
       matrix:
         environment: [prod]
+        product: [apim_v1, apim_v2]
+      max-parallel: 1
     environment:
       name: ${{ matrix.environment }}
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -40,14 +40,13 @@ jobs:
           persist-credentials: false
 
       # from https://github.com/pagopa/opex-dashboard-azure-action/
-      - uses: pagopa/opex-dashboard-azure-action@ece3bc2b133be74cabb50aec14cdb9b8051b886f
+      - uses: pagopa/opex-dashboard-azure-action@v1.1.2
         with:
           environment: ${{ matrix.environment }}
-          api-name: # empty to have `.opex/env` directory structure
-          config: .opex/env/${{ matrix.environment }}/config.yaml
+          api-name: ${{ matrix.product }} # empty to have `.opex/env` directory structure
+          config: .opex/${{ matrix.product }}/env/${{ matrix.environment }}/config.yaml
           client-id: ${{ secrets.CLIENT_ID }}
           tenant-id: ${{ secrets.TENANT_ID }}
           subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
           # from https://github.com/pagopa/opex-dashboard-azure-action/pkgs/container/opex-dashboard-azure-action
           docker-version: sha256:e4245954566cd3470e1b5527d33bb58ca132ce7493eac01be9e808fd25a11c8d
-
