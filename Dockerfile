@@ -7,7 +7,8 @@ RUN yarn build
 
 FROM node:22.13.1-slim AS production
 WORKDIR /app
-RUN apt-get install -y --no-install-recommends --no-cache ca-certificates chromium
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends ca-certificates chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 COPY --from=builder ./app/dist ./dist
