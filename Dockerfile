@@ -1,13 +1,12 @@
-FROM node:18.13.0-alpine AS builder
+FROM node:22.13.1-slim AS builder
 WORKDIR /app
 COPY . .
 RUN yarn install --frozen-lockfile
 RUN yarn generate
 RUN yarn build
 
-FROM node:18.13.0-alpine AS production
+FROM node:22.13.1-slim AS production
 WORKDIR /app
-RUN apk add --no-cache nss freetype harfbuzz ca-certificates udev chromium
 COPY --from=builder ./app/dist ./dist
 COPY package* ./
 COPY tsconfig* ./
