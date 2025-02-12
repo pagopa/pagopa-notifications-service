@@ -1,16 +1,15 @@
-FROM node:22.13.1-slim AS builder
+FROM node:18.13.0-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN yarn install --frozen-lockfile
 RUN yarn generate
 RUN yarn build
 
-FROM node:22.13.1-slim AS production
+FROM node:18.13.0-alpine AS production
 WORKDIR /app
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends ca-certificates chromium
+RUN apk add --no-cache nss freetype harfbuzz ca-certificates udev chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY --from=builder ./app/dist ./dist
 COPY package* ./
 COPY tsconfig* ./
