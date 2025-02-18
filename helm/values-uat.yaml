@@ -47,14 +47,14 @@ microservice-chart:
     httpGet:
       path: /health/liveness
       port: 3000
-    initialDelaySeconds: 30
+    initialDelaySeconds: 10
     failureThreshold: 6
     periodSeconds: 60
   readinessProbe:
     httpGet:
       path: /health/readiness
       port: 3000
-    initialDelaySeconds: 30
+    initialDelaySeconds: 10
     failureThreshold: 6
     periodSeconds: 10
   deployment:
