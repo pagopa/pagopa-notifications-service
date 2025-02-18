@@ -83,7 +83,7 @@ export const startApp = async (
     res.send("Express + TypeScript Server");
   });
   const server = http.createServer(app);
-  server.keepAliveTimeout(config.SERVER_KEEP_ALIVE);
+  server.keepAliveTimeout = config.SERVER_KEEP_ALIVE;
   server.listen(config.PORT);
 
   addRetryQueueListener(config, mailTrasporter, browserEngine);
