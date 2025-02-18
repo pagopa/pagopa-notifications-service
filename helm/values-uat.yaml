@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "ecommerce"
-  nameOverride: ""
-  fullnameOverride: ""
+  nameOverride: "b-pagopa-notifications-service"
+  fullnameOverride: "b-pagopanotificationsservice"
   canaryDelivery:
     create: false
     ingress:
@@ -47,7 +47,7 @@ microservice-chart:
     httpGet:
       path: /health/liveness
       port: 3000
-    initialDelaySeconds: 60
+    initialDelaySeconds: 30
     failureThreshold: 6
     periodSeconds: 60
   readinessProbe:
@@ -68,7 +68,7 @@ microservice-chart:
   ingress:
     create: true
     host: "weuuat.ecommerce.internal.uat.platform.pagopa.it"
-    path: /pagopa-notifications-service/(.*)
+    path: /beta/pagopa-notifications-service/(.*)
     servicePort: 3000
   serviceAccount:
     create: false
@@ -85,8 +85,8 @@ microservice-chart:
       memory: "512Mi"
       cpu: "150m"
     limits:
-      memory: "512Mi"
-      cpu: "200m"
+      memory: "768Mi"
+      cpu: "300m"
   autoscaling:
     minReplica: 1
     maxReplica: 2
