@@ -193,6 +193,7 @@ export const sendEmail = async (
           }),
           O.map(async v => await v)
         );*/
+        await new Promise(resolve => setTimeout(resolve, 600));
         logger.info(
           `[${clientId}] - Sending email with template ${templateId}`
         );
