@@ -183,7 +183,7 @@ export const sendEmail = async (
       async ([htmlMarkup, textMarkup, pdfMarkup]): Promise<
         O.Option<SESTransport.SentMessageInfo>
       > => {
-        const pdfData = pipe(
+        /*const pdfData = pipe(
           pdfMarkup,
           O.map(async markup => {
             const page = await browserEngine.newPage();
@@ -192,7 +192,7 @@ export const sendEmail = async (
             return await page.pdf({ printBackground: true });
           }),
           O.map(async v => await v)
-        );
+        );*/
         logger.info(
           `[${clientId}] - Sending email with template ${templateId}`
         );
@@ -213,7 +213,7 @@ export const sendEmail = async (
                     htmlMarkup,
                     textMarkup,
                     mailTrasporter,
-                    pdfData,
+                    O.none,
                     "test.pdf"
                   )
                 );
