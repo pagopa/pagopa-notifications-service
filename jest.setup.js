@@ -1,4 +1,5 @@
 process.env.PORT="3030"
+process.env.SERVER_KEEP_ALIVE="61000"
 process.env.CLIENT_PAYMENT_MANAGER='{"TEMPLATE_IDS":["success","ko"]}'
 process.env.CLIENT_ECOMMERCE='{"TEMPLATE_IDS":["success","ko"]}'
 process.env.CLIENT_ECOMMERCE_TEST='{"TEMPLATE_IDS":["success","ko","poc-1","poc-2"]}'
