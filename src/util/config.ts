@@ -88,7 +88,9 @@ const envConfig = {
   PERSONAL_DATA_VAULT_API_HOST: process.env.PERSONAL_DATA_VAULT_API_HOST,
   PERSONAL_DATA_VAULT_API_KEY: process.env.PERSONAL_DATA_VAULT_API_KEY,
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
-  SERVER_KEEP_ALIVE: process.env.SERVER_KEEP_ALIVE ? parseInt(process.env.SERVER_KEEP_ALIVE, 10) : 61000
+  SERVER_KEEP_ALIVE: process.env.SERVER_KEEP_ALIVE
+    ? parseInt(process.env.SERVER_KEEP_ALIVE, 10)
+    : 61000
 };
 
 // No need to re-evaluate this object for each call
