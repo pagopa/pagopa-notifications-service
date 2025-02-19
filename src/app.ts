@@ -82,8 +82,10 @@ export const startApp = async (
   app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Express + TypeScript Server");
   });
-  const server = http.createServer(app);
-  server.keepAliveTimeout = config.SERVER_KEEP_ALIVE;
+  const server = http.createServer(
+    { keepAliveTimeout: config.SERVER_KEEP_ALIVE },
+    app
+  );
   server.listen(config.PORT);
 
   addRetryQueueListener(config, mailTrasporter, browserEngine);
