@@ -7,7 +7,6 @@ import { SentMessageInfo } from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import { addRetryQueueListener } from "../queues/RetryQueueListener";
 import { QueueReceiveMessageResponse } from "@azure/storage-queue";
-import * as puppeteer from "puppeteer";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../__mocks__/data_mock";
 
@@ -57,11 +56,6 @@ describe("retry queue", () => {
     
     jest.spyOn(global, 'setInterval');
 
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
-      headless: true
-    });
-
     retryQueueClient.createIfNotExists = jest.fn().mockResolvedValue({});
 
     const mockedMailFunction = jest.fn().mockResolvedValueOnce(sentMessageMock(1)).mockResolvedValueOnce(sentMessageMock(3)).mockResolvedValueOnce(sentMessageMock(3));
@@ -93,7 +87,7 @@ describe("retry queue", () => {
     retryQueueClient.createIfNotExists();
     const spyDecrypt = jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue({_tag: "Right", right:{ status:200 , value: {pii: JSON.stringify(requestMock.body)}, headers: "" as any} });
 
-    addRetryQueueListener(config,mailTrasporterMock,browser);
+    addRetryQueueListener(config,mailTrasporterMock);
 
     expect(setInterval).toHaveBeenCalledTimes(1);
     expect(setInterval).toHaveBeenLastCalledWith(expect.any(Function), 1000);
@@ -102,7 +96,6 @@ describe("retry queue", () => {
 
     console.log(mockedMailFunction.mock.calls.length);
 
-    await browser?.close();
     jest.useRealTimers();
   });
 
@@ -112,11 +105,6 @@ describe("retry queue", () => {
     registerHelpers();
 
     jest.spyOn(global, 'setInterval');
-
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
-      headless: true
-    });
 
     retryQueueClient.createIfNotExists = jest.fn().mockResolvedValue({});
 
@@ -138,7 +126,7 @@ describe("retry queue", () => {
     retryQueueClient.createIfNotExists();
     const spyDecrypt = jest.spyOn(apiPdvClient, 'findPiiUsingGET').mockResolvedValue({_tag: "Right", right:{ status: 400 , value: { status: 400, title: ""}, headers: "" as any} });
 
-    addRetryQueueListener(config, mailTrasporterMock, browser);
+    addRetryQueueListener(config, mailTrasporterMock);
 
     expect(setInterval).toHaveBeenCalledTimes(1);
     expect(setInterval).toHaveBeenLastCalledWith(expect.any(Function), 1000);
@@ -146,7 +134,6 @@ describe("retry queue", () => {
 
     expect(mockReceiveMessages).toHaveBeenCalledTimes(1);
 
-    await browser?.close();
     jest.useRealTimers();
   });
 });
