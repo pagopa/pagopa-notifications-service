@@ -42,9 +42,6 @@ import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 import { encryptBody } from "../util/confidentialDataManager";
 
-// reusing the same page instead of always opening a new one may help save some CPU
-var browserSingletonPage: any = null;
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
   senderEmail: string,
@@ -190,13 +187,13 @@ export const sendEmail = async (
           pdfMarkup,
           O.map(async markup => {
             
-            if(!browserSingletonPage){
-              browserSingletonPage = await browserEngine.newPage();
-            }         
+            if(!singletonPage){
+              singletonPage = await browserEngine.newPage();
+            }
+            
+            await singletonPage.setContent(markup);
 
-            await browserSingletonPage.setContent(markup);
-
-            return await browserSingletonPage.pdf({ printBackground: true });
+            return await singletonPage.pdf({ printBackground: true });
           }),
           O.map(async v => await v)
         );
@@ -279,118 +276,6 @@ export const sendEmail = async (
     )
   );
 };
-
-export const sendEmail = async (
-  params: TypeofApiParams<SendNotificationEmailT>,
-  schema: {
-    readonly default: t.Type<unknown>;
-  },
-  browserEngine: Browser,
-  mailTransporter: Transporter<SESTransport.SentMessageInfo>,
-  config: IConfig,
-  retryCount: number
-): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
-
-  const clientId = params["X-Client-Id"];
-  const templateId = params.body.templateId;
-
-  // Precompile templates and store them in memory
-  const textTemplatePath = `./dist/src/templates/${templateId}/${templateId}.template.txt`;
-  const htmlTemplatePath = `./dist/src/templates/${templateId}/${templateId}.template.html`;
-  const pdfTemplatePath = `./dist/src/templates/${templateId}/${templateId}.template.pdf.html`;
-
-  let textTemplate: HandlebarsTemplateDelegate;
-  let htmlTemplate: HandlebarsTemplateDelegate;
-  let pdfTemplate: HandlebarsTemplateDelegate | null = null;
-
-  try {
-    const textTemplateRaw = fs.readFileSync(textTemplatePath, 'utf-8');
-    textTemplate = Handlebars.compile(textTemplateRaw);
-
-    const htmlTemplateRaw = fs.readFileSync(htmlTemplatePath, 'utf-8');
-    htmlTemplate = Handlebars.compile(htmlTemplateRaw);
-
-    if (fs.existsSync(pdfTemplatePath)) {
-      const pdfTemplateRaw = fs.readFileSync(pdfTemplatePath, 'utf-8');
-      pdfTemplate = Handlebars.compile(pdfTemplateRaw);
-    }
-  } catch (error) {
-    logger.error(`Error reading or compiling templates: ${error}`);
-    return ResponseErrorInternal(`Error processing templates for templateId ${templateId}`);
-  }
-
-  // Enrich parameters
-  const enrichedParameters = {
-    ...params.body.parameters,
-    logos: {
-      pagopaCdnUri: config.PAGOPA_MAIL_LOGO_URI
-    }
-  };
-
-  // Validate parameters using the provided schema
-  const validationResult = schema.default.decode(enrichedParameters);
-  if (validationResult._tag === 'Left') {
-    const validationErrors = validationResult.left;
-    logger.error(`Validation errors: ${formatValidationErrors(validationErrors)}`);
-    return ResponseErrorFromValidationErrors(schema.default)(validationErrors);
-  }
-  const templateParams = validationResult.right;
-
-  // Render templates
-  const textMarkup = textTemplate(templateParams);
-  const htmlMarkup = htmlTemplate(templateParams);
-
-  let pdfBuffer: Buffer | null = null;
-  if (pdfTemplate) {
-    try {
-      pdfBuffer = await generatePdf(browserEngine, pdfTemplate, templateParams);
-    } catch (error) {
-      logger.error(`Error generating PDF: ${error}`);
-      // Decide how to handle PDF generation errors (e.g., continue without attachment)
-    }
-  }
-
-  // Prepare email options
-  const emailOptions: Mail.Options = {
-    from: config.ECOMMERCE_NOTIFICATIONS_SENDER,
-    to: params.body.to,
-    subject: params.body.subject,
-    html: htmlMarkup,
-    text: textMarkup
-  };
-
-  if (pdfBuffer) {
-    emailOptions.attachments = [
-      {
-        filename: 'attachment.pdf',
-        content: pdfBuffer,
-        contentType: 'application/pdf'
-      }
-    ];
-  }
-
-  logger.info(`[${clientId}] - Sending email with template ${templateId}`);
-
-  // Send email or return mock response based on clientId
-  if (clientId !== 'CLIENT_ECOMMERCE_TEST') {
-    try {
-      const messageInfo = await mailTransporter.sendMail(emailOptions);
-      logger.info(`Message sent with ID ${messageInfo.messageId}`);
-      return ResponseSuccessJson({ outcome: 'OK' });
-    } catch (error) {
-      logger.error(`Error sending email: ${error}`);
-      // Handle retry logic
-      await handleEmailError(params.body, clientId, retryCount, config, error);
-      return ResponseSuccessAccepted();
-    }
-  } else {
-    // Return mocked response
-    const mockResponse = mockedResponse(params.body.to);
-    logger.info(`Mock message sent with ID ${mockResponse.messageId}`);
-    return ResponseSuccessJson({ outcome: 'OK' });
-  }
-};
-
 
 export const sendMailController: (
   config: IConfig,
