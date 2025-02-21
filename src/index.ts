@@ -1,9 +1,9 @@
 import "elastic-apm-node/start";
+import cluster from "cluster";
+import os from "os";
 import * as app from "./app";
 import { getConfigOrThrow } from "./util/config";
 import { logger } from "./util/logger";
-import cluster from "cluster";
-import os from "os";
 
 // Retrieve server configuration
 const config = getConfigOrThrow();
