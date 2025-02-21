@@ -17,15 +17,15 @@ process.on("uncaughtException", reason => {
 });
 
 if (cluster.isMaster) {
-  const numCPUs = os.cpus().length;
-  logger.info(`Master process is running. Forking ${numCPUs} workers...`);
+  const cpus = os.cpus();
+  logger.info(`Master process is running. Forking ${cpus.length} workers...`);
 
   // Fork workers
-  for (let i = 0; i < numCPUs; i++) {
+  cpus.forEach(() => {
     cluster.fork();
-  }
+  });
 
-  cluster.on("exit", (worker) => {
+  cluster.on("exit", worker => {
     logger.warn(`Worker ${worker.process.pid} died. Forking a new worker...`);
     cluster.fork();
   });
