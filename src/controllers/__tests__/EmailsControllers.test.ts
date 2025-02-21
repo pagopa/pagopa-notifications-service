@@ -1,11 +1,9 @@
 import { sendMail } from "../EmailsControllers";
-import { getConfigOrThrow } from "../../util/config";;
-import { Browser } from "puppeteer";
+import { getConfigOrThrow } from "../../util/config";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { SentMessageInfo } from "nodemailer/lib/ses-transport";
 import { Transporter, createTransport } from "nodemailer";
 import { SES, SendRawEmailCommand } from "@aws-sdk/client-ses";
-import * as puppeteer from "puppeteer";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../../__mocks__/data_mock";
   
@@ -44,7 +42,6 @@ const getMailTransporterMock = () => { return {
 describe("mail controller", () => {
 
   describe('test send mail', () => {
-    var browser: Browser;
 
     beforeAll(async () => {
       registerHelpers();
@@ -54,16 +51,11 @@ describe("mail controller", () => {
       jest.useRealTimers();
       jest.resetAllMocks();
       jest.restoreAllMocks();
-      await browser?.close();
     });
 
     beforeEach(async () => {
       jest.useFakeTimers();
       jest.spyOn(global, 'setInterval');
-      browser = await puppeteer.launch({
-        args: ["--no-sandbox"],
-        headless: true
-      });
     });
 
     it("should return IResponseErrorValidation", async () => {
@@ -71,7 +63,7 @@ describe("mail controller", () => {
         body: "testBody"
       } as any;
 
-      const handler = sendMail(config, getMailTransporter(), browser);
+      const handler = sendMail(config, getMailTransporter());
 
       const responseErrorValidation = await handler(request);
 
@@ -80,7 +72,7 @@ describe("mail controller", () => {
 
     it("should return Invalid X-Client-Id", async () => {
 
-      const handler = sendMail(config, getMailTransporter(), browser);
+      const handler = sendMail(config, getMailTransporter());
 
       const responseErrorValidation2 = await handler(getReq("success","test"));
 
@@ -90,7 +82,7 @@ describe("mail controller", () => {
     });
 
     it("should return Invalid Template", async () => {
-      const handler = sendMail(config, getMailTransporterMock(), browser);
+      const handler = sendMail(config, getMailTransporterMock());
 
       const responseSuccessValidation = await handler(getReq("no-success", "CLIENT_ECOMMERCE_TEST"));
 
@@ -100,7 +92,7 @@ describe("mail controller", () => {
 
     it("should return Missing X-Client-Id", async () => {
 
-      const handler = sendMail(config, getMailTransporterMock(), browser);
+      const handler = sendMail(config, getMailTransporterMock());
 
       const responseSuccessValidation = await handler(getReq("success", undefined));
 
@@ -113,7 +105,7 @@ describe("mail controller", () => {
         sendMail: jest.fn(() => {return null;})
       } as unknown as Transporter<SentMessageInfo>;
 
-      const handler = sendMail(config, mailTrasporterMock, browser);
+      const handler = sendMail(config, mailTrasporterMock);
 
       const responseSuccessValidation = await handler(getReq("success","CLIENT_ECOMMERCE_TEST"));
 
@@ -122,7 +114,7 @@ describe("mail controller", () => {
 
     it("should return ok no mock", async () => {
 
-      const handler = sendMail(config, getMailTransporterMock(), browser);
+      const handler = sendMail(config, getMailTransporterMock());
 
       const responseErrorValidation = await handler(getReq("success","CLIENT_ECOMMERCE"));
 
@@ -150,7 +142,7 @@ describe("mail controller", () => {
       sendMail: mockSendMail
     } as unknown as Transporter<SentMessageInfo>;
 
-    const handler = sendMail(config, mailTrasporterMock, browser);
+    const handler = sendMail(config, mailTrasporterMock);
 
     const response = await handler(getReq("success","CLIENT_ECOMMERCE"));
     expect(mockSendMail).toThrowError();
@@ -160,15 +152,12 @@ describe("mail controller", () => {
 });
 
 describe("test template", () => {
-
-  var browser: Browser;
   
   beforeAll(async () => {
     registerHelpers();
   });
 
   afterEach(async () => {
-    await browser?.close();
     jest.useRealTimers();
     jest.resetAllMocks();
     jest.restoreAllMocks();
@@ -177,14 +166,10 @@ describe("test template", () => {
   beforeEach(async () => {
     jest.useFakeTimers();
     jest.spyOn(global, 'setInterval');
-    browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
-      headless: true
-    });
   });
 
   it("should return responseSuccessValidation mock template success", async () => {
-    const handler = sendMail(config, getMailTransporterMock(), browser);
+    const handler = sendMail(config, getMailTransporterMock());
 
     const responseSuccessValidation = await handler(getReq("success","CLIENT_ECOMMERCE_TEST"));
 
@@ -192,7 +177,7 @@ describe("test template", () => {
   });
 
   it("should return responseSuccessValidation mock template ko", async () => {
-    const handler = sendMail(config, getMailTransporterMock(), browser);
+    const handler = sendMail(config, getMailTransporterMock());
 
     const responseSuccessValidation = await handler(getReq("ko","CLIENT_ECOMMERCE_TEST"));
 

@@ -1,7 +1,6 @@
 /* eslint-disable sort-keys */
 import { Transporter } from "nodemailer";
 import * as SESTransport from "nodemailer/lib/ses-transport";
-import { Browser } from "puppeteer";
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import { decryptBody } from "../util/confidentialDataManager";
@@ -16,8 +15,7 @@ import { NotificationEmailRequest } from "../generated/definitions/NotificationE
 
 export const addRetryQueueListener = (
   config: IConfig,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  browserEngine: Browser
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
 ): void => {
   const retrieveMessage = async (): Promise<void> => {
     try {
@@ -70,7 +68,6 @@ export const addRetryQueueListener = (
                       body: bodyRequest
                     },
                     schema,
-                    browserEngine,
                     mailTrasporter,
                     config,
                     retryCount - 1
