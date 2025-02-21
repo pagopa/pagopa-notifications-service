@@ -25,7 +25,7 @@ if (cluster.isMaster) {
     cluster.fork();
   }
 
-  cluster.on("exit", (worker, code, signal) => {
+  cluster.on("exit", (worker) => {
     logger.warn(`Worker ${worker.process.pid} died. Forking a new worker...`);
     cluster.fork();
   });
