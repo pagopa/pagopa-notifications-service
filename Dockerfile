@@ -20,6 +20,6 @@ COPY tsconfig* ./
 
 RUN yarn install --production --frozen-lockfile
 RUN rm -rf dist/__test__
-EXPOSE 3030
+EXPOSE 3000
 
 CMD [ "yarn", "start" ]
