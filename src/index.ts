@@ -16,18 +16,24 @@ process.on("uncaughtException", reason => {
   logger.error(reason);
 });
 
-if (cluster.isMaster) {
+if (cluster.isPrimary) {
   const cpus = os.cpus();
   logger.info(`Master process is running. Forking ${cpus.length} workers...`);
 
   // Fork workers
-  cpus.forEach(() => {
+  // we use only half cpus to avoid trashing and resource contention,
+  // wich can lead worst performances overhaul
+  for(let i = 0; i < cpus.length / 2; i++){
     cluster.fork();
-  });
+  }
 
   cluster.on("exit", worker => {
     logger.warn(`Worker ${worker.process.pid} died. Forking a new worker...`);
-    cluster.fork();
+
+    // backoff strategy in case workers are failing due to resource contention
+    setTimeout(() => {
+      cluster.fork();
+    }, 5000);
   });
 } else {
   // Define and start server
