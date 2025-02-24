@@ -1,6 +1,3 @@
-/**
- * Create and Run the server
- */
 import "elastic-apm-node/start";
 import cluster from "cluster";
 import os from "os";
