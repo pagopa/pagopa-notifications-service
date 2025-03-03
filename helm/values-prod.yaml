@@ -31,6 +31,7 @@ microservice-chart:
         PAGOPA_MAIL_LOGO_URI: "https://checkout.pagopa.it/assets/logos/logo_pagopa.png"
         ELASTIC_APM_SERVICE_NAME: pagopa-notification-service-blue
         ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
+        ELASTIC_APM_ENVIRONMENT: "prod"
         SERVER_KEEP_ALIVE: "61000"
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
@@ -121,6 +122,7 @@ microservice-chart:
     PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
     ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
     ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
+    ELASTIC_APM_ENVIRONMENT: "prod"
     SERVER_KEEP_ALIVE: "61000"
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
