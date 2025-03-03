@@ -25,7 +25,6 @@ import * as E from "fp-ts/lib/Either";
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
-import { Browser } from "puppeteer";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { formatValidationErrors } from "io-ts-reporters";
 import { AsControllerFunction, AsControllerResponseType } from "../util/types";
@@ -49,25 +48,9 @@ const sendEmailWithAWS = async (
   subject: string,
   htmlData: string,
   textData: string,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  _pdfData: O.Option<Promise<Buffer>>,
-  _pdfName: string
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
   // eslint-disable-next-line max-params
 ) => {
-  /*
-  logger.info("Attachment configurations...");
-  const attachments = await Promise.all(
-    pipe(
-      pdfData,
-      O.map(async content => ({
-        filename: pdfName,
-        content: await content,
-        contentType: "application/pdf"
-      })),
-      A.fromOption
-    )
-  );
-  */
   const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
     {
       from: senderEmail,
@@ -75,7 +58,6 @@ const sendEmailWithAWS = async (
       subject,
       html: htmlData,
       text: textData
-      // attachments
     }
   );
   logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
@@ -126,7 +108,6 @@ export const sendEmail = async (
   schema: {
     readonly default: t.Type<unknown>;
   },
-  browserEngine: Browser,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
   config: IConfig,
   retryCount: number
@@ -149,15 +130,6 @@ export const sendEmail = async (
     .toString();
   const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
 
-  const pathExists = O.fromPredicate((path: string) => fs.existsSync(path));
-
-  const pdfTemplate = pipe(
-    pathExists(
-      `dist/src/templates/${templateId}/${templateId}.template.pdf.html`
-    ),
-    O.map(path => fs.readFileSync(path).toString()),
-    O.map(Handlebars.compile)
-  );
   // add pagopa logo URI taken from configuration
   const enrichedParameters = {
     ...params.body.parameters,
@@ -169,30 +141,14 @@ export const sendEmail = async (
   return pipe(
     enrichedParameters,
     schema.default.decode,
-    E.map<unknown, readonly [string, string, O.Option<string>]>(
-      (templateParams: unknown) => [
-        htmlTemplate(templateParams),
-        textTemplate(templateParams),
-        pipe(
-          pdfTemplate,
-          O.map(pdf => pdf(templateParams))
-        )
-      ]
-    ),
+    E.map<unknown, readonly [string, string]>((templateParams: unknown) => [
+      htmlTemplate(templateParams),
+      textTemplate(templateParams)
+    ]),
     E.map(
-      async ([htmlMarkup, textMarkup, pdfMarkup]): Promise<
+      async ([htmlMarkup, textMarkup]): Promise<
         O.Option<SESTransport.SentMessageInfo>
       > => {
-        const pdfData = pipe(
-          pdfMarkup,
-          O.map(async markup => {
-            const page = await browserEngine.newPage();
-            await page.setContent(markup);
-
-            return await page.pdf({ printBackground: true });
-          }),
-          O.map(async v => await v)
-        );
         logger.info(
           `[${clientId}] - Sending email with template ${templateId}`
         );
@@ -212,9 +168,7 @@ export const sendEmail = async (
                     params.body.subject,
                     htmlMarkup,
                     textMarkup,
-                    mailTrasporter,
-                    pdfData,
-                    "test.pdf"
+                    mailTrasporter
                   )
                 );
               } catch (error) {
@@ -275,12 +229,10 @@ export const sendEmail = async (
 
 export const sendMailController: (
   config: IConfig,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  browserEngine: Browser
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
 ) => AsControllerFunction<SendNotificationEmailT> = (
   config,
-  mailTrasporter,
-  browserEngine
+  mailTrasporter
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
   const templateId = params.body.templateId;
@@ -290,7 +242,6 @@ export const sendMailController: (
   return sendEmail(
     params,
     schema,
-    browserEngine,
     mailTrasporter,
     config,
     config.MAX_RETRY_ATTEMPTS
@@ -336,14 +287,13 @@ const headerValidationErrorHandler: (
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function sendMail(
   config: IConfig,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
-  browserEngine: Browser
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
 ): (
   req: express.Request
 ) => Promise<
   AsControllerResponseType<TypeofApiResponse<SendNotificationEmailT>>
 > {
-  const controller = sendMailController(config, mailTrasporter, browserEngine);
+  const controller = sendMailController(config, mailTrasporter);
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   return async req =>
     pipe(

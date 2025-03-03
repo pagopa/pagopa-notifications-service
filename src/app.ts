@@ -4,7 +4,6 @@ import { Logger } from "winston";
 import { toExpressHandler } from "@pagopa/ts-commons/lib/express";
 import * as bodyParser from "body-parser";
 import * as nodemailer from "nodemailer";
-import * as puppeteer from "puppeteer";
 import { Transporter } from "nodemailer";
 import registerHelpers from "handlebars-helpers";
 import { SendRawEmailCommand, SES } from "@aws-sdk/client-ses";
@@ -27,10 +26,6 @@ export const startApp = async (
 ): Promise<http.Server> => {
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server Starting at https://localhost:${config.PORT} ⚡️⚡️⚡️⚡️⚡️`
-  );
-
-  logger.info(
-    `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service server setup puppeter for pdf generator⚡️⚡️⚡️⚡️⚡️`
   );
 
   logger.info(
@@ -63,13 +58,8 @@ export const startApp = async (
 
   const jsonParser = bodyParser.json();
 
-  const browserEngine = await puppeteer.launch({
-    args: ["--no-sandbox"],
-    headless: true
-  });
-
   const sendMailtHandler = toExpressHandler(
-    EmailsControllers.sendMail(config, mailTrasporter, browserEngine)
+    EmailsControllers.sendMail(config, mailTrasporter)
   );
   const getInfoHandler = toExpressHandler(infoController(config, logger));
 
@@ -82,10 +72,13 @@ export const startApp = async (
   app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Express + TypeScript Server");
   });
-  const server = http.createServer(app);
+  const server = http.createServer(
+    { keepAliveTimeout: config.SERVER_KEEP_ALIVE },
+    app
+  );
   server.listen(config.PORT);
 
-  addRetryQueueListener(config, mailTrasporter, browserEngine);
+  addRetryQueueListener(config, mailTrasporter);
 
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service Server started at https://localhost:${config.PORT} ⚡️⚡️⚡️⚡️⚡️`

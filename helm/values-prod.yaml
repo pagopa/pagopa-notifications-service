@@ -32,6 +32,7 @@ microservice-chart:
         ELASTIC_APM_SERVICE_NAME: pagopa-notification-service-blue
         ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
         ELASTIC_APM_ENVIRONMENT: "prod"
+        SERVER_KEEP_ALIVE: "61000"
       envSecret:
         AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
         AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
@@ -42,7 +43,7 @@ microservice-chart:
         ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
   image:
     repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "1.5.0"
+    tag: "1.6.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -122,6 +123,7 @@ microservice-chart:
     ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
     ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
     ELASTIC_APM_ENVIRONMENT: "prod"
+    SERVER_KEEP_ALIVE: "61000"
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
