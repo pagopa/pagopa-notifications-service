@@ -43,7 +43,7 @@ microservice-chart:
         ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
   image:
     repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "1.7.0"
+    tag: "1.8.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
