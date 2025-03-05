@@ -86,9 +86,13 @@ microservice-chart:
     PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
     PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
     PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/logo_pagopa.png"
-    ELASTIC_APM_SERVICE_NAME: pagopa-notification-service
-    ELASTIC_APM_SERVER_URL: http://quickstart-apm-http.elastic-system.svc:8200
-    ELASTIC_APM_ENVIRONMENT: "dev"
+    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service,deployment.environment=dev"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
+    OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+    OTEL_TRACES_EXPORTER: otlp
+    OTEL_METRICS_EXPORTER: otlp
+    OTEL_LOGS_EXPORTER: none
+    OTEL_TRACES_SAMPLER: "always_on"
     SERVER_KEEP_ALIVE: "61000"
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
@@ -97,7 +101,7 @@ microservice-chart:
     STORAGE_DEADLETTER_CONNECTION_STRING: ecommerce-storage-deadletter-connection-string
     PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
     ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
-    ELASTIC_APM_SECRET_TOKEN: elastic-apm-secret-token
+    OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
   keyvault:
     name: "pagopa-d-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
