@@ -20,4 +20,3 @@ process.on("uncaughtException", reason => {
 app.startApp(config, logger).catch(error => {
   logger.error(`Error occurred starting server: ${error}`);
 });
-
