@@ -72,6 +72,8 @@
     "@opentelemetry/semantic-conventions" : "^1.30.0",
     "@opentelemetry/auto-instrumentations-node" : "^0.56.1",
     "@opentelemetry/sdk-node" : "^0.57.2",
-    "@opentelemetry/exporter-trace-otlp-grpc": "^0.57.2"
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.57.2",
+    "@opentelemetry/instrumentation-express" : "^0.47.1",
+    "@opentelemetry/instrumentation-runtime-node": "^0.12.2"
   }
 }
