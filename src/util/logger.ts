@@ -19,8 +19,8 @@ otelResourceAttributes
 
 export const logger = createLogger({
   format: ecsFormat({
-    serviceEnvironment: attributes["deployment.environment"],
-    serviceName: attributes["service.name"],
+    serviceEnvironment: attributes["deployment.environment"] ?? "unset",
+    serviceName: attributes["service.name"] ?? "unset",
     serviceVersion: appVersion
   }),
   transports: [
