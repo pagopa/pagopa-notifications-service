@@ -14,7 +14,7 @@
     "generate:template-schemas": "find src/templates/*/*.json -exec yarn run iotsfjs --inputFile {} --outputDir src/generated \\;",
     "test": "jest --detectOpenHandles --force-exit",
     "test:coverage": "jest --detectOpenHandles --force-exit --runInBand --coverage",
-    "start": "node --require '@opentelemetry/auto-instrumentations-node/register' dist/src/index.js",
+    "start": "node --trace-warnings --require '@opentelemetry/auto-instrumentations-node/register' dist/src/index.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/index.js\"",
     "lint": "eslint . -c .eslintrc.js --ext .ts,.tsx",
     "lint:autofix": "eslint . -c .eslintrc.js --ext .ts,.tsx --fix"
