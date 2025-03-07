@@ -5,9 +5,13 @@ import { Resource } from "@opentelemetry/resources";
 import { ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { OTLPMetricExporter as OTLPGrpcMetricExporter } from "@opentelemetry/exporter-metrics-otlp-grpc";
 import { RuntimeNodeInstrumentation } from "@opentelemetry/instrumentation-runtime-node";
-
-import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { HostMetrics } from "@opentelemetry/host-metrics";
+import {
+  MeterProvider,
+  PeriodicExportingMetricReader
+} from "@opentelemetry/sdk-metrics";
 import packageJson from "../package.json";
+
 const appVersion = packageJson.version;
 
 const resource = Resource.default().merge(
@@ -21,6 +25,13 @@ const metricReader = new PeriodicExportingMetricReader({
   exporter: new OTLPGrpcMetricExporter()
 });
 
+const meterProvider = new MeterProvider({
+  readers: [metricReader]
+});
+
+const hostMetrics = new HostMetrics({ meterProvider });
+hostMetrics.start();
+
 const sdk = new NodeSDK({
   instrumentations: [
     getNodeAutoInstrumentations({
@@ -29,7 +40,8 @@ const sdk = new NodeSDK({
       }
     }),
     new RuntimeNodeInstrumentation({
-      enabled: true
+      enabled: true,
+      monitoringPrecision: 5000 // 5 seconds
     })
   ],
   metricReader,
