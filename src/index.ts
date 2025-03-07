@@ -1,7 +1,6 @@
 /**
  * Create and Run the server
  */
-import "elastic-apm-node/start";
 import * as app from "./app";
 import { getConfigOrThrow } from "./util/config";
 import { logger } from "./util/logger";
