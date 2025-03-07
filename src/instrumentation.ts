@@ -44,7 +44,6 @@ const sdk = new NodeSDK({
       monitoringPrecision: 5000 // 5 seconds
     })
   ],
-  metricReader,
   resource,
   traceExporter: new OTLPGrpcTraceExporter()
 });
