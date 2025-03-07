@@ -67,7 +67,7 @@ microservice-chart:
   ingress:
     create: true
     host: "weuuat.ecommerce.internal.uat.platform.pagopa.it"
-    path: /pagopa-notifications-service/(.*)
+    path: /beta/pagopa-notifications-service/(.*)
     servicePort: 3000
   serviceAccount:
     create: false
@@ -87,23 +87,17 @@ microservice-chart:
       memory: "512Mi"
       cpu: "200m"
   autoscaling:
-    minReplica: 1
-    maxReplica: 2
+    enable: true
+    minReplica: 3
+    maxReplica: 10
     pollingInterval: 30 # seconds
     cooldownPeriod: 300 # seconds
     triggers:
-      - type: azure-monitor
+      - type: cpu
         metadata:
-          tenantId: 7788edaf-0346-4068-9d79-c868aed15b3d
-          subscriptionId: bbe47ad4-08b3-4925-94c5-1278e5819b86
-          resourceGroupName: pagopa-u-ecommerce-sec-rg
-          resourceURI: Microsoft.KeyVault/vaults/pagopa-u-ecommerce-kv
-          metricName: ServiceApiHit
-          # metricNamespace: Microsoft.KeyVault/vaults
-          # metricFilter: namespace eq 'default'
-          # metricAggregationInterval: "-1:1:0"
-          metricAggregationType: Count
-          targetValue: "30"
+          # Required
+          type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
+          value: "70"
   terminationGracePeriodSeconds: 30
   strategy:
     type: "RollingUpdate"
@@ -123,7 +117,7 @@ microservice-chart:
     PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/logo_pagopa.png"
     PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
     PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
-    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service,deployment.environment=uat"
+    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_EXPORTER_OTLP_PROTOCOL: grpc
     OTEL_TRACES_EXPORTER: otlp
