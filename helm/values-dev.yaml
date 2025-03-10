@@ -16,9 +16,12 @@ microservice-chart:
       tag: "latest"
     envConfig: {}
     envSecret: {}
+    deployment:
+      image:
+        tag: ""
   image:
     repository: pagopadcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "1.8.0"
+    tag: "1.9.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -48,7 +51,7 @@ microservice-chart:
     servicePort: 3000
   serviceAccount:
     create: false
-    annotations: { }
+    annotations: {}
     name: "ecommerce-workload-identity"
   podAnnotations: {}
   podSecurityContext:
