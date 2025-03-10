@@ -5,42 +5,24 @@ microservice-chart:
   canaryDelivery:
     create: false
     ingress:
-      create: true
-      canary:
-        type: bluegreen
-    service:
-      create: true
-    deployment:
-      create: true
+      bluegreen: false
+      #set canary deployment with traffic balancing see https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md#canary for more info
+      header: true
+      headerName: deployment
+      headerValue: blue
+      weightPercent: 10
       image:
         repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-        tag: ""
-        pullPolicy: Always
+        tag: "latest"
       envConfig:
-        NOTIFICATIONS_EMAIL_ENABLED: "true"
-        AWS_SES_REGION: "eu-south-1"
-        CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
-        CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
-        CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
-        RETRY_QUEUE_NAME: "pagopa-p-weu-ecommerce-notifications-service-retry-queue"
-        ERROR_QUEUE_NAME: "pagopa-p-weu-ecommerce-notifications-service-errors-queue"
-        AI_SAMPLING_PERCENTAGE: "30"
-        AI_ENABLED: "true"
-        PERSONAL_DATA_VAULT_API_HOST: "https://api.tokenizer.pdv.pagopa.it"
-        PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
-        PAGOPA_MAIL_LOGO_URI: "https://checkout.pagopa.it/assets/logos/logo_pagopa.png"
-        SERVER_KEEP_ALIVE: "61000"
         OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=prod"
-      envSecret:
-        AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
-        AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
-        STORAGE_TRANSIENT_CONNECTION_STRING: ecommerce-storage-transient-connection-string
-        STORAGE_DEADLETTER_CONNECTION_STRING: ecommerce-storage-deadletter-connection-string
-        PERSONAL_DATA_VAULT_API_KEY: personal-data-vault-api-key
-        ECOMMERCE_NOTIFICATIONS_SENDER: notifications-sender
+      envSecret: {}
+    deployment:
+      image:
+        tag: ""
   image:
     repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "1.8.0"
+    tag: "1.9.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -72,7 +54,7 @@ microservice-chart:
   serviceAccount:
     create: false
     annotations: {}
-    name: ""
+    name: "ecommerce-workload-identity"
   podAnnotations: {}
   podSecurityContext:
     seccompProfile:
@@ -156,3 +138,5 @@ microservice-chart:
                 app.kubernetes.io/instance: pagopanotificationsservice
             namespaces: ["ecommerce"]
             topologyKey: topology.kubernetes.io/zone
+  azure:
+    workloadIdentityClientId: "d5614882-90dd-47a1-aad1-cdf295201469"
