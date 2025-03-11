@@ -23,7 +23,7 @@ const metricReader = new PeriodicExportingMetricReader({
 
 const traceExporter = new OTLPGrpcTraceExporter();
 
-const sdk = new NodeSDK({
+export const sdk = new NodeSDK({
   instrumentations: [
     getNodeAutoInstrumentations(),
     new RuntimeNodeInstrumentation({
