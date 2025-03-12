@@ -22,7 +22,7 @@ microservice-chart:
         tag: ""
   image:
     repository: pagopapcommonacr.azurecr.io/pagopanotificationsservice
-    tag: "1.9.0"
+    tag: "1.10.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
