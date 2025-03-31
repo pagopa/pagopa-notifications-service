@@ -64,6 +64,37 @@ const sendEmailWithAWS = async (
 
   return messageInfoOk;
 };
+
+type TemplateResult = {
+  textTemplate: Handlebars.TemplateDelegate;
+  htmlTemplate: Handlebars.TemplateDelegate;
+}
+
+const loadTemplates = async (templateId: string): Promise<TemplateResult> => {
+  try {
+    // Load both templates in parallel
+    const [textTemplateRaw, htmlTemplateRaw] = await Promise.all([
+      fs.promises.readFile(
+        `./dist/src/templates/${templateId}/${templateId}.template.txt`, 
+        "utf8"
+      ),
+      fs.promises.readFile(
+        `./dist/src/templates/${templateId}/${templateId}.template.html`, 
+        "utf8"
+      )
+    ]);
+    
+    // Compile the templates
+    return {
+      textTemplate: Handlebars.compile(textTemplateRaw),
+      htmlTemplate: Handlebars.compile(htmlTemplateRaw)
+    };
+  } catch (error) {
+    logger.error(`Error loading templates for ${templateId}: ${error}`);
+    throw new Error(`Error loading templates templates: ${error}`);
+  }
+};
+
 const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   envelope: {
     from: "no-reply@pagopa.gov.it",
@@ -116,19 +147,8 @@ export const sendEmail = async (
   const clientId = params["X-Client-Id"];
 
   const templateId = params.body.templateId;
-  const textTemplateRaw = fs
-    .readFileSync(
-      `./dist/src/templates/${templateId}/${templateId}.template.txt`
-    )
-    .toString();
-  const textTemplate = Handlebars.compile(textTemplateRaw);
-
-  const htmlTemplateRaw = fs
-    .readFileSync(
-      `./dist/src/templates/${templateId}/${templateId}.template.html`
-    )
-    .toString();
-  const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
+  
+  const { textTemplate, htmlTemplate } = await loadTemplates(templateId);
 
   // add pagopa logo URI taken from configuration
   const enrichedParameters = {
