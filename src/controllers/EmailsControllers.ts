@@ -64,37 +64,6 @@ const sendEmailWithAWS = async (
 
   return messageInfoOk;
 };
-
-interface ITemplateResult {
-  readonly textTemplate: Handlebars.TemplateDelegate;
-  readonly htmlTemplate: Handlebars.TemplateDelegate;
-}
-
-const loadTemplates = async (templateId: string): Promise<ITemplateResult> => {
-  try {
-    // Load both templates in parallel
-    const [textTemplateRaw, htmlTemplateRaw] = await Promise.all([
-      fs.promises.readFile(
-        `./dist/src/templates/${templateId}/${templateId}.template.txt`,
-        "utf8"
-      ),
-      fs.promises.readFile(
-        `./dist/src/templates/${templateId}/${templateId}.template.html`,
-        "utf8"
-      )
-    ]);
-
-    // Compile the templates
-    return {
-      textTemplate: Handlebars.compile(textTemplateRaw),
-      htmlTemplate: Handlebars.compile(htmlTemplateRaw)
-    };
-  } catch (error) {
-    logger.error(`Error loading templates for ${templateId}: ${error}`);
-    throw new Error(`Error loading templates templates: ${error}`);
-  }
-};
-
 const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   envelope: {
     from: "no-reply@pagopa.gov.it",
@@ -148,103 +117,126 @@ export const sendEmail = async (
 
   const templateId = params.body.templateId;
 
-  const { textTemplate, htmlTemplate } = await loadTemplates(templateId);
+  try {
+    // Read templates asynchronously
+    const [textTemplateRaw, htmlTemplateRaw] = await Promise.all([
+      fs.promises.readFile(
+        `./dist/src/templates/${templateId}/${templateId}.template.txt`,
+        "utf-8"
+      ),
+      fs.promises.readFile(
+        `./dist/src/templates/${templateId}/${templateId}.template.html`,
+        "utf-8"
+      )
+    ]);
 
-  // add pagopa logo URI taken from configuration
-  const enrichedParameters = {
-    ...params.body.parameters,
-    logos: {
-      pagopaCdnUri: config.PAGOPA_MAIL_LOGO_URI
-    }
-  };
+    const textTemplate = Handlebars.compile(textTemplateRaw);
+    const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
 
-  return pipe(
-    enrichedParameters,
-    schema.default.decode,
-    E.map<unknown, readonly [string, string]>((templateParams: unknown) => [
-      htmlTemplate(templateParams),
-      textTemplate(templateParams)
-    ]),
-    E.map(
-      async ([htmlMarkup, textMarkup]): Promise<
-        O.Option<SESTransport.SentMessageInfo>
-      > => {
-        logger.info(
-          `[${clientId}] - Sending email with template ${templateId}`
-        );
-        return pipe(
-          clientId,
-          O.fromPredicate(
-            (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
-          ),
-          O.fold(
-            async () => O.some(mockedResponse(params.body.to)),
-            async () => {
-              try {
-                return O.some(
-                  await sendEmailWithAWS(
-                    config.ECOMMERCE_NOTIFICATIONS_SENDER,
-                    params.body.to,
-                    params.body.subject,
-                    htmlMarkup,
-                    textMarkup,
-                    mailTrasporter
-                  )
-                );
-              } catch (error) {
-                logger.error(
-                  `Error while trying to send email to AWS SES: ${error}`
-                );
-                await pipe(
-                  encryptBody(JSON.stringify(params.body)),
-                  TE.bimap(
-                    e => {
-                      logger.error("Error while invoke PDV while encrypt body");
-                      // First invoking the service with aws and pdv KO returns an error.
-                      if (retryCount === config.MAX_RETRY_ATTEMPTS) {
-                        throw e;
-                      } else {
-                        // Service retry with aws and pdv ko rewrites on the queue with retry retryCount -1
+    // add pagopa logo URI taken from configuration
+    const enrichedParameters = {
+      ...params.body.parameters,
+      logos: {
+        pagopaCdnUri: config.PAGOPA_MAIL_LOGO_URI
+      }
+    };
+
+    return pipe(
+      enrichedParameters,
+      schema.default.decode,
+      E.map<unknown, readonly [string, string]>((templateParams: unknown) => [
+        htmlTemplate(templateParams),
+        textTemplate(templateParams)
+      ]),
+      E.map(
+        async ([htmlMarkup, textMarkup]): Promise<
+          O.Option<SESTransport.SentMessageInfo>
+        > => {
+          logger.info(
+            `[${clientId}] - Sending email with template ${templateId}`
+          );
+          return pipe(
+            clientId,
+            O.fromPredicate(
+              (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
+            ),
+            O.fold(
+              async () => O.some(mockedResponse(params.body.to)),
+              async () => {
+                try {
+                  return O.some(
+                    await sendEmailWithAWS(
+                      config.ECOMMERCE_NOTIFICATIONS_SENDER,
+                      params.body.to,
+                      params.body.subject,
+                      htmlMarkup,
+                      textMarkup,
+                      mailTrasporter
+                    )
+                  );
+                } catch (error) {
+                  logger.error(
+                    `Error while trying to send email to AWS SES: ${error}`
+                  );
+                  await pipe(
+                    encryptBody(JSON.stringify(params.body)),
+                    TE.bimap(
+                      e => {
+                        logger.error(
+                          "Error while invoke PDV while encrypt body"
+                        );
+                        // First invoking the service with aws and pdv KO returns an error.
+                        if (retryCount === config.MAX_RETRY_ATTEMPTS) {
+                          throw e;
+                        } else {
+                          // Service retry with aws and pdv ko rewrites on the queue with retry retryCount -1
+                          writeMessageIntoQueue(
+                            JSON.stringify(params.body),
+                            clientId,
+                            retryCount - 1,
+                            config
+                          );
+                        }
+                      },
+                      bodyEncrypted => {
                         writeMessageIntoQueue(
-                          JSON.stringify(params.body),
+                          bodyEncrypted,
                           clientId,
-                          retryCount - 1,
+                          retryCount,
                           config
                         );
                       }
-                    },
-                    bodyEncrypted => {
-                      writeMessageIntoQueue(
-                        bodyEncrypted,
-                        clientId,
-                        retryCount,
-                        config
-                      );
-                    }
-                  )
-                )();
-                return O.none;
+                    )
+                  )();
+                  return O.none;
+                }
               }
-            }
+            )
+          );
+        }
+      ),
+      E.fold(
+        async err => ResponseErrorFromValidationErrors(schema.default)(err),
+        async sentMessageInfo =>
+          pipe(
+            await sentMessageInfo,
+            O.fold<
+              SESTransport.SentMessageInfo,
+              ReturnType<AsControllerFunction<SendNotificationEmailT>>
+            >(
+              async () => ResponseSuccessAccepted(),
+              async _v => ResponseSuccessJson({ outcome: "OK" })
+            )
           )
-        );
-      }
-    ),
-    E.fold(
-      async err => ResponseErrorFromValidationErrors(schema.default)(err),
-      async sentMessageInfo =>
-        pipe(
-          await sentMessageInfo,
-          O.fold<
-            SESTransport.SentMessageInfo,
-            ReturnType<AsControllerFunction<SendNotificationEmailT>>
-          >(
-            async () => ResponseSuccessAccepted(),
-            async _v => ResponseSuccessJson({ outcome: "OK" })
-          )
-        )
-    )
-  );
+      )
+    );
+  } catch (error) {
+    logger.error(`Error reading templates: ${error}`);
+    return ResponseErrorValidation(
+      "Template Error",
+      "Failed to load templates"
+    );
+  }
 };
 
 export const sendMailController: (

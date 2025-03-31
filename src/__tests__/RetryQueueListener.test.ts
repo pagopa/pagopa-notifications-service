@@ -9,6 +9,7 @@ import { addRetryQueueListener } from "../queues/RetryQueueListener";
 import { QueueReceiveMessageResponse } from "@azure/storage-queue";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../__mocks__/data_mock";
+import * as fs from "fs";
 
 describe("retry queue", () => {
 
@@ -47,9 +48,28 @@ describe("retry queue", () => {
     return Promise.resolve(messageId);
   });
 
+  const mockLoadTemplate = (path: any) => {
+    const pathStr = typeof path === 'string' 
+      ? path 
+      : path instanceof URL 
+        ? path.toString() 
+        : path instanceof Buffer 
+          ? path.toString() 
+          : path.toString();
+    
+    if (pathStr.includes('.template.txt')) {
+      return Promise.resolve('Text template');
+    } else if (pathStr.includes('.template.html')) {
+      return Promise.resolve('<html>HTML template</html>');
+    }
+    return Promise.reject(new Error(`File not found: ${pathStr}`));
+  }
+
   retryQueueClient.deleteMessage = mockDeleteMessage;
 
   it("sendMessageToRetryQueue", async () => {
+    jest.spyOn(fs.promises, 'readFile').mockImplementation(mockLoadTemplate);
+
     jest.useFakeTimers();
     const emailMockedFunction = jest.fn();
     registerHelpers();
