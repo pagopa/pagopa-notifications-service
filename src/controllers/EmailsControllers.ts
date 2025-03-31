@@ -65,25 +65,25 @@ const sendEmailWithAWS = async (
   return messageInfoOk;
 };
 
-type TemplateResult = {
-  textTemplate: Handlebars.TemplateDelegate;
-  htmlTemplate: Handlebars.TemplateDelegate;
+interface ITemplateResult {
+  readonly textTemplate: Handlebars.TemplateDelegate;
+  readonly htmlTemplate: Handlebars.TemplateDelegate;
 }
 
-const loadTemplates = async (templateId: string): Promise<TemplateResult> => {
+const loadTemplates = async (templateId: string): Promise<ITemplateResult> => {
   try {
     // Load both templates in parallel
     const [textTemplateRaw, htmlTemplateRaw] = await Promise.all([
       fs.promises.readFile(
-        `./dist/src/templates/${templateId}/${templateId}.template.txt`, 
+        `./dist/src/templates/${templateId}/${templateId}.template.txt`,
         "utf8"
       ),
       fs.promises.readFile(
-        `./dist/src/templates/${templateId}/${templateId}.template.html`, 
+        `./dist/src/templates/${templateId}/${templateId}.template.html`,
         "utf8"
       )
     ]);
-    
+
     // Compile the templates
     return {
       textTemplate: Handlebars.compile(textTemplateRaw),
@@ -147,7 +147,7 @@ export const sendEmail = async (
   const clientId = params["X-Client-Id"];
 
   const templateId = params.body.templateId;
-  
+
   const { textTemplate, htmlTemplate } = await loadTemplates(templateId);
 
   // add pagopa logo URI taken from configuration
