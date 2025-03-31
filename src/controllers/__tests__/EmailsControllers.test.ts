@@ -6,6 +6,8 @@ import { Transporter, createTransport } from "nodemailer";
 import { SES, SendRawEmailCommand } from "@aws-sdk/client-ses";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../../__mocks__/data_mock";
+import * as fs from "fs";
+import { logger } from "../../util/logger";
   
 var config = getConfigOrThrow();
 
@@ -119,6 +121,38 @@ describe("mail controller", () => {
       const responseErrorValidation = await handler(getReq("success","CLIENT_ECOMMERCE"));
 
       expect(responseErrorValidation.kind).toBe("IResponseSuccessJson");
+    });
+
+    it("should return ResponseErrorValidation when template files cannot be read", async () => {
+      // Mock fs.promises.readFile to throw an error
+      const fsReadFileMock = jest.spyOn(fs.promises, "readFile").mockImplementation(() => {
+        throw new Error("File not found");
+      });
+    
+      const loggerErrorMock = jest.spyOn(logger, "error").mockImplementation(jest.fn());
+    
+      // Create a valid request with proper client ID and template ID
+      const request = getReq("success", "CLIENT_ECOMMERCE");
+
+      const handler = sendMail(config, getMailTransporterMock());
+      
+      const response = await handler(request);
+    
+      expect(response.kind).toBe("IResponseErrorValidation");
+      
+      // Type guard to check if response is IResponseErrorValidation
+      if (response.kind === "IResponseErrorValidation") {
+        expect(response.detail).toBe("Template Error: Failed to load templates");
+      }
+    
+      // Verify logger.error was called with the error message
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining("Error reading templates: Error: File not found")
+      );
+    
+      // Clean up mocks
+      fsReadFileMock.mockRestore();
+      loggerErrorMock.mockRestore();
     });
 
     xit("should catch error and return none", async () => {
