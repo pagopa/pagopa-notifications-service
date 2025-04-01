@@ -3,7 +3,6 @@
  * EmailsControllers
  * RESTful Controllers for emails functions
  */
-import * as fs from "fs";
 import * as express from "express";
 import {
   IResponseErrorValidation,
@@ -17,7 +16,6 @@ import {
   TypeofApiParams,
   TypeofApiResponse
 } from "@pagopa/ts-commons/lib/requests";
-import * as Handlebars from "handlebars";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import { Transporter } from "nodemailer";
 import * as O from "fp-ts/lib/Option";
@@ -40,6 +38,7 @@ import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 import { encryptBody } from "../util/confidentialDataManager";
+import { createTemplateCache, ITemplateCache } from "../util/templateCache";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -64,6 +63,7 @@ const sendEmailWithAWS = async (
 
   return messageInfoOk;
 };
+
 const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   envelope: {
     from: "no-reply@pagopa.gov.it",
@@ -110,7 +110,8 @@ export const sendEmail = async (
   },
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
   config: IConfig,
-  retryCount: number
+  retryCount: number,
+  templateCache: ITemplateCache
   // eslint-disable-next-line max-params
 ): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
   const clientId = params["X-Client-Id"];
@@ -118,20 +119,10 @@ export const sendEmail = async (
   const templateId = params.body.templateId;
 
   try {
-    // Read templates asynchronously
-    const [textTemplateRaw, htmlTemplateRaw] = await Promise.all([
-      fs.promises.readFile(
-        `./dist/src/templates/${templateId}/${templateId}.template.txt`,
-        "utf-8"
-      ),
-      fs.promises.readFile(
-        `./dist/src/templates/${templateId}/${templateId}.template.html`,
-        "utf-8"
-      )
-    ]);
-
-    const textTemplate = Handlebars.compile(textTemplateRaw);
-    const htmlTemplate = Handlebars.compile(htmlTemplateRaw);
+    // Read templates asynchronously using the provided template cache
+    const { textTemplate, htmlTemplate } = await templateCache.getTemplates(
+      templateId
+    );
 
     // add pagopa logo URI taken from configuration
     const enrichedParameters = {
@@ -241,10 +232,12 @@ export const sendEmail = async (
 
 export const sendMailController: (
   config: IConfig,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  templateCache: ITemplateCache
 ) => AsControllerFunction<SendNotificationEmailT> = (
   config,
-  mailTrasporter
+  mailTrasporter,
+  templateCache
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => async params => {
   const templateId = params.body.templateId;
@@ -256,7 +249,8 @@ export const sendMailController: (
     schema,
     mailTrasporter,
     config,
-    config.MAX_RETRY_ATTEMPTS
+    config.MAX_RETRY_ATTEMPTS,
+    templateCache
   );
 };
 
@@ -299,45 +293,58 @@ const headerValidationErrorHandler: (
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function sendMail(
   config: IConfig,
-  mailTrasporter: Transporter<SESTransport.SentMessageInfo>
+  mailTrasporter: Transporter<SESTransport.SentMessageInfo>,
+  templateCacheFactory: () => ITemplateCache = createTemplateCache
 ): (
   req: express.Request
 ) => Promise<
   AsControllerResponseType<TypeofApiResponse<SendNotificationEmailT>>
 > {
-  const controller = sendMailController(config, mailTrasporter);
+  // Create the template cache when the function is called
+  const templateCache = templateCacheFactory();
+
+  const controller = sendMailController(config, mailTrasporter, templateCache);
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  return async req =>
-    pipe(
-      req.body,
-      NotificationEmailRequest.decode,
-      E.mapLeft(async e => {
-        logger.error(formatValidationErrors(e));
-        return ResponseErrorFromValidationErrors(NotificationEmailRequest)(e);
-      }),
-      E.bindTo("body"),
-      E.bind("clientId", () =>
-        pipe(
-          getClientId(req),
-          E.mapLeft(e => headerValidationErrorHandler(e))
+  return async req => {
+    try {
+      return await pipe(
+        req.body,
+        NotificationEmailRequest.decode,
+        E.mapLeft(async e => {
+          logger.error(formatValidationErrors(e));
+          return ResponseErrorFromValidationErrors(NotificationEmailRequest)(e);
+        }),
+        E.bindTo("body"),
+        E.bind("clientId", () =>
+          pipe(
+            getClientId(req),
+            E.mapLeft(e => headerValidationErrorHandler(e))
+          )
+        ),
+        E.chainFirst(({ body, clientId }) =>
+          pipe(
+            validTemplateIdGivenClientConfig(
+              config[clientId as NotificationsServiceClientEnum],
+              body.templateId
+            ),
+            E.mapLeft(async e => ResponseErrorValidation(e.name, e.message))
+          )
+        ),
+        E.fold(
+          e => e,
+          ({ body, clientId }) =>
+            controller({
+              body,
+              "X-Client-Id": clientId
+            })
         )
-      ),
-      E.chainFirst(({ body, clientId }) =>
-        pipe(
-          validTemplateIdGivenClientConfig(
-            config[clientId as NotificationsServiceClientEnum],
-            body.templateId
-          ),
-          E.mapLeft(async e => ResponseErrorValidation(e.name, e.message))
-        )
-      ),
-      E.fold(
-        e => e,
-        ({ body, clientId }) =>
-          controller({
-            body,
-            "X-Client-Id": clientId
-          })
-      )
-    );
+      );
+    } catch (error) {
+      logger.error(`Unexpected error in sendMail: ${error}`);
+      return ResponseErrorValidation(
+        "Template Error",
+        "Failed to load templates"
+      );
+    }
+  };
 }
