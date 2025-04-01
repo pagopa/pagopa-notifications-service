@@ -173,7 +173,8 @@ describe("mail controller", () => {
 
 });
 
-// Move to a new describe block
+// template-reated errors section.
+// Moved to a new describe block to optimize mocking
 describe("template error handling", () => {
   beforeAll(async () => {
     registerHelpers();
