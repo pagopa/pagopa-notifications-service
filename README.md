@@ -38,6 +38,20 @@ The server should reload automatically when the code changes.
 
 This microservice use https://github.com/pagopa/aks-microservice-chart-blueprint to release it in k8s.
 
+## Starting runtime with aws-ses-mock
+
+1) Set `AWS_SES_ENDPOINT` env variable with `http://localhost:8005` to point the mock.
+
+2) Start `aws-ses-mock` with the following command
+```
+$ yarn run-aws-ses-mock
+```
+
+3) Start `notification-service`
+```
+$ yarn start
+```
+
 ## How to upgrade helm microservice chart release
 
 Follow this steps if you need to upgrade the microservice-chart release.
