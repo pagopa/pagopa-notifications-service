@@ -88,6 +88,7 @@ microservice-chart:
       maxUnavailable: 0
   envConfig:
     NOTIFICATIONS_EMAIL_ENABLED: "true"
+    AWS_SES_ENDPOINT: ""
     AWS_SES_REGION: "eu-south-1"
     CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
