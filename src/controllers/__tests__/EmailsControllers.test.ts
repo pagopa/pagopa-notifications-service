@@ -203,34 +203,34 @@ describe("template error handling", () => {
     // Spy on the createTemplateCache function and replace its implementation
     jest.spyOn(templateCacheModule, "createTemplateCache").mockReturnValue(mockTemplateCache);
 
-      // Mock the logger to verify error logging
-      const loggerErrorMock = jest.spyOn(logger, "error").mockImplementation(jest.fn());
+    // Mock the logger to verify error logging
+    const loggerErrorMock = jest.spyOn(logger, "error").mockImplementation(jest.fn());
 
-      const { sendMail } = require("../EmailsControllers");
-    
-      // Create a valid request with proper client ID and template ID
-      const request = getReq("success", "CLIENT_ECOMMERCE");
+    const { sendMail } = require("../EmailsControllers");
+  
+    // Create a valid request with proper client ID and template ID
+    const request = getReq("success", "CLIENT_ECOMMERCE");
 
-      const handler = sendMail(config, getMailTransporterMock());
-      
-      const response = await handler(request);
+    const handler = sendMail(config, getMailTransporterMock());
     
-      expect(response.kind).toBe("IResponseErrorValidation");
-      
-      // Type guard to check if response is IResponseErrorValidation
-      if (response.kind === "IResponseErrorValidation") {
-        expect(response.detail).toBe("Template Error: Failed to load templates");
-      }
+    const response = await handler(request);
+  
+    expect(response.kind).toBe("IResponseErrorValidation");
     
-    
-      // Verify that logger.error was called with the correct error message
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining("Error reading templates: Error: File not found")
-      );
+    // Type guard to check if response is IResponseErrorValidation
+    if (response.kind === "IResponseErrorValidation") {
+      expect(response.detail).toBe("Template Error: Failed to load templates");
+    }
+  
+  
+    // Verify that logger.error was called with the correct error message
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining("Error reading templates: Error: File not found")
+    );
 
-      // Restore mocks after test
-      jest.restoreAllMocks();
-    });
+    // Restore mocks after test
+    jest.restoreAllMocks();
+  });
 });
 
 describe("test template", () => {
