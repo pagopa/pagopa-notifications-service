@@ -203,10 +203,10 @@ describe("template error handling", () => {
     // Spy on the createTemplateCache function and replace its implementation
     jest.spyOn(templateCacheModule, "createTemplateCache").mockReturnValue(mockTemplateCache);
 
-    // Mock the logger to verify error logging
-    const loggerErrorMock = jest.spyOn(logger, "error").mockImplementation(jest.fn());
+      // Mock the logger to verify error logging
+      const loggerErrorMock = jest.spyOn(logger, "error").mockImplementation(jest.fn());
 
-    const { sendMail } = require("../EmailsControllers");
+      const { sendMail } = require("../EmailsControllers");
     
       // Create a valid request with proper client ID and template ID
       const request = getReq("success", "CLIENT_ECOMMERCE");
@@ -274,10 +274,10 @@ const getReq = (templateId: string, header: string | undefined) => {
   return {
     header: (s: string) => header,
     body: {
-     to: "to@email.it",
-     subject: "subjectTest",
-     templateId: templateId,
-     parameters: mockReq},
-     lang: {language: "IT" }
-   } as any;
+      to: "to@email.it",
+      subject: "subjectTest",
+      templateId: templateId,
+      parameters: mockReq},
+      lang: {language: "IT" }
+  } as any;
 }
