@@ -38,7 +38,7 @@ export const startApp = async (
       secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
     },
     region: config.AWS_SES_REGION,
-    ...(config.AWS_SES_ENDPOINT && { endpoint: config.AWS_SES_ENDPOINT })
+    ...(config.AWS_SES_ENDPOINT !== "" && { endpoint: config.AWS_SES_ENDPOINT })
   };
 
   const mailTrasporter: Transporter = nodemailer.createTransport({

@@ -33,7 +33,7 @@ export const checkSESTask = (
     },
     region: config.AWS_SES_REGION,
     tls: true,
-    ...(config.AWS_SES_ENDPOINT && { endpoint: config.AWS_SES_ENDPOINT })
+    ...(config.AWS_SES_ENDPOINT !== "" && { endpoint: config.AWS_SES_ENDPOINT })
   });
   const command = new GetSendQuotaCommand({});
 
