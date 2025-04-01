@@ -220,7 +220,7 @@ stages:
                     ENV: 'UAT'
                     KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: ecommerce
-                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)-blue
                     VALUE_FILE: "helm/values-uat.yaml"
                     GREEN_VERSION: $(green_app_version)
                     BLUE_VERSION: $(Build.SourceVersion)
@@ -337,6 +337,16 @@ stages:
           runOnce:
             deploy:
               steps:
+                - ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
+                  # uninstall helm release used for blue instance
+                  - task: HelmDeploy@0
+                    displayName: Un-install UAT blue version
+                    continueOnError: false
+                    inputs:
+                      kubernetesServiceEndpoint: $(UAT_KUBERNETES_SERVICE_CONN)
+                      namespace: "ecommerce"
+                      command: uninstall
+                      arguments: $(K8S_IMAGE_REPOSITORY_NAME)-blue
                 - checkout: self
                   displayName: "Checkout"
                 - task: Bash@3
@@ -462,7 +472,7 @@ stages:
                     ENV: 'PROD'
                     KUBERNETES_SERVICE_CONN: $(PROD_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: ecommerce
-                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)-blue
                     VALUE_FILE: "helm/values-prod.yaml"
                     GREEN_VERSION: $(app_version)
                     BLUE_VERSION: $(Build.SourceVersion)
@@ -552,6 +562,16 @@ stages:
         runOnce:
           deploy:
             steps:
+              - ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
+                # uninstall helm release used for blue instance
+                - task: HelmDeploy@0
+                  displayName: Un-install PROD blue version
+                  continueOnError: false
+                  inputs:
+                    kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
+                    namespace: "ecommerce"
+                    command: uninstall
+                    arguments: $(K8S_IMAGE_REPOSITORY_NAME)-blue
               - checkout: self
                 displayName: "Checkout"
               - task: Bash@3
