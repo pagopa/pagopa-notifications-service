@@ -246,9 +246,6 @@ stages:
         displayName: API test for blue deploy approval
         steps:
           - script: |
-              sleep 60
-            displayName: 'Waiting App running'
-          - script: |
               yarn global add newman
             displayName: 'newman installation'
           - script: |
