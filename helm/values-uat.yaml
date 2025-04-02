@@ -5,10 +5,9 @@ microservice-chart:
   canaryDelivery:
     create: false
     ingress:
-      #for UAT enable blue/green (used into api tests) and disable canary
-      bluegreen: true
+      bluegreen: false
       #set canary deployment with traffic balancing see https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md#canary for more info
-      header: false
+      header: true
       headerName: deployment
       headerValue: blue
       weightPercent: 0
