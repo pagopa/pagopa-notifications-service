@@ -58,11 +58,8 @@ export const createTemplateCache = (): ITemplateCache => {
     }> => {
       // Return from cache if available
       if (templateCache[templateId]) {
-        logger.info(`Using cached template for ${templateId}`);
         return templateCache[templateId];
       }
-
-      logger.info(`Compiling template for ${templateId}`);
 
       try {
         // Read templates asynchronously
