@@ -84,5 +84,10 @@ export const startApp = async (
   logger.info(
     `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service Server started at https://localhost:${config.PORT} ⚡️⚡️⚡️⚡️⚡️`
   );
+  
+  logger.info(
+    `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service AWS SES endpoint ${SES_CONFIG.endpoint} ⚡️⚡️⚡️⚡️⚡️`
+  );
+  
   return server;
 };
