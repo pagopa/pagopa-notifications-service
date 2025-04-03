@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "ecommerce"
   nameOverride: ""
-  fullnameOverride: ""
+  fullnameOverride: "soak-pagopa-notifications-service"
   canaryDelivery:
     create: false
     ingress:
@@ -50,7 +50,7 @@ microservice-chart:
   ingress:
     create: true
     host: "weuuat.ecommerce.internal.uat.platform.pagopa.it"
-    path: /pagopa-notifications-service/(.*)
+    path: /beta/pagopa-notifications-service/(.*)
     servicePort: 3000
   serviceAccount:
     create: false
@@ -71,7 +71,7 @@ microservice-chart:
       cpu: "200m"
   autoscaling:
     minReplica: 1
-    maxReplica: 2
+    maxReplica: 3
     pollingInterval: 30 # seconds
     cooldownPeriod: 300 # seconds
     triggers:
