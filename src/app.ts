@@ -38,7 +38,7 @@ export const startApp = async (
       secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
     },
     region: config.AWS_SES_REGION,
-    endpoint: "http://aws-ses-mock.ecommerce.svc.cluster.local:8005"
+    endpoint: "http://10.1.24.191:8005"
   };
 
   const mailTrasporter: Transporter = nodemailer.createTransport({
