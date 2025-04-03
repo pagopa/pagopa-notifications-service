@@ -1,5 +1,5 @@
 # Deploy to Azure Kubernetes Service:
-# - UAT
+# - UAT SOAK
 # Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
@@ -131,4 +131,5 @@ stages:
                     NAMESPACE: ecommerce
                     APP_NAME: soak-$(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
+                    GREEN_VERSION: $(Build.SourceVersion)
 # --- END Deploy UAT --- # 
