@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "ecommerce"
   nameOverride: ""
-  fullnameOverride: ""
+  fullnameOverride: "soak-pagopa-notifications-service"
   canaryDelivery:
     create: false
     ingress:
@@ -50,7 +50,7 @@ microservice-chart:
   ingress:
     create: true
     host: "weuuat.ecommerce.internal.uat.platform.pagopa.it"
-    path: /pagopa-notifications-service/(.*)
+    path: /beta/pagopa-notifications-service/(.*)
     servicePort: 3000
   serviceAccount:
     create: false
@@ -71,7 +71,7 @@ microservice-chart:
       cpu: "200m"
   autoscaling:
     minReplica: 1
-    maxReplica: 2
+    maxReplica: 3
     pollingInterval: 30 # seconds
     cooldownPeriod: 300 # seconds
     triggers:
@@ -99,8 +99,8 @@ microservice-chart:
     CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
     CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
-    RETRY_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-retry-queue"
-    ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue"
+    RETRY_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-retry-beta-queue"
+    ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-beta-queue"
     AI_SAMPLING_PERCENTAGE: "30"
     AI_ENABLED: "true"
     PAGOPA_MAIL_LOGO_URI: "https://uat.checkout.pagopa.it/assets/logos/logo_pagopa.png"
