@@ -37,7 +37,8 @@ export const startApp = async (
       accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
       secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
     },
-    region: config.AWS_SES_REGION
+    region: config.AWS_SES_REGION,
+    endpoint: "http://10.1.24.191:8005"
   };
 
   const mailTrasporter: Transporter = nodemailer.createTransport({
@@ -81,7 +82,7 @@ export const startApp = async (
   addRetryQueueListener(config, mailTrasporter);
 
   logger.info(
-    `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service Server started at https://localhost:${config.PORT} ⚡️⚡️⚡️⚡️⚡️`
+    `⚡️⚡️⚡️⚡️⚡️ pagopa-notification-service Server started at https://localhost:${config.PORT} with endpoint ⚡️⚡️⚡️⚡️⚡️`
   );
   return server;
 };
