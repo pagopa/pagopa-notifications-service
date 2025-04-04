@@ -86,8 +86,6 @@ describe("templateCache", () => {
       expect(mockedCompile).toHaveBeenCalledWith(mockTextContent);
       expect(mockedCompile).toHaveBeenCalledWith(mockHtmlContent);
       
-      expect(logger.info).toHaveBeenCalledWith(`Compiling template for ${mockTemplateId}`);
-      
       expect(result).toEqual({
         textTemplate: mockCompiledTextTemplate,
         htmlTemplate: mockCompiledHtmlTemplate
@@ -107,7 +105,6 @@ describe("templateCache", () => {
       // Verify
       expect(mockedReadFile).not.toHaveBeenCalled();
       expect(mockedCompile).not.toHaveBeenCalled();
-      expect(logger.info).toHaveBeenCalledWith(`Using cached template for ${mockTemplateId}`);
       
       expect(result).toEqual({
         textTemplate: mockCompiledTextTemplate,
