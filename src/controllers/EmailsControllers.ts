@@ -73,7 +73,8 @@ const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   response: "ok",
   accepted: [to],
   rejected: [],
-  pending: []
+  pending: [],
+  raw: Buffer.alloc(0)
 });
 
 export const writeMessageIntoQueue: (
