@@ -6,6 +6,8 @@ module.exports = {
     "**/__tests__/*.ts"
   ],
   setupFiles: ["<rootDir>/jest.setup.js"],
+  // Tell Jest to ignore the dist directory for mocks
+  modulePathIgnorePatterns: ["<rootDir>/dist/"],
   rootDir: ".",
   moduleNameMapper: {
     '^[./a-zA-Z0-9$_-]+\\/success/schema.js$':'<rootDir>/dist/src/generated/templates/success/schema.js',
