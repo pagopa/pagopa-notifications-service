@@ -6,11 +6,14 @@ import { Transporter, createTransport } from "nodemailer";
 import { SES, SendRawEmailCommand } from "@aws-sdk/client-ses";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../../__mocks__/data_mock";
+import * as fs from "fs";
+import { logger } from "../../util/logger";
+import * as templateCacheModule from "../../util/templateCache";
   
 var config = getConfigOrThrow();
 
 const sentMessage = {
-  /** an envelope object {from:‘address’, to:[‘address’]} */
+  /** an envelope object {from:'address', to:['address']} */
   envelope: {from: "testFrom", to: ["testTo"]} as Envelope,
   /** the Message-ID header value. This value is derived from the response of SES API, so it differs from the Message-ID values used in logging. */
   messageId: "messageId",
@@ -56,6 +59,25 @@ describe("mail controller", () => {
 
     beforeEach(async () => {
       jest.useFakeTimers();
+      // Create mock template functions
+      const mockTextTemplate = jest.fn((data) => `Text template with ${JSON.stringify(data)}`);
+      const mockHtmlTemplate = jest.fn((data) => `<html>HTML template with ${JSON.stringify(data)}</html>`);
+      
+      // Mock the getTemplates function to return our mock templates
+      const mockGetTemplates = jest.fn().mockResolvedValue({
+        textTemplate: mockTextTemplate,
+        htmlTemplate: mockHtmlTemplate
+      });
+      
+      // Create a mock template cache object
+      const mockTemplateCache = {
+        getTemplates: mockGetTemplates,
+        clearCache: jest.fn(),
+        getCacheSize: jest.fn(() => 0)
+      };
+      
+      // Replace the createTemplateCache function
+      jest.spyOn(templateCacheModule, 'createTemplateCache').mockImplementation(() => mockTemplateCache);
       jest.spyOn(global, 'setInterval');
     });
 
@@ -152,6 +174,66 @@ describe("mail controller", () => {
 
 });
 
+// template-reated errors section.
+// Moved to a new describe block to optimize mocking
+describe("template error handling", () => {
+  beforeAll(async () => {
+    registerHelpers();
+  });
+
+  afterEach(async () => {
+    jest.useRealTimers();
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  beforeEach(async () => {
+    jest.useFakeTimers();
+    jest.spyOn(global, 'setInterval');
+  });
+  
+  it("should return ResponseErrorValidation when template files cannot be read", async () => {
+    // Mock the createTemplateCache function to return a cache that throws an error
+    const errorMock = new Error("File not found");
+    const mockTemplateCache = {
+      getTemplates: jest.fn().mockRejectedValue(errorMock),
+      clearCache: jest.fn(),
+      getCacheSize: jest.fn(() => 0),
+    };
+
+    // Spy on the createTemplateCache function and replace its implementation
+    jest.spyOn(templateCacheModule, "createTemplateCache").mockReturnValue(mockTemplateCache);
+
+    // Mock the logger to verify error logging
+    const loggerErrorMock = jest.spyOn(logger, "error").mockImplementation(jest.fn());
+
+    const { sendMail } = require("../EmailsControllers");
+  
+    // Create a valid request with proper client ID and template ID
+    const request = getReq("success", "CLIENT_ECOMMERCE");
+
+    const handler = sendMail(config, getMailTransporterMock());
+    
+    const response = await handler(request);
+  
+    expect(response.kind).toBe("IResponseErrorValidation");
+    
+    // Type guard to check if response is IResponseErrorValidation
+    if (response.kind === "IResponseErrorValidation") {
+      expect(response.detail).toBe("Template Error: Failed to load templates");
+    }
+  
+  
+    // Verify that logger.error was called with the correct error message
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining("Error reading templates: Error: File not found")
+    );
+
+    // Restore mocks after test
+    jest.restoreAllMocks();
+  });
+});
+
 describe("test template", () => {
   
   beforeAll(async () => {
@@ -193,10 +275,10 @@ const getReq = (templateId: string, header: string | undefined) => {
   return {
     header: (s: string) => header,
     body: {
-     to: "to@email.it",
-     subject: "subjectTest",
-     templateId: templateId,
-     parameters: mockReq},
-     lang: {language: "IT" }
-   } as any;
+      to: "to@email.it",
+      subject: "subjectTest",
+      templateId: templateId,
+      parameters: mockReq},
+      lang: {language: "IT" }
+  } as any;
 }

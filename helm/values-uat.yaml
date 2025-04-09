@@ -10,20 +10,19 @@ microservice-chart:
       header: true
       headerName: deployment
       headerValue: blue
-      weightPercent: 10
+      weightPercent: 0
     image:
-      image:
-        repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-        tag: "latest"
-      envConfig:
-        OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
-      envSecret: {}
+      repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
+      tag: "latest"
+    envConfig:
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
+    envSecret: {}
     deployment:
       image:
         tag: ""
   image:
     repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-    tag: "1.10.0"
+    tag: "1.11.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:

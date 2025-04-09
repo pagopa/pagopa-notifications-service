@@ -12,11 +12,15 @@ import { logger } from "../util/logger";
 import { retryQueueClient } from "../util/queues";
 import { IConfig } from "../util/config";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
+import { createTemplateCache } from "../util/templateCache";
 
 export const addRetryQueueListener = (
   config: IConfig,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>
 ): void => {
+  // Create the template cache when the listener is initialized
+  const templateCache = createTemplateCache();
+
   const retrieveMessage = async (): Promise<void> => {
     try {
       const messages = await retryQueueClient.receiveMessages({
@@ -70,7 +74,8 @@ export const addRetryQueueListener = (
                     schema,
                     mailTrasporter,
                     config,
-                    retryCount - 1
+                    retryCount - 1,
+                    templateCache
                   );
                 }
               )
