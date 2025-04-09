@@ -24,6 +24,7 @@ describe("health check", () => {
     AI_ENABLED: false,
     AI_SAMPLING_PERCENTAGE: 0,
     AWS_SES_ACCESS_KEY_ID: "aws_access_key",
+    AWS_SES_ENDPOINT: "",
     AWS_SES_REGION: "aws_region",
     AWS_SES_SECRET_ACCESS_KEY: "aws_secret",
     CLIENT_ECOMMERCE: {TEMPLATE_IDS: ["fake template"]} as NotificationsServiceClientConfig,
