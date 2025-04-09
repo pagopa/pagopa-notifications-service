@@ -59,7 +59,8 @@ describe("retry queue", () => {
       accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
       secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
     },
-    region: config.AWS_SES_REGION
+    region: config.AWS_SES_REGION,
+    ...(config.AWS_SES_ENDPOINT !== "" && { endpoint: config.AWS_SES_ENDPOINT })
   };
 
   const sentMessageMock = (a: number): SentMessageInfo => { return {

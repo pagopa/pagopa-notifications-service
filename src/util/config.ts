@@ -38,6 +38,7 @@ export const IConfig = t.interface({
   AI_ENABLED: t.boolean,
   AI_SAMPLING_PERCENTAGE: t.number,
   AWS_SES_ACCESS_KEY_ID: t.string,
+  AWS_SES_ENDPOINT: t.string,
   AWS_SES_REGION: t.string,
   AWS_SES_SECRET_ACCESS_KEY: t.string,
   CLIENT_ECOMMERCE: NotificationsServiceClientConfig,
@@ -67,6 +68,9 @@ const envConfig = {
   AI_SAMPLING_PERCENTAGE: process.env.AI_SAMPLING_PERCENTAGE
     ? parseInt(process.env.AI_SAMPLING_PERCENTAGE, 10)
     : 30,
+  AWS_SES_ENDPOINT: process.env.AWS_SES_ENDPOINT
+    ? process.env.AWS_SES_ENDPOINT
+    : "",
   CLIENT_ECOMMERCE: JSON.parse(process.env.CLIENT_ECOMMERCE || "{}"),
   CLIENT_ECOMMERCE_TEST: JSON.parse(process.env.CLIENT_ECOMMERCE_TEST || "{}"),
   CLIENT_PAYMENT_MANAGER: JSON.parse(

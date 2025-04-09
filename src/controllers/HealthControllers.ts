@@ -32,7 +32,8 @@ export const checkSESTask = (
       secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
     },
     region: config.AWS_SES_REGION,
-    tls: true
+    tls: true,
+    ...(config.AWS_SES_ENDPOINT !== "" && { endpoint: config.AWS_SES_ENDPOINT })
   });
   const command = new GetSendQuotaCommand({});
 

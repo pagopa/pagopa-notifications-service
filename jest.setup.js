@@ -12,6 +12,7 @@ process.env.MAX_RETRY_ATTEMPTS="3"
 process.env.AI_SAMPLING_PERCENTAGE="30"
 process.env.AI_ENABLED=false
 process.env.AWS_SES_ACCESS_KEY_ID="test-access-key"
+process.env.AWS_SES_ENDPOINT="http://localhost:8005"
 process.env.AWS_SES_REGION="test-region"
 process.env.AWS_SES_SECRET_ACCESS_KEY="test-secret-key"
 process.env.PAGOPA_MAIL_LOGO_URI="https://dev.checkout.pagopa.it/assets/logos/pagopa-logo.svg"
