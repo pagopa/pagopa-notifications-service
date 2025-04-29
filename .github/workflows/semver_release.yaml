@@ -44,27 +44,20 @@ jobs:
         run: |
           git config --global user.email "${{ secrets.BOT_GIT_MAIL }}" && git config --global user.name "${{ secrets.BOT_GIT_USER }}"
         # bump version
-      - name: Set up JDK 17
-        uses:  actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3
+      - name: Setup Node.js
+        uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7 # v3
         with:
-          java-version: '17'
-          distribution: 'corretto'
+          node-version: '22'
       - name: Get New App Version
         id: get_new_ver
         run: |
           RELEASE_APP_SEMVER=${{ needs.semver_labels.outputs.semver_app }}
-          if [[ $RELEASE_APP_SEMVER = "patch" ]]
+          if [[ $RELEASE_APP_SEMVER != "ignore-for-release" ]]
           then
-            mvn -f pom.xml build-helper:parse-version versions:set '-DnewVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}'
-          elif [[ $RELEASE_APP_SEMVER = "minor" ]]
-          then
-            mvn -f pom.xml build-helper:parse-version versions:set '-DnewVersion=${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0'
-          elif [[ $RELEASE_APP_SEMVER = "major" ]]
-          then
-            mvn -f pom.xml build-helper:parse-version versions:set '-DnewVersion=${parsedVersion.nextMajorVersion}.0.0'
+            npm version ${{ parameters.semver }} --git-tag-version false
           fi
-          git add pom.xml
-          version=$(mvn -f pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+          git add package.json
+          $version=$(node -p "require('./package.json').version")
           echo $version
           echo "version=$version" >> $GITHUB_OUTPUT
       - name: Update Helm Version Values
@@ -81,10 +74,6 @@ jobs:
               yq -i ".appVersion = \"${{steps.get_new_ver.outputs.version}}\"" "$CHART_FILE"
               git add "$CHART_FILE"
           fi
-      - name: Setup Node.js
-        uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7 # v3
-        with:
-          node-version: '22'
       - name: Install semver globally
         run: yarn global add semver
       - name: Update Chart Version
