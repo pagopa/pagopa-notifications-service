@@ -54,7 +54,7 @@ jobs:
           RELEASE_APP_SEMVER=${{ needs.semver_labels.outputs.semver_app }}
           if [[ $RELEASE_APP_SEMVER != "ignore-for-release" ]]
           then
-            npm version ${{ parameters.semver }} --git-tag-version false
+            npm version "$RELEASE_APP_SEMVER" --git-tag-version false
           fi
           git add package.json
           $version=$(node -p "require('./package.json').version")
