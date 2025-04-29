@@ -57,7 +57,7 @@ jobs:
             npm version "$RELEASE_APP_SEMVER" --git-tag-version false
           fi
           git add package.json
-          $version=$(node -p "require('./package.json').version")
+          version=$(node -p "require('./package.json').version")
           echo $version
           echo "version=$version" >> $GITHUB_OUTPUT
       - name: Update Helm Version Values
