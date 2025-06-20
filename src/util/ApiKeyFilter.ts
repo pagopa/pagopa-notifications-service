@@ -3,7 +3,7 @@ import { getConfigOrThrow } from "./config";
 import { logger } from "../util/logger";
 
 const config = getConfigOrThrow();
-const securedPaths = ['/emails'];
+const securedPaths = config.SECURITY_API_KEY_SECURED_PATHS;
 const validApiKeys = [config.SECURITY_API_KEY_PRIMARY, config.SECURITY_API_KEY_SECONDARY];
 
 function isValidApiKey(apiKey: string | undefined) {

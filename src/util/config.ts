@@ -56,6 +56,7 @@ export const IConfig = t.interface({
   RETRY_QUEUE_NAME: t.string,
   SECURITY_API_KEY_PRIMARY: t.string,
   SECURITY_API_KEY_SECONDARY: t.string,
+  SECURITY_API_KEY_SECURED_PATHS: t.array(t.string),
   SERVER_KEEP_ALIVE: t.number,
   STORAGE_DEADLETTER_CONNECTION_STRING: t.string,
   STORAGE_TRANSIENT_CONNECTION_STRING: t.string
@@ -96,6 +97,7 @@ const envConfig = {
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
   SECURITY_API_KEY_PRIMARY: process.env.SECURITY_API_KEY_PRIMARY,
   SECURITY_API_KEY_SECONDARY: process.env.SECURITY_API_KEY_SECONDARY,
+  SECURITY_API_KEY_SECURED_PATHS: (process.env.SECURITY_API_KEY_SECURED_PATHS || "").split(",").map(s => s.trim()).filter(Boolean),
   SERVER_KEEP_ALIVE: process.env.SERVER_KEEP_ALIVE
     ? parseInt(process.env.SERVER_KEEP_ALIVE, 10)
     : 61000

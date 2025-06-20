@@ -112,6 +112,7 @@ microservice-chart:
     OTEL_LOGS_EXPORTER: none
     OTEL_TRACES_SAMPLER: "always_on"
     SERVER_KEEP_ALIVE: "61000"
+    SECURITY_API_KEY_SECURED_PATHS: "/emails"
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
