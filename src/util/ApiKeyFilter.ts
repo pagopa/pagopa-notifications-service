@@ -9,25 +9,28 @@ const validApiKeys = [
   config.SECURITY_API_KEY_SECONDARY
 ];
 
-function isValidApiKey(apiKey: string | undefined) {
-  return apiKey && apiKey.trim() !== "" && validApiKeys.includes(apiKey);
-}
+const isValidApiKey = (apiKey: string | undefined): boolean =>
+  typeof apiKey === "string" &&
+  apiKey.trim() !== "" &&
+  validApiKeys.includes(apiKey);
 
-function logWhichApiKey(apiKey: string | undefined, path: string) {
-  let apiKeyType;
-  if (apiKey === config.SECURITY_API_KEY_PRIMARY) {
-    apiKeyType = "primary";
-  } else if (apiKey === config.SECURITY_API_KEY_SECONDARY) {
-    apiKeyType = "secondary";
-  } else {
-    apiKeyType = "unknown";
-  }
+const logWhichApiKey = (apiKey: string | undefined, path: string): void => {
+  const apiKeyType =
+    apiKey === config.SECURITY_API_KEY_PRIMARY
+      ? "primary"
+      : apiKey === config.SECURITY_API_KEY_SECONDARY
+      ? "secondary"
+      : "unknown";
 
   logger.debug(`API key type used for path ${path}: ${apiKeyType}`);
-}
+};
 
 // Middleware function
-function apiKeyFilter(req: Request, res: Response, next: NextFunction) {
+const apiKeyFilter = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   const path = req.path;
   const sanitizedPath = path.replace(/\n|\r/g, "");
 
@@ -39,13 +42,15 @@ function apiKeyFilter(req: Request, res: Response, next: NextFunction) {
       logger.error(
         `Unauthorized request for path ${sanitizedPath} - Missing or invalid API key`
       );
-      return res.status(401).send("Unauthorized");
+
+      res.status(401).send("Unauthorized");
+      return;
     }
 
     logWhichApiKey(apiKey, sanitizedPath);
   }
 
   next(); // Continue to next middleware/route
-}
+};
 
 export default apiKeyFilter;
