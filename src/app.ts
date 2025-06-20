@@ -12,6 +12,7 @@ import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
 import { healthController } from "./controllers/HealthControllers";
 import { addRetryQueueListener } from "./queues/RetryQueueListener";
+import apiKeyFilter from './util/ApiKeyFilter';
 
 /**
  * Define and start an express Server
@@ -66,6 +67,7 @@ export const startApp = async (
 
   const getHealthHandler = toExpressHandler(healthController(config, logger));
 
+  app.use(apiKeyFilter)
   app.post("/emails", jsonParser, sendMailtHandler);
   app.get("/health/readiness", jsonParser, getInfoHandler);
   app.get("/health/liveness", jsonParser, getHealthHandler);
