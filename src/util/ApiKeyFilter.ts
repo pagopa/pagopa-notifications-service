@@ -29,6 +29,7 @@ function logWhichApiKey(apiKey: string | undefined, path: string) {
 // Middleware function
 function apiKeyFilter(req: Request, res: Response, next: NextFunction) {
   const path = req.path;
+  const sanitizedPath = path.replace(/\n|\r/g, "");
 
   if (securedPaths.some(p => path.startsWith(p))) {
     const apiKeyHeader = req.headers["x-api-key"];
@@ -36,12 +37,12 @@ function apiKeyFilter(req: Request, res: Response, next: NextFunction) {
 
     if (!isValidApiKey(apiKey)) {
       logger.error(
-        `Unauthorized request for path ${path} - Missing or invalid API key`
+        `Unauthorized request for path ${sanitizedPath} - Missing or invalid API key`
       );
       return res.status(401).send("Unauthorized");
     }
 
-    logWhichApiKey(apiKey, path);
+    logWhichApiKey(apiKey, sanitizedPath);
   }
 
   next(); // Continue to next middleware/route
