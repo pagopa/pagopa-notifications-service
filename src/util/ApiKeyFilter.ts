@@ -34,7 +34,7 @@ const apiKeyFilter = (
   const path = req.path;
   const sanitizedPath = path.replace(/\n|\r/g, "");
 
-  if (securedPaths.some(p => path.startsWith(p))) {
+  if (securedPaths.some(p => sanitizedPath.startsWith(p))) {
     const apiKeyHeader = req.headers["x-api-key"];
     const apiKey = Array.isArray(apiKeyHeader) ? apiKeyHeader[0] : apiKeyHeader;
 
