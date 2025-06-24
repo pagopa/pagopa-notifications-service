@@ -17,6 +17,8 @@ paths:
       summary: New Notification email
       description: Api used to process a new email notification
       operationId: sendNotificationEmail
+      security:
+        - ApiKeyAuth: []
       parameters:
       - name: X-Client-Id
         in: header
@@ -92,6 +94,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
   schemas:
     NotificationEmailRequest:
       type: object
