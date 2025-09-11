@@ -95,15 +95,13 @@ stages:
               CONTAINER_REGISTRY_SERVICE_CONN: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
               CONTAINER_REGISTRY_FQDN: $(UAT_CONTAINER_NAMESPACE)
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-              DOCKER_IMAGE_TAG: cdctest110902
+              DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
           - template: azure-templates/chart-current-version.yml
 
   - stage: "Deploy_UAT_Green"
     displayName: 'UAT green deployment'
     dependsOn: [Build_release_candidate]
-    variables:
-      app_version: cdctest110902
     jobs:
       - deployment: "Green_deployment"
         displayName: "Green deployment"
@@ -131,6 +129,7 @@ stages:
                     ENV: 'UAT'
                     KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: ecommerce
-                    APP_NAME: pagopanotificationsservice-b
+                    APP_NAME: soak-$(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
-                    GREEN_VERSION: $(app_version)
+                    GREEN_VERSION: $(Build.SourceVersion)
+# --- END Deploy UAT --- # 

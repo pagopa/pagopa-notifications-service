@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "ecommerce"
-  nameOverride: "b-pagopa-notifications-service"
-  fullnameOverride: "b-pagopanotificationsservice"
+  nameOverride: ""
+  fullnameOverride: "soak-pagopa-notifications-service"
   canaryDelivery:
     create: false
     ingress:
@@ -12,11 +12,12 @@ microservice-chart:
       headerValue: blue
       weightPercent: 10
     image:
-      repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-      tag: "latest"
-    envConfig:
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
-    envSecret: {}
+      image:
+        repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
+        tag: "latest"
+      envConfig:
+        OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
+      envSecret: {}
     deployment:
       image:
         tag: ""
@@ -40,7 +41,7 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
-    replicas: 3
+    replicas: 1
   service:
     create: true
     type: ClusterIP
@@ -69,8 +70,8 @@ microservice-chart:
       memory: "512Mi"
       cpu: "200m"
   autoscaling:
-    minReplica: 3
-    maxReplica: 10
+    minReplica: 1
+    maxReplica: 3
     pollingInterval: 30 # seconds
     cooldownPeriod: 300 # seconds
     triggers:
@@ -114,7 +115,7 @@ microservice-chart:
     OTEL_LOGS_EXPORTER: none
     OTEL_TRACES_SAMPLER: "always_on"
     SERVER_KEEP_ALIVE: "61000"
-    SECURITY_API_KEY_SECURED_PATHS: "/emails"
+    SECURITY_API_KEY_SECURED_PATHS: ""
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
