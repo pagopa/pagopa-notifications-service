@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "ecommerce"
-  nameOverride: ""
-  fullnameOverride: ""
+  nameOverride: "b-pagopa-notifications-service"
+  fullnameOverride: "b-pagopanotificationsservice"
   canaryDelivery:
     create: false
     ingress:
@@ -40,7 +40,7 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
-    replicas: 1
+    replicas: 3
   service:
     create: true
     type: ClusterIP
@@ -69,8 +69,8 @@ microservice-chart:
       memory: "512Mi"
       cpu: "200m"
   autoscaling:
-    minReplica: 1
-    maxReplica: 2
+    minReplica: 3
+    maxReplica: 10
     pollingInterval: 30 # seconds
     cooldownPeriod: 300 # seconds
     triggers:
@@ -93,20 +93,20 @@ microservice-chart:
       maxSurge: 1
       maxUnavailable: 0
   envConfig:
-    NOTIFICATIONS_EMAIL_ENABLED: "true"
+    NOTIFICATIONS_EMAIL_ENABLED: "false"
     AWS_SES_ENDPOINT: ""
     AWS_SES_REGION: "eu-south-1"
     CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
     CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
-    RETRY_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-retry-queue"
-    ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue"
+    RETRY_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-retry-queue-b"
+    ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue-b"
     AI_SAMPLING_PERCENTAGE: "30"
     AI_ENABLED: "true"
     PAGOPA_MAIL_LOGO_URI: "https://uat.checkout.pagopa.it/assets/logos/logo_pagopa.png"
     PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
     PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
-    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service,deployment.environment=uat"
+    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_EXPORTER_OTLP_PROTOCOL: grpc
     OTEL_TRACES_EXPORTER: otlp
