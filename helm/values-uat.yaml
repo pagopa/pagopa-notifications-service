@@ -10,7 +10,7 @@ microservice-chart:
       header: true
       headerName: deployment
       headerValue: blue
-      weightPercent: 0
+      weightPercent: 10
     image:
       repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
       tag: "latest"

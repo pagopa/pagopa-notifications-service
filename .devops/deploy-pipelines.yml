@@ -102,6 +102,8 @@ stages:
   - stage: "Deploy_UAT_Green"
     displayName: 'UAT green deployment'
     dependsOn: [Build_release_candidate]
+    variables:
+      app_version: cdctest110901
     jobs:
       - deployment: "Green_deployment"
         displayName: "Green deployment"
@@ -131,4 +133,4 @@ stages:
                     NAMESPACE: ecommerce
                     APP_NAME: cdctest110901
                     VALUE_FILE: "helm/values-uat.yaml"
-                    GREEN_VERSION: $(Build.SourceVersion)
+                    GREEN_VERSION: $(app_version)
