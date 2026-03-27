@@ -335,6 +335,7 @@ export function sendMail(
           e => e,
           ({ body, clientId }) =>
             controller({
+              ApiKeyAuth: "",
               body,
               "X-Client-Id": clientId
             })

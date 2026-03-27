@@ -1,5 +1,8 @@
 # pagoPA notifications service
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-notifications-service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pagopa_pagopa-notifications-service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-notifications-service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pagopa_pagopa-notifications-service)
+
 This project implements the APIs to enable user receipts for _ecommerce platform_.
 
 ## Architecture overview

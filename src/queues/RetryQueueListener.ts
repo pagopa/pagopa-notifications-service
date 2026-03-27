@@ -68,6 +68,7 @@ export const addRetryQueueListener = (
                   );
                   void sendEmail(
                     {
+                      ApiKeyAuth: "",
                       "X-Client-Id": clientId,
                       body: bodyRequest
                     },
