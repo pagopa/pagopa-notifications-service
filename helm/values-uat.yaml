@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "ecommerce"
   nameOverride: ""
-  fullnameOverride: ""
+  fullnameOverride: "soak-pagopa-notifications-service"
   canaryDelivery:
     create: false
     ingress:
@@ -10,13 +10,14 @@ microservice-chart:
       header: true
       headerName: deployment
       headerValue: blue
-      weightPercent: 0
+      weightPercent: 10
     image:
-      repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
-      tag: "latest"
-    envConfig:
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
-    envSecret: {}
+      image:
+        repository: pagopaucommonacr.azurecr.io/pagopanotificationsservice
+        tag: "latest"
+      envConfig:
+        OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
+      envSecret: {}
     deployment:
       image:
         tag: ""
@@ -49,7 +50,7 @@ microservice-chart:
   ingress:
     create: true
     host: "weuuat.ecommerce.internal.uat.platform.pagopa.it"
-    path: /pagopa-notifications-service/(.*)
+    path: /beta/pagopa-notifications-service/(.*)
     servicePort: 3000
   serviceAccount:
     create: false
@@ -70,7 +71,7 @@ microservice-chart:
       cpu: "200m"
   autoscaling:
     minReplica: 1
-    maxReplica: 2
+    maxReplica: 3
     pollingInterval: 30 # seconds
     cooldownPeriod: 300 # seconds
     triggers:
@@ -93,20 +94,20 @@ microservice-chart:
       maxSurge: 1
       maxUnavailable: 0
   envConfig:
-    NOTIFICATIONS_EMAIL_ENABLED: "true"
+    NOTIFICATIONS_EMAIL_ENABLED: "false"
     AWS_SES_ENDPOINT: ""
     AWS_SES_REGION: "eu-south-1"
     CLIENT_ECOMMERCE_TEST: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
     CLIENT_PAYMENT_MANAGER: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
     CLIENT_ECOMMERCE: "{\"TEMPLATE_IDS\":[\"poc-1\", \"success\", \"ko\"]}"
-    RETRY_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-retry-queue"
-    ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue"
+    RETRY_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-retry-queue-b"
+    ERROR_QUEUE_NAME: "pagopa-u-weu-ecommerce-notifications-service-errors-queue-b"
     AI_SAMPLING_PERCENTAGE: "30"
     AI_ENABLED: "true"
     PAGOPA_MAIL_LOGO_URI: "https://uat.checkout.pagopa.it/assets/logos/logo_pagopa.png"
     PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
     PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
-    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service,deployment.environment=uat"
+    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service-blue,deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_EXPORTER_OTLP_PROTOCOL: grpc
     OTEL_TRACES_EXPORTER: otlp
@@ -114,7 +115,7 @@ microservice-chart:
     OTEL_LOGS_EXPORTER: none
     OTEL_TRACES_SAMPLER: "always_on"
     SERVER_KEEP_ALIVE: "61000"
-    SECURITY_API_KEY_SECURED_PATHS: "/emails"
+    SECURITY_API_KEY_SECURED_PATHS: ""
   envSecret:
     AWS_SES_ACCESS_KEY_ID: aws-ses-accesskey-id
     AWS_SES_SECRET_ACCESS_KEY: aws-ses-secretaccess-key
