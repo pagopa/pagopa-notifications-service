@@ -6,7 +6,7 @@ import * as bodyParser from "body-parser";
 import * as nodemailer from "nodemailer";
 import { Transporter } from "nodemailer";
 import registerHelpers from "handlebars-helpers";
-import { SendEmailCommand,  SESv2Client } from "@aws-sdk/client-sesv2";
+import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
