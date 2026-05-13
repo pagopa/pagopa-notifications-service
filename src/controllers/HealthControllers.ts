@@ -39,7 +39,7 @@ export const checkSESTask = (
 
   return TE.tryCatch(
     () => sesClient.send(command),
-    _ => String(`Error during AWS SES connectivity check`)
+    err => String(`Error during AWS SES connectivity check: ${err}`)
   );
 };
 
