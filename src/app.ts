@@ -42,11 +42,10 @@ export const startApp = async (
     ...(config.AWS_SES_ENDPOINT !== "" && { endpoint: config.AWS_SES_ENDPOINT })
   };
 
+  const sesClient = new SESv2Client(SES_CONFIG);
+
   const mailTrasporter: Transporter = nodemailer.createTransport({
-    SES: {
-      aws: { SendEmailCommand },
-      ses: new SESv2Client(SES_CONFIG)
-    }
+    SES: { SendEmailCommand, sesClient }
   });
 
   registerHelpers();
