@@ -3,10 +3,9 @@ import { getConfigOrThrow } from "../../util/config";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { SentMessageInfo } from "nodemailer/lib/ses-transport";
 import { Transporter, createTransport } from "nodemailer";
-import { SESv2, SendEmailCommand } from "@aws-sdk/client-sesv2";
+import {  SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../../__mocks__/data_mock";
-import * as fs from "fs";
 import { logger } from "../../util/logger";
 import * as templateCacheModule from "../../util/templateCache";
   
@@ -14,7 +13,7 @@ var config = getConfigOrThrow();
 
 const sentMessage = {
   /** an envelope object {from:'address', to:['address']} */
-  envelope: {from: "testFrom", to: ["testTo"]} as Envelope,
+  envelope: {from: "testFrom", to: ["testTo"]},
   /** the Message-ID header value. This value is derived from the response of SES API, so it differs from the Message-ID values used in logging. */
   messageId: "messageId",
   response: "response",
@@ -35,7 +34,7 @@ const SES_CONFIG = {
 const getMailTransporter = () =>  createTransport({
   SES: {
     aws: { SendEmailCommand },
-    ses: new SESv2(SES_CONFIG)
+    ses: new SESv2Client(SES_CONFIG)
   }
 });
 
