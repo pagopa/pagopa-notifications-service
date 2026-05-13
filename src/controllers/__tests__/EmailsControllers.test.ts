@@ -3,7 +3,7 @@ import { getConfigOrThrow } from "../../util/config";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { SentMessageInfo } from "nodemailer/lib/ses-transport";
 import { Transporter, createTransport } from "nodemailer";
-import { SES, SendRawEmailCommand } from "@aws-sdk/client-ses";
+import { SESv2, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../../__mocks__/data_mock";
 import * as fs from "fs";
@@ -34,8 +34,8 @@ const SES_CONFIG = {
 
 const getMailTransporter = () =>  createTransport({
   SES: {
-    aws: { SendRawEmailCommand },
-    ses: new SES(SES_CONFIG)
+    aws: { SendEmailCommand },
+    ses: new SESv2(SES_CONFIG)
   }
 });
 

@@ -6,7 +6,7 @@ import * as bodyParser from "body-parser";
 import * as nodemailer from "nodemailer";
 import { Transporter } from "nodemailer";
 import registerHelpers from "handlebars-helpers";
-import { SendRawEmailCommand, SES } from "@aws-sdk/client-ses";
+import { SendEmailCommand, SESv2 } from "@aws-sdk/client-sesv2";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
@@ -44,8 +44,8 @@ export const startApp = async (
 
   const mailTrasporter: Transporter = nodemailer.createTransport({
     SES: {
-      aws: { SendRawEmailCommand },
-      ses: new SES(SES_CONFIG)
+      aws: { SendEmailCommand },
+      ses: new SESv2(SES_CONFIG)
     }
   });
 

@@ -3,10 +3,10 @@
  * RESTful Controllers for pod health related informations
  */
 import {
-  GetSendQuotaCommand,
-  GetSendQuotaCommandOutput,
-  SESClient
-} from "@aws-sdk/client-ses";
+  SESv2Client,
+  GetAccountCommand,
+  GetAccountCommandOutput
+} from "@aws-sdk/client-sesv2";
 import { Logger } from "winston";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
@@ -25,8 +25,8 @@ import { AsControllerFunction, AsControllerResponseType } from "../util/types";
 
 export const checkSESTask = (
   config: IConfig
-): TE.TaskEither<string, GetSendQuotaCommandOutput> => {
-  const sesClient = new SESClient({
+): TE.TaskEither<string, GetAccountCommandOutput> => {
+  const sesClient = new SESv2Client({
     credentials: {
       accessKeyId: config.AWS_SES_ACCESS_KEY_ID,
       secretAccessKey: config.AWS_SES_SECRET_ACCESS_KEY
@@ -35,7 +35,7 @@ export const checkSESTask = (
     tls: true,
     ...(config.AWS_SES_ENDPOINT !== "" && { endpoint: config.AWS_SES_ENDPOINT })
   });
-  const command = new GetSendQuotaCommand({});
+  const command = new GetAccountCommand({});
 
   return TE.tryCatch(
     () => sesClient.send(command),
@@ -60,7 +60,7 @@ const healthcheck = (
     ),
     TE.map(resp =>
       ResponseSuccessJson(({
-        sentLast24Hours: resp.SentLast24Hours
+        sentLast24Hours: resp.SendQuota?.SentLast24Hours ?? 0
       } as unknown) as GetHealthT)
     ),
     TE.toUnion
