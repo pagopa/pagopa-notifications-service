@@ -1,7 +1,9 @@
 import { getHealth } from "../HealthControllers";
 import { Logger } from "winston";
 import { NotificationsServiceClientConfig, IConfig } from "../../util/config";
-import { GetSendQuotaCommandOutput } from "@aws-sdk/client-ses/dist-types/commands/GetSendQuotaCommand";
+import {
+  GetAccountCommandOutput
+} from "@aws-sdk/client-sesv2";
 import { of } from "fp-ts/TaskEither";
 
 
@@ -53,11 +55,11 @@ describe("health check", () => {
 
   xit("should return a success response", async () => {
 
-    const getSendQuotaCommandOutput : GetSendQuotaCommandOutput = {$metadata: {}};
+    const getSendQuotaCommandOutput : GetAccountCommandOutput = {$metadata: {}};
 
     jest.mock("../HealthControllers", () => ({
       checkSESTask () {
-        return new Promise<GetSendQuotaCommandOutput>(of(getSendQuotaCommandOutput));
+        return new Promise<GetAccountCommandOutput>(of(getSendQuotaCommandOutput));
       }
     }));
 
