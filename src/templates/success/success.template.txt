@@ -8,18 +8,18 @@ in all the possible combinations --}}
 {{!-- Show transaction subject if there aren't multiple cart items
 AND transaction subject is set --}}
 {{#eq cart.items.length 1}}
-  {{#if cart.items.[0].subject}} 
+{{#if cart.items.[0].subject}}
 - - - - - - - - - - -
 
 Oggetto del pagamento:
 {{cart.items.[0].subject}}
-  {{/if}}
+{{/if}}
 {{/eq}}
 {{!-- End condition --}}
 
 - - - - - - - - - - -
 
-{{!-- Show the following key value pair if user is authenticated  --}}
+{{!-- Show the following key value pair if user is authenticated --}}
 {{#with user.data}}
 Pagato da: {{firstName}} {{lastName}} ({{taxCode}})
 {{/with}}
@@ -36,20 +36,20 @@ Data e ora: {{transaction.timestamp}}
 - - - - - - - - - - -
 
 {{#each cart.items}}
-  {{#with this.debtor}}
+{{#with this.debtor}}
 Debitore: {{fullName}} {{#if taxCode}}({{taxCode}}){{/if}}
-  {{/with}}
+{{/with}}
 Ente creditore: {{this.payee.name}}
 Codice Fiscale ente: {{this.payee.taxCode}}
-  {{#eq this.refNumber.type "codiceAvviso"}}
+{{#eq this.refNumber.type "codiceAvviso"}}
 Codice Avviso: {{this.refNumber.value}}
-  {{/eq}}
-  {{#eq this.refNumber.type "IUV"}}
+{{/eq}}
+{{#eq this.refNumber.type "IUV"}}
 IUV: {{this.refNumber.value}}
-  {{/eq}}
-  {{#not @root.cart.items.length 1}}
+{{/eq}}
+{{#not @root.cart.items.length 1}}
 Oggetto del pagamento: {{this.subject}}
-  {{/not}}
+{{/not}}
 Importo: {{this.amount}}
 
 {{/each}}
@@ -66,16 +66,14 @@ Il totale non include eventuali costi di invio bonifico, se applicati dal gestor
 {{/if}}
 
 - - - - - - - - - - -
-{{#if user.data.taxCode}}
 
-Poiché hai effettuato questo pagamento tramite uno strumento tracciabile, puoi usare questa e-mail come ricevuta per le tue detrazioni o deduzioni fiscali.
+Fai attenzione alle truffe online
+
+Alcune usano il nome e il logo di pagoPA per simulare comunicazioni ufficiali. Impara a riconoscerle ed evitarle con la guida contro il phishing e altre truffe: https://www.pagopa.gov.it/phishing
 
 - - - - - - - - - - -
-{{/if}}
 
-Serve aiuto?
-
-Contatta il servizio di assistenza all'indirizzo https://pagopa.gov.it/assistenza e comunica il codice transazione: {{transaction.id}}.
+Codice transazione: {{transaction.id}}
 
 Non rispondere a questa email. Questa casella di posta è utilizzata solo per l’invio della presente mail e, non essendo monitorata, non riceveresti risposta.
 
