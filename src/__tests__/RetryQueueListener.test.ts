@@ -280,7 +280,6 @@ describe("retry queue", () => {
         ECOMMERCE_NOTIFICATIONS_SENDER: "test@example.com",
         MAX_RETRY_ATTEMPTS: 3,
         INITIAL_RETRY_TIMEOUT_SECONDS: 60,
-        PAGOPA_MAIL_LOGO_URI: "https://example.com/logo.png"
       };
       
       const mockTemplateCache = {
