@@ -103,7 +103,6 @@ microservice-chart:
     AI_ENABLED: "true"
     PERSONAL_DATA_VAULT_API_HOST: "https://api.uat.tokenizer.pdv.pagopa.it"
     PERSONAL_DATA_VAULT_API_BASE_PATH: "/tokenizer/v1"
-    PAGOPA_MAIL_LOGO_URI: "https://dev.checkout.pagopa.it/assets/logos/logo_pagopa.png"
     OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-notifications-service,deployment.environment=dev"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_EXPORTER_OTLP_PROTOCOL: grpc

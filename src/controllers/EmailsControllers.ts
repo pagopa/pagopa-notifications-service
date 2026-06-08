@@ -125,16 +125,8 @@ export const sendEmail = async (
       templateId
     );
 
-    // add pagopa logo URI taken from configuration
-    const enrichedParameters = {
-      ...params.body.parameters,
-      logos: {
-        pagopaCdnUri: config.PAGOPA_MAIL_LOGO_URI
-      }
-    };
-
     return pipe(
-      enrichedParameters,
+      params.body.parameters,
       schema.default.decode,
       E.map<unknown, readonly [string, string]>((templateParams: unknown) => [
         htmlTemplate(templateParams),
