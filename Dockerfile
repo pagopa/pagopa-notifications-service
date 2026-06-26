@@ -13,4 +13,9 @@ COPY tsconfig* ./
 RUN yarn install --production --frozen-lockfile
 RUN rm -rf dist/__test__
 EXPOSE 3000
+
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+RUN chown -R appuser:appgroup /app
+USER appuser:appgroup
+
 CMD [ "yarn", "start" ]
