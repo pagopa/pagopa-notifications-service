@@ -68,7 +68,7 @@
     "io-ts-reporters": "^2.0.1",
     "jest-handlebars": "^1.0.0",
     "node-forge": "1.4.0",
-    "nodemailer": "8.0.5",
+    "nodemailer": "9.0.1",
     "winston": "^3.8.1"
   }
 }
