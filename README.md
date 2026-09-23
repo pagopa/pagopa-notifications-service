@@ -15,11 +15,17 @@ This project implements the APIs to enable user receipts for _ecommerce platform
 
 Install the dependencies:
 
-```
-$ yarn install
+```sh
+yarn install
 ```
 
 Create a file `.env` in your cloned repo, with the contents similar to `.env.example`
+
+Then run:
+
+```sh
+yarn build
+```
 
 ### Attention must be paid to the mandatory variables for connection to PDV.
 
