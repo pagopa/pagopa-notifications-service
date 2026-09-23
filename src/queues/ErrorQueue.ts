@@ -1,5 +1,6 @@
 import opentelemetry, { Span } from "@opentelemetry/api";
 import { errorQueueClient } from "../util/queues";
+import { logger } from "../util/logger";
 
 const deadLetterErrorLabels = [
   { key: "deadLetterEvent_category", value: "RETRY_EVENT_NO_ATTEMPTS_LEFT" },
@@ -17,6 +18,10 @@ export const sendMessageToErrorQueue = async (
       clientId
     })
   );
+
+  logger.error(`Message failed too many times, added to error queue`, {
+    event_outcome: "failure"
+  });
   deadLetterErrorLabels.forEach(({ key, value }) =>
     span.setAttribute(key, value)
   );

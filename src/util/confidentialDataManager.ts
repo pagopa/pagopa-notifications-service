@@ -50,7 +50,12 @@ export const decryptBody = (opaqueData: string): TE.TaskEither<Error, string> =>
         });
       } catch (e) {
         logger.error(
-          `Got unexpected error while invoking PDV for decrypting body: ${e}`
+          `Got unexpected error while invoking PDV for decrypting body`,
+          {
+            error: {
+              message: (e as Error).message
+            }
+          }
         );
         return new Promise(
           (

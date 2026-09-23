@@ -1,6 +1,6 @@
+import { Logger } from "winston";
 import { startApp } from "../app";
 import { getConfigOrThrow } from "../util/config";
-import { Logger } from "winston";
 
 describe("app", () => {
 

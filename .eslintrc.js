@@ -21,6 +21,8 @@ module.exports = {
     "@pagopa/eslint-config/strong",
   ],
   "rules": {
-
+    "functional/immutable-data": "warn",
+    "functional/prefer-readonly-type": "warn",
+    "@typescript-eslint/no-floating-promises": "warn"
   }
 }

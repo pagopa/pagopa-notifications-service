@@ -36,7 +36,6 @@ export const createTemplateCache = (): ITemplateCache => {
         // eslint-disable-next-line fp/no-delete, functional/immutable-data
         delete templateCache[key];
       });
-      logger.info("Template cache cleared");
     },
 
     /**
@@ -88,9 +87,11 @@ export const createTemplateCache = (): ITemplateCache => {
         templateCache[templateId] = newTemplate;
 
         return newTemplate;
-      } catch (error) {
-        logger.error(`Error reading or compiling templates: ${error}`);
-        throw error;
+      } catch (e) {
+        logger.error(`Error reading or compiling templates`, {
+          error: { message: e }
+        });
+        throw e;
       }
     }
   };

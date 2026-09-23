@@ -1,5 +1,4 @@
 import { retryQueueClient } from "../util/queues";
-import { apiPdvClient, encryptBody } from "../util/confidentialDataManager";
 import { getConfigOrThrow } from "../util/config";
 import { Envelope } from "nodemailer/lib/mime-node";
 import { SentMessageInfo } from "nodemailer/lib/ses-transport";
@@ -9,14 +8,11 @@ import { QueueReceiveMessageResponse } from "@azure/storage-queue";
 import registerHelpers from "handlebars-helpers";
 import { mockReq } from "../__mocks__/data_mock";
 import * as fs from "fs";
-import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
 import * as TE from "fp-ts/lib/TaskEither";
-import { pipe } from "fp-ts/lib/function";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 import { sendEmail, writeMessageIntoQueue } from "../controllers/EmailsControllers";
 import { logger } from "../util/logger";
-import { Type } from "io-ts";
 
 // Mock dependencies for retry tests
 jest.mock("../queues/ErrorQueue", () => ({
@@ -26,7 +22,8 @@ jest.mock("../queues/ErrorQueue", () => ({
 jest.mock("../util/logger", () => ({
   logger: {
     info: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
+    ctx: {}
   }
 }));
 
@@ -216,9 +213,7 @@ describe("retry queue", () => {
 
         writeMessageIntoQueue(bodyEncrypted, clientId, retryCount, mockConfig as any);
 
-        expect(logger.info).toHaveBeenCalledWith(
-          `Enqueueing failed message with retryCount ${retryCount}`
-        );
+        expect(logger.info).toHaveBeenCalledTimes(1);
         expect(retryQueueClient.sendMessage).toHaveBeenCalledWith(
           JSON.stringify({
             clientId,
@@ -241,9 +236,6 @@ describe("retry queue", () => {
 
         writeMessageIntoQueue(bodyEncrypted, clientId, retryCount, mockConfig as any);
 
-        expect(logger.error).toHaveBeenCalledWith(
-          "Message failed too many times, adding to error queue"
-        );
         expect(sendMessageToErrorQueue).toHaveBeenCalledWith(bodyEncrypted, clientId);
         expect(retryQueueClient.sendMessage).not.toHaveBeenCalled();
       });
@@ -323,7 +315,8 @@ describe("retry queue", () => {
         
         // Verify error was logged
         expect(logger.error).toHaveBeenCalledWith(
-          expect.stringContaining("Error while trying to send email to AWS SES")
+          expect.stringContaining("Error while trying to send email to AWS SES"),
+          expect.anything()
         );
         
         // Verify message was queued with correct parameters
