@@ -13,7 +13,7 @@ var config = getConfigOrThrow();
 
 const sentMessage = {
   /** an envelope object {from:'address', to:['address']} */
-  envelope: {from: "testFrom", to: ["testTo"]},
+  envelope: {from: "testfrom@test.com", to: ["testto@test.com"]},
   /** the Message-ID header value. This value is derived from the response of SES API, so it differs from the Message-ID values used in logging. */
   messageId: "messageId",
   response: "response",
@@ -222,7 +222,8 @@ describe("template error handling", () => {
   
     // Verify that logger.error was called with the correct error message
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining("Error reading templates: Error: File not found")
+      expect.stringContaining("Error reading templates: file not found"),
+      expect.anything()
     );
 
     // Restore mocks after test

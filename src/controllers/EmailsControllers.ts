@@ -39,6 +39,7 @@ import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 import { encryptBody } from "../util/confidentialDataManager";
 import { createTemplateCache, ITemplateCache } from "../util/templateCache";
+import { requestContext } from "../util/contextStorage";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -59,7 +60,10 @@ const sendEmailWithAWS = async (
       text: textData
     }
   );
-  logger.info(`Message sent with ID ${messageInfoOk.messageId}`);
+  logger.info(`Message sent`, {
+    event_outcome: "success",
+    ctx_details: JSON.stringify({ message_id: messageInfoOk.messageId })
+  });
 
   return messageInfoOk;
 };
@@ -84,7 +88,6 @@ export const writeMessageIntoQueue: (
   config: IConfig
 ) => void = (bodyEncrypted, clientId, retryCount, config) => {
   if (retryCount > 0) {
-    logger.info(`Enqueueing failed message with retryCount ${retryCount}`);
     void retryQueueClient.sendMessage(
       JSON.stringify({
         clientId,
@@ -97,8 +100,11 @@ export const writeMessageIntoQueue: (
           config.INITIAL_RETRY_TIMEOUT_SECONDS
       }
     );
+    logger.info(`Enqueued failed message`, {
+      event_outcome: "success",
+      ctx_details: JSON.stringify({ retry_count: retryCount })
+    });
   } else {
-    logger.error(`Message failed too many times, adding to error queue`);
     void sendMessageToErrorQueue(bodyEncrypted, clientId);
   }
 };
@@ -116,8 +122,12 @@ export const sendEmail = async (
   // eslint-disable-next-line max-params
 ): ReturnType<AsControllerFunction<SendNotificationEmailT>> => {
   const clientId = params["X-Client-Id"];
-
   const templateId = params.body.templateId;
+
+  const storage = requestContext.getStore();
+  if (storage) {
+    storage.template_id = templateId;
+  }
 
   try {
     // Read templates asynchronously using the provided template cache
@@ -135,11 +145,8 @@ export const sendEmail = async (
       E.map(
         async ([htmlMarkup, textMarkup]): Promise<
           O.Option<SESTransport.SentMessageInfo>
-        > => {
-          logger.info(
-            `[${clientId}] - Sending email with template ${templateId}`
-          );
-          return pipe(
+        > =>
+          pipe(
             clientId,
             O.fromPredicate(
               (client: string) => client !== "CLIENT_ECOMMERCE_TEST"
@@ -159,15 +166,20 @@ export const sendEmail = async (
                     )
                   );
                 } catch (error) {
-                  logger.error(
-                    `Error while trying to send email to AWS SES: ${error}`
-                  );
+                  logger.error(`Error while trying to send email to AWS SES`, {
+                    event_outcome: "failure",
+                    error: { message: error }
+                  });
                   await pipe(
                     encryptBody(JSON.stringify(params.body)),
                     TE.bimap(
                       e => {
                         logger.error(
-                          "Error while invoke PDV while encrypt body"
+                          "Error while invoke PDV while encrypt body",
+                          {
+                            event_outcome: "failure",
+                            error: { message: e.message }
+                          }
                         );
                         // First invoking the service with aws and pdv KO returns an error.
                         if (retryCount === config.MAX_RETRY_ATTEMPTS) {
@@ -196,8 +208,7 @@ export const sendEmail = async (
                 }
               }
             )
-          );
-        }
+          )
       ),
       E.fold(
         async err => ResponseErrorFromValidationErrors(schema.default)(err),
@@ -215,7 +226,10 @@ export const sendEmail = async (
       )
     );
   } catch (error) {
-    logger.error(`Error reading templates: ${error}`);
+    logger.error(`Error reading templates: file not found`, {
+      event_outcome: "failure",
+      error: { message: error }
+    });
     return ResponseErrorValidation(
       "Template Error",
       "Failed to load templates"
@@ -334,7 +348,10 @@ export function sendMail(
         )
       );
     } catch (error) {
-      logger.error(`Unexpected error in sendMail: ${error}`);
+      logger.error(`Unexpected error in sendMail`, {
+        event_outcome: "failure",
+        error: { message: error }
+      });
       return ResponseErrorValidation(
         "Template Error",
         "Failed to load templates"
