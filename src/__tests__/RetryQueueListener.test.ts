@@ -23,8 +23,8 @@ jest.mock("../util/logger", () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),
-    ctx: {}
-  }
+  },
+  getLoggableError: jest.fn(() => {})
 }));
 
 // Properly mock the confidentialDataManager module

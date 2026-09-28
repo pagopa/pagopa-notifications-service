@@ -32,7 +32,7 @@ import {
   NotificationsServiceClientEnum,
   NotificationsServiceClientType
 } from "../util/config";
-import { logger } from "../util/logger";
+import { getLoggableError, logger } from "../util/logger";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 import { SendNotificationEmailT } from "../generated/definitions/requestTypes";
 import { retryQueueClient } from "../util/queues";
@@ -102,7 +102,7 @@ export const writeMessageIntoQueue: (
     );
     logger.info(`Enqueued failed message`, {
       event_outcome: "success",
-      ctx_details: JSON.stringify({ retry_count: retryCount })
+      retry_count: retryCount
     });
   } else {
     void sendMessageToErrorQueue(bodyEncrypted, clientId);
@@ -167,8 +167,8 @@ export const sendEmail = async (
                   );
                 } catch (error) {
                   logger.error(`Error while trying to send email to AWS SES`, {
-                    event_outcome: "failure",
-                    error: { message: error }
+                    ...getLoggableError(error),
+                    event_outcome: "failure"
                   });
                   await pipe(
                     encryptBody(JSON.stringify(params.body)),
@@ -177,8 +177,8 @@ export const sendEmail = async (
                         logger.error(
                           "Error while invoke PDV while encrypt body",
                           {
-                            event_outcome: "failure",
-                            error: { message: e.message }
+                            ...getLoggableError(e),
+                            event_outcome: "failure"
                           }
                         );
                         // First invoking the service with aws and pdv KO returns an error.
@@ -227,8 +227,8 @@ export const sendEmail = async (
     );
   } catch (error) {
     logger.error(`Error reading templates: file not found`, {
-      event_outcome: "failure",
-      error: { message: error }
+      ...getLoggableError(error),
+      event_outcome: "failure"
     });
     return ResponseErrorValidation(
       "Template Error",
@@ -349,8 +349,8 @@ export function sendMail(
       );
     } catch (error) {
       logger.error(`Unexpected error in sendMail`, {
-        event_outcome: "failure",
-        error: { message: error }
+        ...getLoggableError(error),
+        event_outcome: "failure"
       });
       return ResponseErrorValidation(
         "Template Error",

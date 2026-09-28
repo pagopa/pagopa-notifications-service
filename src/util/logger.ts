@@ -34,3 +34,16 @@ export const logger = createLogger({
     new transports.Console({ handleExceptions: true, handleRejections: true })
   ]
 });
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const getLoggableError = (e: unknown) => {
+  if (e instanceof Error) {
+    return {
+      "error.message": e.message,
+      "error.stack_trace": e.stack,
+      "error.type": e.name
+    };
+  }
+
+  return {};
+};

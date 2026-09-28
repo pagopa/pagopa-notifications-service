@@ -8,7 +8,7 @@ import {
   sendEmail,
   writeMessageIntoQueue
 } from "../controllers/EmailsControllers";
-import { logger } from "../util/logger";
+import { getLoggableError, logger } from "../util/logger";
 import { retryQueueClient } from "../util/queues";
 import { IConfig } from "../util/config";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
@@ -56,10 +56,8 @@ export const addRetryQueueListener = (
               TE.bimap(
                 e => {
                   logger.error("Error while invoke PDV while decrypt body", {
-                    event_outcome: "failure",
-                    error: {
-                      message: e.message
-                    }
+                    ...getLoggableError(e),
+                    event_outcome: "failure"
                   });
                   // Error case: we fail to decrypt  the request body -> we write the same event on the retry queque with a decremented retryCount
                   writeMessageIntoQueue(
@@ -97,10 +95,8 @@ export const addRetryQueueListener = (
             logger.error(
               "Caught exception while processing message from retry queue",
               {
-                event_outcome: "failure",
-                error: {
-                  message: (e as Error).message
-                }
+                ...getLoggableError(e),
+                event_outcome: "failure"
               }
             );
           }
@@ -108,10 +104,8 @@ export const addRetryQueueListener = (
       }
     } catch (e) {
       logger.error(`Caught exception while retrieving messages from queue`, {
-        event_outcome: "failure",
-        error: {
-          message: (e as Error).message
-        }
+        ...getLoggableError(e),
+        event_outcome: "failure"
       });
     }
   };

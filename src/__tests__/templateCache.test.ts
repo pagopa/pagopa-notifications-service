@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as Handlebars from "handlebars";
 import { createTemplateCache, ITemplateCache } from "../../src/util/templateCache";
-import { logger } from "../../src/util/logger";
+import { logger, getLoggableError } from "../../src/util/logger";
 
 type MockedFunction<T extends (...args: any[]) => any> = jest.Mock<ReturnType<T>, Parameters<T>>;
 
@@ -9,8 +9,9 @@ type MockedFunction<T extends (...args: any[]) => any> = jest.Mock<ReturnType<T>
 jest.mock("../../src/util/logger", () => ({
   logger: {
     info: jest.fn(),
-    error: jest.fn()
-  }
+    error: jest.fn(),
+  },
+  getLoggableError: jest.fn(() => {})
 }));
 
 // Mock handlebars

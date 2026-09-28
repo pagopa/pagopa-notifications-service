@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as Handlebars from "handlebars";
-import { logger } from "./logger";
+import { getLoggableError, logger } from "./logger";
 
 export interface ITemplateCache {
   readonly getTemplates: (
@@ -89,7 +89,7 @@ export const createTemplateCache = (): ITemplateCache => {
         return newTemplate;
       } catch (e) {
         logger.error(`Error reading or compiling templates`, {
-          error: { message: e }
+          ...getLoggableError(e)
         });
         throw e;
       }
