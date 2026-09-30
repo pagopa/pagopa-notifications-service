@@ -102,7 +102,7 @@ export const writeMessageIntoQueue: (
     );
     logger.info(`Enqueued failed message`, {
       event_outcome: "success",
-      retry_count: retryCount
+      ctx_details: JSON.stringify({ retry_count: retryCount })
     });
   } else {
     void sendMessageToErrorQueue(bodyEncrypted, clientId);
