@@ -40,7 +40,10 @@ const apiKeyFilter = (
 
     if (!isValidApiKey(apiKey)) {
       logger.error("Unauthorized request - Missing or invalid API key", {
-        ctx_details: JSON.stringify({ is_api_key_empty: apiKey?.length === 0 })
+        ctx_details: JSON.stringify({
+          is_api_key_empty: apiKey?.length === 0,
+          sanitized_path: sanitizedPath
+        })
       });
 
       res.status(401).send("Unauthorized");
