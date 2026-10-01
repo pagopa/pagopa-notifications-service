@@ -1,10 +1,9 @@
-import { createLogger, transports } from "winston";
-
+import { createLogger, transports, Logform, format } from "winston";
 import { ecsFormat } from "@elastic/ecs-winston-format";
-
 import packageJson from "../../package.json";
-const otelResourceAttributes = process.env.OTEL_RESOURCE_ATTRIBUTES;
+import { requestContext } from "./contextStorage";
 
+const otelResourceAttributes = process.env.OTEL_RESOURCE_ATTRIBUTES;
 const appVersion = packageJson.version;
 
 const attributes: Record<string, string> = {};
@@ -17,13 +16,34 @@ otelResourceAttributes
   // eslint-disable-next-line functional/immutable-data
   .forEach(el => (attributes[el.key] = el.value));
 
-export const logger = createLogger({
-  format: ecsFormat({
+const hooks: ReadonlyArray<Logform.Format> = [
+  format(info => ({
+    ...info,
+    ...(requestContext.getStore() ?? {})
+  }))(),
+  ecsFormat({
     serviceEnvironment: attributes["deployment.environment"] ?? "unset",
     serviceName: attributes["service.name"] ?? "unset",
     serviceVersion: appVersion
-  }),
+  })
+];
+
+export const logger = createLogger({
+  format: format.combine(...hooks),
   transports: [
     new transports.Console({ handleExceptions: true, handleRejections: true })
   ]
 });
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const getLoggableError = (e: unknown) => {
+  if (e instanceof Error) {
+    return {
+      "error.message": e.message,
+      "error.stack_trace": e.stack,
+      "error.type": e.name
+    };
+  }
+
+  return {};
+};

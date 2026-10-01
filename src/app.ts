@@ -1,18 +1,19 @@
 import * as http from "http";
 import express from "express";
-import { Logger } from "winston";
 import { toExpressHandler } from "@pagopa/ts-commons/lib/express";
 import * as bodyParser from "body-parser";
 import * as nodemailer from "nodemailer";
 import { Transporter } from "nodemailer";
 import registerHelpers from "handlebars-helpers";
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
+import { Logger } from "winston";
 import { IConfig } from "./util/config";
 import * as EmailsControllers from "./controllers/EmailsControllers";
 import { infoController } from "./controllers/InfoControllers";
 import { healthController } from "./controllers/HealthControllers";
 import { addRetryQueueListener } from "./queues/RetryQueueListener";
 import apiKeyFilter from "./util/ApiKeyFilter";
+import { storageMiddleware } from "./util/contextStorage";
 
 /**
  * Define and start an express Server
@@ -66,7 +67,7 @@ export const startApp = async (
 
   const getHealthHandler = toExpressHandler(healthController(config, logger));
 
-  app.use(apiKeyFilter);
+  app.use(storageMiddleware, apiKeyFilter);
   app.post("/emails", jsonParser, sendMailtHandler);
   app.get("/health/readiness", jsonParser, getInfoHandler);
   app.get("/health/liveness", jsonParser, getHealthHandler);

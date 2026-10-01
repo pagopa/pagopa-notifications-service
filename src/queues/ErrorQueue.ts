@@ -1,5 +1,7 @@
 import opentelemetry, { Span } from "@opentelemetry/api";
 import { errorQueueClient } from "../util/queues";
+import { logger } from "../util/logger";
+import { getConfigOrThrow } from "../util/config";
 
 const deadLetterErrorLabels = [
   { key: "deadLetterEvent_category", value: "RETRY_EVENT_NO_ATTEMPTS_LEFT" },
@@ -17,6 +19,13 @@ export const sendMessageToErrorQueue = async (
       clientId
     })
   );
+
+  logger.error(`Message failed too many times, added to error queue`, {
+    ctx_details: JSON.stringify({
+      max_retry_attempts: getConfigOrThrow().MAX_RETRY_ATTEMPTS
+    }),
+    event_outcome: "failure"
+  });
   deadLetterErrorLabels.forEach(({ key, value }) =>
     span.setAttribute(key, value)
   );

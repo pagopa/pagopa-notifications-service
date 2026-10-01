@@ -8,11 +8,12 @@ import {
   sendEmail,
   writeMessageIntoQueue
 } from "../controllers/EmailsControllers";
-import { logger } from "../util/logger";
+import { getLoggableError, logger } from "../util/logger";
 import { retryQueueClient } from "../util/queues";
 import { IConfig } from "../util/config";
 import { NotificationEmailRequest } from "../generated/definitions/NotificationEmailRequest";
 import { createTemplateCache } from "../util/templateCache";
+import { requestContext } from "../util/contextStorage";
 
 export const addRetryQueueListener = (
   config: IConfig,
@@ -28,10 +29,18 @@ export const addRetryQueueListener = (
       });
 
       if (messages?.receivedMessageItems.length > 0) {
-        logger.info(
-          `Retrying ${messages.receivedMessageItems.length} enqueued messages`
-        );
+        logger.info("Retrieved messages from retry queue", {
+          ctx_details: JSON.stringify({
+            messages_queue_length: messages.receivedMessageItems.length
+          })
+        });
+
         for (const message of messages.receivedMessageItems) {
+          const storage = requestContext.getStore();
+          if (storage) {
+            storage.message_id = message.messageId;
+          }
+
           try {
             await retryQueueClient.deleteMessage(
               message.messageId,
@@ -41,14 +50,15 @@ export const addRetryQueueListener = (
             const { clientId, bodyEncrypted, retryCount } = JSON.parse(
               message.messageText
             );
-            logger.info(bodyEncrypted);
+
             await pipe(
               decryptBody(bodyEncrypted),
               TE.bimap(
                 e => {
-                  logger.error(
-                    `Error while invoke PDV while decrypt body: ${e} `
-                  );
+                  logger.error("Error while invoke PDV while decrypt body", {
+                    ...getLoggableError(e),
+                    event_outcome: "failure"
+                  });
                   // Error case: we fail to decrypt  the request body -> we write the same event on the retry queque with a decremented retryCount
                   writeMessageIntoQueue(
                     bodyEncrypted,
@@ -83,15 +93,20 @@ export const addRetryQueueListener = (
             )();
           } catch (e) {
             logger.error(
-              `Caught exception while processing message from retry queue with messageId ${message.messageId}`
+              "Caught exception while processing message from retry queue",
+              {
+                ...getLoggableError(e),
+                event_outcome: "failure"
+              }
             );
           }
         }
       }
     } catch (e) {
-      logger.error(
-        `Caught exception while retrieving messages from queue: ${e}`
-      );
+      logger.error(`Caught exception while retrieving messages from queue`, {
+        ...getLoggableError(e),
+        event_outcome: "failure"
+      });
     }
   };
 

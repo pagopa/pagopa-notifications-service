@@ -7,7 +7,7 @@ import { TypeofApiResponse } from "@pagopa/ts-commons/lib/requests";
 import { FindPiiUsingGETT } from "@src/generated/personal-data-vault/requestTypes";
 import { createClient } from "../generated/personal-data-vault/client";
 import { getConfigOrThrow } from "./config";
-import { logger } from "./logger";
+import { getLoggableError, logger } from "./logger";
 
 const config = getConfigOrThrow();
 
@@ -50,7 +50,8 @@ export const decryptBody = (opaqueData: string): TE.TaskEither<Error, string> =>
         });
       } catch (e) {
         logger.error(
-          `Got unexpected error while invoking PDV for decrypting body: ${e}`
+          `Got unexpected error while invoking PDV for decrypting body`,
+          { ...getLoggableError(e) }
         );
         return new Promise(
           (
