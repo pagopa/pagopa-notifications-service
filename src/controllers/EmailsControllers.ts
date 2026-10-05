@@ -39,7 +39,6 @@ import { retryQueueClient } from "../util/queues";
 import { sendMessageToErrorQueue } from "../queues/ErrorQueue";
 import { encryptBody } from "../util/confidentialDataManager";
 import { createTemplateCache, ITemplateCache } from "../util/templateCache";
-import { requestContext } from "../util/contextStorage";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const sendEmailWithAWS = async (
@@ -50,23 +49,14 @@ const sendEmailWithAWS = async (
   textData: string,
   mailTrasporter: Transporter<SESTransport.SentMessageInfo>
   // eslint-disable-next-line max-params
-) => {
-  const messageInfoOk: SESTransport.SentMessageInfo = await mailTrasporter.sendMail(
-    {
-      from: senderEmail,
-      to: recipientEmail,
-      subject,
-      html: htmlData,
-      text: textData
-    }
-  );
-  logger.info(`Message sent`, {
-    event_outcome: "success",
-    ctx_details: JSON.stringify({ message_id: messageInfoOk.messageId })
+) =>
+  await mailTrasporter.sendMail({
+    from: senderEmail,
+    to: recipientEmail,
+    subject,
+    html: htmlData,
+    text: textData
   });
-
-  return messageInfoOk;
-};
 
 const mockedResponse = (to: string): SESTransport.SentMessageInfo => ({
   envelope: {
@@ -124,12 +114,6 @@ export const sendEmail = async (
   const clientId = params["X-Client-Id"];
   const templateId = params.body.templateId;
 
-  const storage = requestContext.getStore();
-  if (storage) {
-    storage.template_id = templateId;
-    storage.transaction_id = params.body.parameters?.transaction.id
-  }
-
   try {
     // Read templates asynchronously using the provided template cache
     const { textTemplate, htmlTemplate } = await templateCache.getTemplates(
@@ -156,7 +140,7 @@ export const sendEmail = async (
               async () => O.some(mockedResponse(params.body.to)),
               async () => {
                 try {
-                  return O.some(
+                  const response = O.some(
                     await sendEmailWithAWS(
                       config.ECOMMERCE_NOTIFICATIONS_SENDER,
                       params.body.to,
@@ -166,6 +150,21 @@ export const sendEmail = async (
                       mailTrasporter
                     )
                   );
+
+                  if (O.isSome(response)) {
+                    logger.info(`Message sent`, {
+                      event_outcome: "success",
+                      ctx_details: JSON.stringify({
+                        message_id:
+                          O.toNullable(response)?.messageId ??
+                          "{messageId-not-found}",
+                        ctx_template_id:
+                          params.body?.templateId ?? "{templateId-not-found}"
+                      })
+                    });
+                  }
+
+                  return response;
                 } catch (error) {
                   logger.error(`Error while trying to send email to AWS SES`, {
                     ...getLoggableError(error),
