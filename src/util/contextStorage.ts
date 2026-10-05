@@ -7,6 +7,7 @@ export interface IRequestContext {
   message?: string;
   template_id?: string;
   message_id?: string;
+  transaction_id?: string;
 }
 
 export const requestContext = new AsyncLocalStorage<IRequestContext>();

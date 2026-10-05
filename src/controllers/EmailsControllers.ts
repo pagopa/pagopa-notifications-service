@@ -127,6 +127,7 @@ export const sendEmail = async (
   const storage = requestContext.getStore();
   if (storage) {
     storage.template_id = templateId;
+    storage.transaction_id = params.body.parameters?.transaction.id
   }
 
   try {
