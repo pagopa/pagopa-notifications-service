@@ -117,7 +117,7 @@ components:
         parameters:
           description: Parameters used to value email templates
           type: object
-          properties: {}
+          additionalProperties: true
         language:
           description: Language
           type: string

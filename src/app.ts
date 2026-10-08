@@ -67,10 +67,11 @@ export const startApp = async (
 
   const getHealthHandler = toExpressHandler(healthController(config, logger));
 
-  app.use(storageMiddleware, apiKeyFilter);
-  app.post("/emails", jsonParser, sendMailtHandler);
-  app.get("/health/readiness", jsonParser, getInfoHandler);
-  app.get("/health/liveness", jsonParser, getHealthHandler);
+  app.use(jsonParser, storageMiddleware, apiKeyFilter);
+
+  app.post("/emails", sendMailtHandler);
+  app.get("/health/readiness", getInfoHandler);
+  app.get("/health/liveness", getHealthHandler);
 
   app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Express + TypeScript Server");

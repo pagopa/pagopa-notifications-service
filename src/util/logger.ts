@@ -45,5 +45,5 @@ export const getLoggableError = (e: unknown) => {
     };
   }
 
-  return {};
+  return { error: e };
 };
